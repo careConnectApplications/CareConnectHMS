@@ -24,6 +24,7 @@ import LabReport from "../Pages/LabReport";
 import PrintLabReport from "../Pages/PrintLabReport";
 import Encounter from "../Pages/Encounter";
 import AddClinicalEncounter from "../Pages/AddClinicalEncounter";
+import ClinicalEncounterEdit from "../Pages/ClinicalEncounterEdit";
 import AddANC from "../Pages/AddANC";
 import AddANCv2 from "../Pages/AddANCv2";
 import AncFollowUp from "../Pages/AncFollowUp";
@@ -79,6 +80,10 @@ export default function IndexRoutes() {
             <Route
               path="/dashboard/add-clinical-encounter/:id"
               element={<AddClinicalEncounter />}
+            />
+            <Route
+              path="/dashboard/edit-clinical-encounter/:id"
+              element={<ClinicalEncounterEdit />}
             />
             <Route path="/dashboard/add-new-anc/:id" element={<AddANC />} />
             <Route path="/dashboard/add-anc/:id" element={<AddANCv2 />} />

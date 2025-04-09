@@ -109,6 +109,7 @@ export default function DoctoerSchedule() {
       setAll(false);
       setTodayQueue(false);
       setCompleted(true);
+      setInprogress(false);
   
       const filterData = Data.filter((item) => item.status === "complete");
   
@@ -332,7 +333,7 @@ const location = useLocation().pathname
               <Text
                 py="8.5px"
                 px="12px"
-                bg={Completed ? "#fff" : "transparent"}
+                bg={Inprogress ? "#fff" : "transparent"}
                 rounded="7px"
                 color={"#1F2937"}
                 fontWeight={"500"}

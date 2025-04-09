@@ -191,6 +191,8 @@ export default function ClinicalEncounter({ hide = false, index }) {
 
     }, [isOpen, Trigger, index]);
 
+    
+
     return (
         <Box
             bg="#fff"
@@ -635,7 +637,12 @@ export default function ClinicalEncounter({ hide = false, index }) {
                             {
                                 item.status === "inprogress" && (
 
-                                    <Button mt="32px" onClick={() => nav(`/dashboard/add-clinical-encounter/${item._id}`)}>Complete Encounter</Button>
+                                    <Button display={hide === false ? "block": "none"} mt="32px" onClick={() => {
+                                        nav(`/dashboard/edit-clinical-encounter/${item._id}`);
+                                        localStorage.setItem("pathname", pathname)
+                                        localStorage.setItem("oldEncounter", JSON.stringify(item))
+
+                                    }}>Complete Encounter</Button>
                                 )
                             }
 
