@@ -1,6 +1,6 @@
 import { isActive, isOutPatient,isOutPatientParent,isRecordStaff,isInPatient,
   isScheduleAppointmentStaff,isScheduleProcedureStaff,isLabStaff,isRadiologyStaff,
-  isPharmacyStaff,isInventoryStaff,isBillingStaff,isUserManagerStaff,isTheatreStaff,isClinicalReport } from "../Authentication/Index";
+  isPharmacyStaff,isInventoryStaff,isBillingStaff,isUserManagerStaff,isTheatreStaff,isClinicalReport,isBillingStaffHOD } from "../Authentication/Index";
 import { MdOutlineAnalytics } from "react-icons/md";
 import { FaUserInjured, FaUsers } from "react-icons/fa";
 import { BiSolidReport } from "react-icons/bi";
@@ -226,7 +226,7 @@ export const NavList = (location) => {
           name: "cashier Report",
           link: "/dashboard/billing/cashier-report",
           active: isActive(location, "/dashboard/billing/cashier-report"),
-          display: isBillingStaff(),
+          display: isBillingStaffHOD(),
         },
 
       ],
