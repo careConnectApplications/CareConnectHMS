@@ -152,6 +152,18 @@ export const isBillingStaff = () => {
     }
 
 };
+export const isBillingStaffHOD = () => {
+    let roles = ["1", "3",]
+
+    let result = roles.includes(role)
+
+    if (result) {
+        return true
+    } else {
+        return false
+    }
+
+};
 export const isRecordStaff = () => {
     let roles = ["1"]
 
@@ -165,7 +177,9 @@ export const isRecordStaff = () => {
 
 };
 export const isClinicalReport = () => {
-    let roles = ["1","6", "4","7","20","8","9","14","3","5","12"]
+    let roles = ["1"]
+
+    // "6", "4","7","20","8","9","14","3","5","12"
 
     let result = roles.includes(role)
 

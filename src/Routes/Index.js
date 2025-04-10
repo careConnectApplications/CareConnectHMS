@@ -43,6 +43,7 @@ import ScheduleProcedureRoutes from "./ScheduleProcedureRoutes";
 import PharmacyRoutes from "./PharmacyRoutes";
 import InventoryRoutes from "./InventoryRoutes";
 import BillingRoutes from "./BillingRoutes";
+import HODBillingRoutes from "./HODBillingRoutes";
 import UserManagementRoutes from "./UserManagementRoutes";
 import ReferTheatreRoutes from "./ReferTheatreRoutes";
 import ClinicalReportRoutes from "./ClinicalReportRoutes";
@@ -149,6 +150,10 @@ export default function IndexRoutes() {
               path="/dashboard/billing-payment/receipt/:id"
               element={<PrintPaymentReceipt />}
             />
+          
+          </Route>
+          <Route element={<HODBillingRoutes />}>
+          
             <Route
               path="/dashboard/billing/cashier-report"
               element={<CashierReport />}
