@@ -15,6 +15,8 @@ import TubeFeedingChart from "./TubeFeedingChart"
 import FluidBalanceChart from "./FluidBalanceChart"
 import BloodMonitoringChart from "./BloodMonitoringChart"
 import NursingCarePlan from "./NursingCarePlan"
+import NursingPrescription from './NursingPrescription';
+import NursingEncounter from './NursingEncounter';
 
 
 export default function InPatientTimeline() {
@@ -59,6 +61,8 @@ export default function InPatientTimeline() {
                     <Tab _focus={{outline: "none"}} _selected={{ color: "blue.blue500", fontWeight: "700" }}>Tube Feeding Chart</Tab>
                     <Tab _focus={{outline: "none"}} _selected={{ color: "blue.blue500", fontWeight: "700" }}>Fluid Balance Chart </Tab>
                     <Tab _focus={{outline: "none"}} _selected={{ color: "blue.blue500", fontWeight: "700" }}>Blood Monitoring Chart </Tab>
+                    <Tab _focus={{outline: "none"}} _selected={{ color: "blue.blue500", fontWeight: "700" }}>Pharmacy</Tab>
+                    <Tab _focus={{outline: "none"}} _selected={{ color: "blue.blue500", fontWeight: "700" }}>Clinical Encounter</Tab>
 
                 </TabList>
                 
@@ -87,6 +91,12 @@ export default function InPatientTimeline() {
                     </TabPanel>
                     <TabPanel p="0">
                      <BloodMonitoringChart/>
+                    </TabPanel>
+                    <TabPanel p="0">
+                     <NursingPrescription/>
+                    </TabPanel>
+                    <TabPanel p="0">
+                     <NursingEncounter/>
                     </TabPanel>
 
 

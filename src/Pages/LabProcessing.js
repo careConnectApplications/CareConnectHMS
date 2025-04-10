@@ -497,6 +497,9 @@ export default function LabProcessing() {
                   Patient name
                 </Th>
                 <Th fontSize="13px" textTransform="capitalize" color="#534D59" fontWeight="600">
+                  Department
+                </Th>
+                <Th fontSize="13px" textTransform="capitalize" color="#534D59" fontWeight="600">
                   Test Name
                 </Th>
                 <Th fontSize="13px" textTransform="capitalize" color="#534D59" fontWeight="600">
@@ -519,6 +522,7 @@ export default function LabProcessing() {
                     testid={item.testid}
                     name={`${item.patient?.firstName} ${item.patient?.lastName}`}
                     mrn={item.patient?.MRN}
+                    department={item.department}
                     testName={item.testname}
                     date={moment(item.createdAt).format("lll")}
                     labStatus={item.status}
