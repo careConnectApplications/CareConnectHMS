@@ -123,6 +123,7 @@ export default function TableRow({
   diagnosis,
   onReset,
   testid,
+  department,
 }) {
   const router = useNavigate();
 
@@ -1132,6 +1133,11 @@ export default function TableRow({
           </Text>
         </Box>
       </HStack>
+    </Td>
+    <Td>
+      <Text fontWeight="400" fontSize="12px">
+        {department}
+      </Text>
     </Td>
 
     <Td>

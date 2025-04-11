@@ -25,6 +25,7 @@ import {
   RequestLabOrderStandAloneApi,
   SearchPatientApi,
   SearchTestApi, // API for test search
+  GetAllClinicApi,  // Used to fetch clinic details for labs
 } from "../Utils/ApiCalls";
 import Preloader from "./Preloader";
 
@@ -39,7 +40,7 @@ export default function RequestLabOtherModal({
   const [Loading, setLoading] = useState(false);
   const [Settings, setSettings] = useState({});
   const [TestNames, setTestNames] = useState([]);
-  // Instead of pre-loading patients into "Data", we now rely solely on search results.
+  // We now rely solely on search results instead of pre-loading patients.
   const [searchResults, setSearchResults] = useState([]);
   // State to track whether patient search is in progress
   const [isLoadingPatients, setIsLoadingPatients] = useState(false);
@@ -49,13 +50,24 @@ export default function RequestLabOtherModal({
   const [testSearchResults, setTestSearchResults] = useState([]);
   const [isLoadingTests, setIsLoadingTests] = useState(false);
 
+  // New state for Lab list (departments)
+  const [labs, setLabs] = useState([]);
+
+  // Update payload to store the lab name under "department", along with testNames and patient id.
   const [Payload, setPayload] = useState({
+    department: "",
     testNames: "",
     id: "",
   });
   const [searchMRN, setSearchMRN] = useState("");
 
-  // Generic handler to update payload; for test selection, we add the selected test to TestNames
+  // Log the payload on every update.
+  useEffect(() => {
+    console.log("Payload:", Payload);
+  }, [Payload]);
+
+  // Generic handler to update the payload.
+  // For test selection, we also add the selected test to TestNames.
   const handlePayload = (e) => {
     setPayload({ ...Payload, [e.target.id]: e.target.value });
     if (e.target.id === "testNames") {
@@ -72,18 +84,35 @@ export default function RequestLabOtherModal({
     }
   };
 
-  // Trigger lab order request with the selected patient and tests
+  // Fetch labs from the clinic API by filtering for items with type "lab"
+  const getLabs = async () => {
+    try {
+      const result = await GetAllClinicApi();
+      if (result?.queryresult?.clinicdetails) {
+        const labList = result.queryresult.clinicdetails.filter(
+          (item) => item.type === "lab"
+        );
+        setLabs(labList);
+      }
+    } catch (e) {
+      console.error("Error fetching labs:", e);
+    }
+  };
+
+  // Trigger lab order request with the selected patient, department (lab), and tests.
   const RequestLabOrder = async () => {
     setLoading(true);
     try {
+      // Pass the payload with "department" key instead of "lab".
       const result = await RequestLabOrderStandAloneApi(
-        { testname: TestNames, notfromappointment: true },
+        { testname: TestNames, notfromappointment: true, department: Payload.department },
         Payload.id
       );
       if (result.status === 200) {
         setLoading(false);
         onClose();
-        setPayload({ testNames: "", id: "" });
+        // Reset payload and test names.
+        setPayload({ department: "", testNames: "", id: "" });
         setTestNames([]);
         activateNotifications("Lab Order Created Successfully", "success");
         if (onSuccess) {
@@ -98,17 +127,16 @@ export default function RequestLabOtherModal({
   };
 
   const removeTestName = (item) => {
-    const updatedTestNames = TestNames.filter((id) => id !== item);
+    const updatedTestNames = TestNames.filter((test) => test !== item);
     setTestNames(updatedTestNames);
   };
 
-  // Handler for searching a patient using MRN (or first/last name)
+  // Handler for searching a patient using MRN or first/last name.
   const handleSearchPatient = async () => {
     setIsLoadingPatients(true);
     try {
       const results = await SearchPatientApi(searchMRN);
       if (results?.queryresult?.patientdetails) {
-        // Update searchResults with the returned patients
         setSearchResults(results.queryresult.patientdetails);
       } else {
         setSearchResults([]);
@@ -120,14 +148,14 @@ export default function RequestLabOtherModal({
     }
   };
 
-  // useEffect to trigger test search on every change in searchTestQuery
+  // Trigger test search on every change in searchTestQuery.
   useEffect(() => {
     const fetchTests = async () => {
       if (searchTestQuery.trim() !== "") {
         setIsLoadingTests(true);
         try {
           const results = await SearchTestApi(searchTestQuery);
-          console.log("Test search API response:", results); // Log API response
+          console.log("Test search API response:", results);
           if (results?.queryresult) {
             setTestSearchResults(results.queryresult);
           } else {
@@ -148,24 +176,32 @@ export default function RequestLabOtherModal({
     fetchTests();
   }, [searchTestQuery]);
 
+  // Fetch settings and labs when the component mounts or modal is opened.
   useEffect(() => {
     getSettings();
   }, []);
 
+  useEffect(() => {
+    if (isOpen) {
+      getLabs();
+    }
+  }, [isOpen]);
+
+  // Reset fields when the modal closes.
   useEffect(() => {
     if (!isOpen) {
       setSearchMRN("");
       setSearchResults([]);
       setSearchTestQuery("");
       setTestSearchResults([]);
-      setPayload({ testNames: "", id: "" });
-      setTestNames([]); 
+      setPayload({ department: "", testNames: "", id: "" });
+      setTestNames([]);
     }
   }, [isOpen]);
-  
 
-  // Form is complete if a patient is selected and at least one test is chosen
-  const isFormComplete = Payload.id && TestNames.length > 0 && Payload.testNames;
+  // Form is complete if a department, a patient, and at least one test are selected.
+  const isFormComplete =
+    Payload.department && Payload.id && TestNames.length > 0 && Payload.testNames;
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} isCentered size="lg">
@@ -179,8 +215,28 @@ export default function RequestLabOtherModal({
           <ModalHeader> Request Lab Order </ModalHeader>
           <ModalCloseButton />
           <ModalBody>
+            {/* Department (Lab) Selection Dropdown – this is the first input */}
+            <Box mb={4}>
+              <Select
+                onChange={handlePayload}
+                placeholder="Select Lab"
+                border="2px solid"
+                id="department"
+                value={Payload.department}
+                size="lg"
+                fontSize={Payload.department !== "" ? "16px" : "13px"}
+                borderColor="gray.500"
+              >
+                {labs.map((item, i) => (
+                  <option key={i} value={item.clinic}>
+                    {item.clinic}
+                  </option>
+                ))}
+              </Select>
+            </Box>
+
+            {/* Patient Search Section */}
             <Box mt="32px">
-              {/* Patient Search Section */}
               <Flex mb={2} gap={4}>
                 <Input
                   label="Search for Patient"
@@ -236,14 +292,12 @@ export default function RequestLabOtherModal({
                 isDisabled={isLoadingTests}
               >
                 {searchTestQuery.trim() === ""
-                  ? // When no search query, use the default list from Settings.
-                    Settings?.testnames?.map((item, i) => (
+                  ? Settings?.testnames?.map((item, i) => (
                       <option key={i} value={item}>
                         {item}
                       </option>
                     ))
-                  : // When a search query is present, use the API search results.
-                    testSearchResults.map((item) => (
+                  : testSearchResults.map((item) => (
                       <option key={item._id} value={item.servicetype}>
                         {item.servicetype}
                       </option>
