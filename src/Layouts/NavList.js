@@ -188,10 +188,27 @@ export const NavList = (location) => {
     {
       name: "pharmacy",
       icon: <MdLocalPharmacy />,
-      link: "/dashboard/pharmacy",
-      active: isActive(location, "/dashboard/pharmacy"),
+      link: "#",
+      active: isActive(location, "#"),
       display: isPharmacyStaff(),
+      children: [
+        {
+          name: "Optimized pharmacy",
+          icon: <MdLocalPharmacy />,
+          link: "/dashboard/pharmacy-new",
+          active: isActive(location, "/dashboard/pharmacy-new"),
+          display: isPharmacyStaff(),
+        },
+        {
+          name: "pharmacy",
+          icon: <MdLocalPharmacy />,
+          link: "/dashboard/pharmacy",
+          active: isActive(location, "/dashboard/pharmacy"),
+          display: isPharmacyStaff(),
+        },
+      ],
     },
+   
     {
       name: "inventory",
       icon: <MdInventory2 />,
@@ -208,7 +225,7 @@ export const NavList = (location) => {
       display: isBillingStaff(),
       children: [
         {
-          name: "Billing & Payment",
+          name: "Optimized Payment",
           icon: <MdOutlinePayments />,
           link: "/dashboard/billing-payment",
           active: isActive(location, "/dashboard/billing-payment"),

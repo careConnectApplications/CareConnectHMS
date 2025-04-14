@@ -21,8 +21,8 @@ import {
   MenuList,
   MenuItem,
 } from "@chakra-ui/react";
-import CreateUserModal from "../Components/CreateUserModal";
-import { confirmPaymentAPI, GetAllPaymentApi } from "../Utils/ApiCalls";
+import PaymentGroupModal from "../Components/PaymentGroupModal";
+import { GetAllPaidPaymentGroupApi, GetAllFilteredPaymentGroupOptApi, GetAllPaymentGroupOptApi } from "../Utils/ApiCalls";
 import moment from "moment";
 import Seo from "../Utils/Seo";
 import { HiOutlineDocumentArrowUp } from "react-icons/hi2";
@@ -40,6 +40,7 @@ export default function Payment() {
   const [Paid, setPaid] = useState(false);
   const [Pending, setPending] = useState(false);
   const [Trigger, setTrigger] = useState(false);
+  const [OldPayload, setOldPayload] = useState("");
   const [Data, setData] = useState([]);
   const [FilterData, setFilterData] = useState([]);
   const [ModalState, setModalState] = useState("");
@@ -74,41 +75,76 @@ export default function Payment() {
     setFilteredData(filter);
   };
 
+ 
+  // Pagination settings to follow
+  const [CurrentPage, setCurrentPage] = useState(1);
+  const [PostPerPage, setPostPerPage] = useState(configuration.sizePerPage);
+  const [TotalData, setTotalData] = useState("");
+  const [Status, setStatus] = useState("pending payment");
+
+
+  //get current post
+  // const indexOfLastSra = CurrentPage * PostPerPage;
+  // const indexOfFirstSra = indexOfLastSra - PostPerPage;
+  // const PaginatedData = FilterData.slice(indexOfFirstSra, indexOfLastSra);
+  //change page
+  const paginate = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+
+  // Pagination settings to follow end here
+
+  const [showToast, setShowToast] = useState({
+    show: false,
+    message: "",
+    status: "",
+  });
+
+  const [Key, setKey] = useState("");
+  const [Value, setValue] = useState("");
+
+  const getFilteredBilling = async (key, value) => {
+    setKey(key)
+    setValue(value)
+
+    try {
+      setIsLoading(true);
+      const result = await GetAllFilteredPaymentGroupOptApi(Status, key, value, CurrentPage, PostPerPage);
+      console.log("all fitlered payment", result);
+      if (result.status === true) {
+        setFilteredData(result.queryresult.paymentdetails);
+        setTotalData(result.queryresult.totalpaymentdetails)
+      }
+    } catch (e) {
+      console.error(e.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const filterBy = (title) => {
     console.log("filter checking", title);
 
     if (title === "mrn") {
-      let filter = Data.filter((item) =>
-        item.patient?.MRN?.toLowerCase().includes(SearchInput.toLowerCase())
-      );
-      setFilteredData(filter);
-      console.log("filter checking", filter);
+      getFilteredBilling("MRN", SearchInput)
     } else if (title === "email") {
-      let filter = Data.filter((item) =>
-        item.patient?.email?.toLowerCase().includes(SearchInput.toLowerCase())
-      );
-      setFilteredData(filter);
-      console.log("filter checking", filter);
-    } else if (title === "name") {
-
-      let filter = Data.filter(
-        (item) =>
-          item.patient?.firstName?.toLowerCase().includes(SearchInput.toLowerCase()) ||
-          item.patient?.lastName?.toLowerCase().includes(SearchInput.toLowerCase())
-      );
-      setFilteredData(filter);
-      console.log("filter checking XX", filter);
-
-
+      getFilteredBilling("email", SearchInput)
+     
+    } else if (title === "firstName") {
+      
+      getFilteredBilling("firstName", SearchInput)   
+      
+    } else if (title === "lastName") {
+      
+      getFilteredBilling("lastName", SearchInput)
+      
     } else if (title === "phoneNumber") {
-      let filter = Data.filter(
-        (item) =>
-          item.patient?.phoneNumber?.toLowerCase().includes(SearchInput.toLowerCase())
-
-      );
-      setFilteredData(filter);
-      console.log("filter checking", filter);
-    } else if (title === "date") {
+      getFilteredBilling("phoneNumber", SearchInput)
+    }else if (title === "ref") {
+      getFilteredBilling("paymentreference", SearchInput)
+    }else if (title === "hmoId") {
+      getFilteredBilling("HMOId", SearchInput)
+    }else if (title === "date") {
       // add 1 day to end date 
       let endDate = new Date(EndDate)
       endDate.setDate(endDate.getDate() + 1);
@@ -124,120 +160,100 @@ export default function Payment() {
     }
   };
 
-  // Pagination settings to follow
-  const [CurrentPage, setCurrentPage] = useState(1);
-  const [PostPerPage, setPostPerPage] = useState(configuration.sizePerPage);
 
-  //get current post
-  const indexOfLastSra = CurrentPage * PostPerPage;
-  const indexOfFirstSra = indexOfLastSra - PostPerPage;
-  const PaginatedData = FilterData.slice(indexOfFirstSra, indexOfLastSra);
-  //change page
-  const paginate = (pageNumber) => {
-    setCurrentPage(pageNumber);
-  };
 
-  // Pagination settings to follow end here
-
-  const [showToast, setShowToast] = useState({
-    show: false,
-    message: "",
-    status: "",
-  });
-
-  const getAllPayment = async () => {
-    setIsLoading(true);
+  const getAllPayment = async (status) => {
     try {
-      const result = await GetAllPaymentApi();
-
-      console.log("result getAllPayment", result);
-
+      setIsLoading(true);
+      const result = await GetAllPaymentGroupOptApi(CurrentPage, PostPerPage, status);
+      console.log("result getAllPaymentGroup", result);
       if (result.status === true) {
-        setIsLoading(false);
         setData(result.queryresult.paymentdetails);
         setFilterData(result.queryresult.paymentdetails);
+        setTotalData(result.queryresult.totalpaymentdetails)
       }
     } catch (e) {
-      console.log(e.message);
+      console.error(e.message);
+    } finally {
+      setIsLoading(false);
     }
   };
 
+
+
+  
   const filterAll = () => {
+
     setAll(true);
     setPaid(false);
-    setPending(false);
+    getAllPayment("pending payment")
+    setStatus("pending payment")
+    setCurrentPage(1)
 
-    setFilterData(Data);
   };
   const filterPaid = () => {
+
     setAll(false);
     setPaid(true);
-    setPending(false);
+    getAllPayment("paid")
+    setStatus("paid")
+    setCurrentPage(1)
 
-    const filterData = Data.filter((item) => item.status === "paid");
-    console.log("QQQQ", filterData);
 
-    setFilterData(filterData);
   };
 
-  const filterPending = () => {
-    setAll(false);
-    setPaid(false);
-    setPending(true);
 
-    const filterData = Data.filter((item) => item.status === "pending payment");
+  const onChangeStatus = async (item) => {
+    setOldPayload(item)
+    onOpen()
 
-    setFilterData(filterData);
-  };
 
-  const onChangeStatus = async (id) => {
-    // alert(id)
-    try {
-      const result = await confirmPaymentAPI(id);
-      console.log("Confirm Payment", result);
-      if (result.status === 200) {
-        setTrigger(!Trigger);
-
-        setShowToast({
-          show: true,
-          message: `Payment confirmed Successfully`,
-          status: "success",
-        });
-
-        setTimeout(() => {
-          setShowToast({
-            show: false,
-          });
-        }, 3000);
-      }
-    } catch (err) {
-      setShowToast({
-        show: true,
-        message: err.message,
-        status: "error",
-      });
-
-      setTimeout(() => {
-        setShowToast({
-          show: false,
-        });
-      }, 6000);
-    }
   };
 
   const { pathname } = useLocation()
   const nav = useNavigate();
-  
+
   const PrintReceipt = (item) => {
     nav(`/dashboard/billing-payment/receipt/${item.paymentreference}`)
-    
+
     localStorage.setItem("pathname", pathname)
-   
+
+  }
+  const activateNotifications = (message, status) => {
+
+    setShowToast({
+      show: true,
+      message: message,
+      status: status,
+    });
+
+    setTimeout(() => {
+      setShowToast({
+        show: false,
+      });
+
+    }, 5000)
   }
 
+
+
   useEffect(() => {
-    getAllPayment();
-  }, [isOpen, Trigger]);
+
+    if(FilteredData?.length > 0 || FilteredData !== null ){
+      getFilteredBilling(Key,Value) 
+    }else{
+
+      if(All === true){
+        getAllPayment("pending payment")
+      }else{
+        getAllPayment("paid")
+      }
+
+     
+    }
+   
+    // filterAll()
+  }, [isOpen, Trigger, CurrentPage]);
 
   return (
     <MainLayout>
@@ -249,10 +265,10 @@ export default function Payment() {
       )}
       <HStack>
         <Text color="#1F2937" fontWeight="600" fontSize="19px">
-          Payment 
+          Payment
         </Text>
         <Text color="#667085" fontWeight="400" fontSize="18px">
-          ({Data?.length})
+          ({TotalData.toLocaleString()})
         </Text>
       </HStack>
       <Text color="#686C75" mt="9px" fontWeight="400" fontSize="15px">
@@ -289,10 +305,8 @@ export default function Payment() {
                 fontWeight={"500"}
                 fontSize={"13px"}
               >
-                All{" "}
-                <Box color="#667085" as="span" fontWeight="400" fontSize="13px">
-                  ({Data?.length})
-                </Box>
+                All Pending
+
               </Text>
             </Box>
             <Box borderRight="1px solid #EDEFF2" pr="5px" onClick={filterPaid}>
@@ -306,25 +320,10 @@ export default function Payment() {
                 fontSize={"13px"}
               >
                 Paid
+
               </Text>
             </Box>
-            <Box
-              borderRight="1px solid #EDEFF2"
-              pr="5px"
-              onClick={filterPending}
-            >
-              <Text
-                py="8.5px"
-                px="12px"
-                bg={Pending ? "#fff" : "transparent"}
-                rounded="7px"
-                color={"#1F2937"}
-                fontWeight={"500"}
-                fontSize={"13px"}
-              >
-                Pending
-              </Text>
-            </Box>
+          
           </Flex>
 
           <Flex
@@ -397,7 +396,7 @@ export default function Payment() {
                 <MenuList>
 
                   <MenuItem
-                    onClick={() => filterBy("name")}
+                    onClick={() => filterBy("firstName")}
                     textTransform="capitalize"
                     fontWeight={"500"}
                     color="#2F2F2F"
@@ -408,7 +407,22 @@ export default function Payment() {
                     }}
                   >
                     <HStack fontSize="14px">
-                      <Text>by Patient Name</Text>
+                      <Text>by First Name</Text>
+                    </HStack>
+                  </MenuItem>
+                  <MenuItem
+                    onClick={() => filterBy("lastName")}
+                    textTransform="capitalize"
+                    fontWeight={"500"}
+                    color="#2F2F2F"
+                    _hover={{
+                      color: "#fff",
+                      fontWeight: "400",
+                      bg: "blue.blue500",
+                    }}
+                  >
+                    <HStack fontSize="14px">
+                      <Text>by Last Name</Text>
                     </HStack>
                   </MenuItem>
                   <MenuItem
@@ -427,21 +441,6 @@ export default function Payment() {
                     </HStack>
                   </MenuItem>
                   <MenuItem
-                    onClick={() => filterBy("email")}
-                    textTransform="capitalize"
-                    fontWeight={"500"}
-                    color="#2F2F2F"
-                    _hover={{
-                      color: "#fff",
-                      fontWeight: "400",
-                      bg: "blue.blue500",
-                    }}
-                  >
-                    <HStack fontSize="14px">
-                      <Text>by email</Text>
-                    </HStack>
-                  </MenuItem>
-                  <MenuItem
                     onClick={() => filterBy("phoneNumber")}
                     textTransform="capitalize"
                     fontWeight={"500"}
@@ -457,7 +456,7 @@ export default function Payment() {
                     </HStack>
                   </MenuItem>
                   <MenuItem
-                    onClick={() => filterBy("payment")}
+                    onClick={() => filterBy("ref")}
                     textTransform="capitalize"
                     fontWeight={"500"}
                     color="#2F2F2F"
@@ -468,7 +467,7 @@ export default function Payment() {
                     }}
                   >
                     <HStack fontSize="14px">
-                      <Text>by Payment type</Text>
+                      <Text>by Reference No</Text>
                     </HStack>
                   </MenuItem>
                   <MenuItem
@@ -493,6 +492,8 @@ export default function Payment() {
                       setByDate(false);
                       setStartDate("");
                       setEndDate("");
+                      filterAll()
+                      setCurrentPage(1)
                     }}
                     textTransform="capitalize"
                     fontWeight={"500"}
@@ -561,37 +562,14 @@ export default function Payment() {
                     age
                   </Th>
 
+
                   <Th
                     fontSize="13px"
                     textTransform="capitalize"
                     color="#534D59"
                     fontWeight="600"
                   >
-                    status
-                  </Th>
-                  <Th
-                    fontSize="13px"
-                    textTransform="capitalize"
-                    color="#534D59"
-                    fontWeight="600"
-                  >
-                    payment type
-                  </Th>
-                  <Th
-                    fontSize="13px"
-                    textTransform="capitalize"
-                    color="#534D59"
-                    fontWeight="600"
-                  >
-                    amount
-                  </Th>
-                  <Th
-                    fontSize="13px"
-                    textTransform="capitalize"
-                    color="#534D59"
-                    fontWeight="600"
-                  >
-                    Quantity
+                    Reference No
                   </Th>
                   <Th
                     fontSize="13px"
@@ -625,22 +603,22 @@ export default function Payment() {
 
                 {
                   SearchInput === "" || FilteredData === null ? (
-                    PaginatedData?.map((item, i) => (
+                    FilterData?.map((item, i) => (
                       <TableRow
                         key={i}
-                        type="payment"
-                        name={`${item.patient?.firstName} ${item.patient?.lastName}`}
-                        email={item.patient?.email}
-                        age={item.patient?.age}
-                        phone={item.patient?.phoneNumber}
-                        mrn={item.patient?.MRN}
-                        amount={item.amount/item.qty}
+                        type="payment-group"
+                        name={`${item.firstName} ${item.lastName}`}
+                        email={item.email}
+                        age={item.age}
+                        phone={item.phoneNumber}
+                        mrn={item.MRN}
+                        reference={item.paymentreference}
                         quantity={item.qty}
                         total={item.amount}
                         status={item.status}
                         paymentType={item.paymentype}
                         date={moment(item.createdAt).format("lll")}
-                        onClick={() => onChangeStatus(item._id)}
+                        onClick={() => onChangeStatus(item)}
                         onPrint={() => PrintReceipt(item)}
                       />
                     ))
@@ -650,17 +628,19 @@ export default function Payment() {
                       FilteredData?.map((item, i) => (
                         <TableRow
                           key={i}
-                          type="payment"
-                          name={`${item.patient?.firstName} ${item.patient?.lastName}`}
-                          email={item.patient?.email}
-                          age={item.patient?.age}
-                          phone={item.patient?.phoneNumber}
-                          mrn={item.patient?.MRN}
-                          amount={item.amount}
+                          type="payment-group"
+                          name={`${item.firstName} ${item.lastName}`}
+                          email={item.email}
+                          age={item.age}
+                          phone={item.phoneNumber}
+                          mrn={item.MRN}
+                          total={item.amount}
                           status={item.status}
+                          reference={item.paymentreference}
+                          quantity={item.qty}
                           paymentType={item.paymentype}
                           date={moment(item.createdAt).format("lll")}
-                          onClick={() => onChangeStatus(item._id)}
+                          onClick={() => onChangeStatus(item)}
                         />
                       ))
                     ) : (
@@ -680,17 +660,19 @@ export default function Payment() {
           <Pagination
             postPerPage={PostPerPage}
             currentPage={CurrentPage}
-            totalPosts={Data.length}
+            totalPosts={TotalData}
             paginate={paginate}
           />
         </Box>
       </Box>
 
-      <CreateUserModal
+      <PaymentGroupModal
         isOpen={isOpen}
         onClose={onClose}
         type={ModalState}
         filteredUser={FilterUser}
+        oldPayload={OldPayload}
+        activateNotifications={activateNotifications}
       />
     </MainLayout>
   );

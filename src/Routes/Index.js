@@ -30,6 +30,7 @@ import AddANCv2 from "../Pages/AddANCv2";
 import AncFollowUp from "../Pages/AncFollowUp";
 import Inventory from "../Pages/Inventory";
 import Pharmacy from "../Pages/Pharmacy";
+import PharmacyNew from "../Pages/PharmacyNew";
 import NurseCare from "../Pages/NurseCare";
 import RadiologyPage from "../Pages/RadiologyPage";
 import PrivateRoutes from "./PrivateRoute";
@@ -137,6 +138,7 @@ export default function IndexRoutes() {
           </Route>
           <Route element={<PharmacyRoutes />}>
             <Route path="/dashboard/pharmacy" element={<Pharmacy />} />
+            <Route path="/dashboard/pharmacy-new" element={<PharmacyNew />} />
           </Route>
 
           <Route element={<InventoryRoutes />}>
