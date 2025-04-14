@@ -58,21 +58,7 @@ export default function Payment() {
 
   const handleInputChange = (e) => {
     setSearchInput(e.target.value);
-    let filter = Data.filter(
-      (item) =>
-        item.paymentype?.toLowerCase().includes(e.target.value.toLowerCase()) ||
-        item.patient.email
-          ?.toLowerCase()
-          .includes(e.target.value.toLowerCase()) ||
-        item.patient.firstName
-          ?.toLowerCase()
-          .includes(e.target.value.toLowerCase()) ||
-        item.patient.lastName
-          ?.toLowerCase()
-          .includes(e.target.value.toLowerCase())
-    );
-    console.log("filter checking", filter);
-    setFilteredData(filter);
+    setCurrentPage(1)
   };
 
  
@@ -82,12 +68,6 @@ export default function Payment() {
   const [TotalData, setTotalData] = useState("");
   const [Status, setStatus] = useState("pending payment");
 
-
-  //get current post
-  // const indexOfLastSra = CurrentPage * PostPerPage;
-  // const indexOfFirstSra = indexOfLastSra - PostPerPage;
-  // const PaginatedData = FilterData.slice(indexOfFirstSra, indexOfLastSra);
-  //change page
   const paginate = (pageNumber) => {
     setCurrentPage(pageNumber);
   };
@@ -336,7 +316,9 @@ export default function Payment() {
               {ByDate === false ? (
                 <Input
                   label="Search"
-                  onChange={(e) => setSearchInput(e.target.value)}
+                  onChange={(e) => {setSearchInput(e.target.value);
+                    setCurrentPage(1)
+                  }}
                   value={SearchInput}
                   bColor="#E4E4E4"
                   leftIcon={<BiSearch />}
