@@ -115,6 +115,7 @@ export default function PharmacyNew() {
   const handleInputChange = (e) => {
     const value = e.target.value.toLowerCase();
     setSearchInput(value);
+    setCurrentPage(1)
   };
 
    const [Key, setKey] = useState("");
