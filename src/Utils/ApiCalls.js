@@ -2661,6 +2661,64 @@ export const GetAllPatientsApi = (pageNo, postPerPage) => {
       }
     });
 };
+export const GetAllPaymentGroupOptApi = (pageNo, postPerPage,status) => {
+  // Configure the GET request
+  let config = {
+    method: "get",
+    url: `${baseUrl}/billing/groupreadallpaymentoptimized?status=${status}&page=${pageNo}&size=${postPerPage}`,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  };
+
+  return axios
+    .request(config)
+    .then((response) => {
+      return response.data;
+    })
+    .catch((error) => {
+      console.log("Error fetching patients details:", error.response);
+      if (error.response && error.response.data.msg) {
+        throw new Error(error.response.data.msg);
+      } else if (error.response && error.response.data) {
+        throw new Error(error.response);
+      } else if (error.request) {
+        throw new Error(error.msg);
+      } else {
+        throw new Error(error.msg);
+      }
+    });
+};
+export const GetAllFilteredPaymentGroupOptApi = (status,key, value,pageNo,postPerPage) => {
+  // Configure the GET request
+  let config = {
+    method: "get",
+    url: `${baseUrl}/billing/groupreadallpaymentoptimized?status=${status}&${key}=${value}&page=${pageNo}&size=${postPerPage}`,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  };
+
+  return axios
+    .request(config)
+    .then((response) => {
+      return response.data;
+    })
+    .catch((error) => {
+      console.log("Error fetching patients details:", error.response);
+      if (error.response && error.response.data.msg) {
+        throw new Error(error.response.data.msg);
+      } else if (error.response && error.response.data) {
+        throw new Error(error.response);
+      } else if (error.request) {
+        throw new Error(error.msg);
+      } else {
+        throw new Error(error.msg);
+      }
+    });
+};
 export const GetAllFilteredPatientsApi = (key, value,pageNo,postPerPage) => {
   // Configure the GET request
   let config = {
@@ -5371,6 +5429,66 @@ export const GroupReadAllPharmacyApi = () => {
         "Get All Group Transaction Success:",
         JSON.stringify(response.data)
       );
+      return response.data;
+    })
+    .catch((error) => {
+      console.log("Error in Get All Group Transaction:", error.response);
+      if (error.response && error.response.data.msg) {
+        throw new Error(error.response.data.msg);
+      } else if (error.response && error.response.data) {
+        throw new Error(error.response);
+      } else if (error.request) {
+        throw new Error(error.msg);
+      } else {
+        throw new Error(error.msg);
+      }
+    });
+};
+export const GroupReadAllPharmacyOptApi = (status,currentPage,postPerPage) => {
+  console.log("status change", status)
+  let config = {
+    method: "get",
+    maxBodyLength: Infinity,
+    url: `${baseUrl}/pharmacy/groupreadallpharmacytransactionoptimized?status=${status}&page=${currentPage}&size=${postPerPage}`,
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
+
+  return axios
+    .request(config)
+    .then((response) => {
+      
+      return response.data;
+    })
+    .catch((error) => {
+      console.log("Error in Get All Group Transaction:", error.response);
+      if (error.response && error.response.data.msg) {
+        throw new Error(error.response.data.msg);
+      } else if (error.response && error.response.data) {
+        throw new Error(error.response);
+      } else if (error.request) {
+        throw new Error(error.msg);
+      } else {
+        throw new Error(error.msg);
+      }
+    });
+};
+export const GroupReadAllFilteredPharmacyOptApi = (status,currentPage,postPerPage,key,value) => {
+  console.log("status change", status)
+  let config = {
+    method: "get",
+    maxBodyLength: Infinity,
+    url: `${baseUrl}/pharmacy/groupreadallpharmacytransactionoptimized?status=${status}&page=${currentPage}&size=${postPerPage}&${key}=${value}`,
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
+
+  return axios
+    .request(config)
+    .then((response) => {
+      
       return response.data;
     })
     .catch((error) => {

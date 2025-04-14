@@ -66,7 +66,6 @@ export default function Patients() {
       const result = await GetAllFilteredPatientsApi(key,value,CurrentPage,PostPerPage);
       console.log("all fitlered patient", result);
       if (result.status === true) {
-       // setFilteredData(filter);  
        setFilteredData(result.queryresult.patientdetails);
        setTotalData(result.queryresult.totalpatientdetails)
       }

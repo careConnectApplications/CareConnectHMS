@@ -227,15 +227,7 @@ export default function CreateUserModal({
     setMessage(""); // Reset any previous message
 
     // Check if any field in userData is empty
-    for (let key in UpdatedPayload) {
-      if (UpdatedPayload[key] === "") {
-        // If any field is empty, show an alert and stop the form submission
-        alert("Please fill out all the fields.");
-        setLoading(false);
-        return;
-      }
-    }
-
+   
     try {
       const response = await UpdateUserApi(
         UpdatedPayload,
