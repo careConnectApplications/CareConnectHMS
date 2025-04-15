@@ -5596,4 +5596,34 @@ export const SearchTestApi = (searchParam) => {
       }
     });
 };
+export const ReadAllAuditApi = () => {
+  let config = {
+    method: "get",
+    maxBodyLength: Infinity,
+    url: `${baseUrl}/settings/readallaudit`,
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
+
+  return axios
+    .request(config)
+    .then((response) => {
+      console.log("Read All Audit Success:", JSON.stringify(response.data));
+      return response.data;
+    })
+    .catch((error) => {
+      console.log("Error in Read All Audit:", error.response);
+      if (error.response && error.response.data.msg) {
+        throw new Error(error.response.data.msg);
+      } else if (error.response && error.response.data) {
+        throw new Error(error.response);
+      } else if (error.request) {
+        throw new Error(error.msg);
+      } else {
+        throw new Error(error.msg);
+      }
+    });
+};
+
 

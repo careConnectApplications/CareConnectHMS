@@ -11,6 +11,7 @@ import TheatreManagement from "./TheatreManagement"
 import InsuranceManagement from './InsuranceManagement';
 import HMOPatientManagement from './HMOPatientManagement'
 import LabResultManagement from './LabResultManagement';
+import AuditManagement from './AuditManagement'
 
 export default function Settings() {
     return (
@@ -38,6 +39,7 @@ export default function Settings() {
                     <Tab  _focus={{outline: "none"}} _selected={{ color: "blue.blue500", fontWeight: "700" }}>Insurance Management</Tab>
                     <Tab  _focus={{outline: "none"}} _selected={{ color: "blue.blue500", fontWeight: "700" }}>HMO Patient Management</Tab>
                     <Tab  _focus={{outline: "none"}} _selected={{ color: "blue.blue500", fontWeight: "700" }}>Lab Result Management</Tab>
+                    <Tab  _focus={{outline: "none"}} _selected={{ color: "blue.blue500", fontWeight: "700" }}>Audit</Tab>
 
                 </TabList>
                 <TabPanels>
@@ -72,6 +74,10 @@ export default function Settings() {
                     </TabPanel>
                     <TabPanel p="0">
                     <LabResultManagement/>
+
+                    </TabPanel>
+                    <TabPanel p="0">
+                    <AuditManagement/>
 
                     </TabPanel>
 

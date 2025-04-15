@@ -59,7 +59,7 @@ function NurseCare() {
             _focus={{ outline: "none" }}
             _selected={{ color: "blue.blue500", fontWeight: "700" }}
           >
-            Admission Daily Report
+            Admission Daily Register
           </Tab>
           <Tab
             _focus={{ outline: "none" }}
