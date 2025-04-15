@@ -150,8 +150,9 @@ export default function TableRowY({
   appointmentid,
   duration,
   HMOPlan,
- 
-
+  action,
+  actor,
+  affectedEntity,
 }) {
   return (
     <Tr textTransform="capitalize" cursor="pointer">
@@ -386,7 +387,6 @@ export default function TableRowY({
               {duration}
             </Text>
           </Td>
-
 
           <Td>
             <Text fontWeight="400" fontSize="12px">
@@ -2137,7 +2137,6 @@ export default function TableRowY({
             </Text>
           </Td>
 
-
           <Td>
             <Text fontWeight="400" fontSize="12px">
               {isHMOCover}
@@ -2186,9 +2185,47 @@ export default function TableRowY({
                 >
                   Order Details
                 </MenuItem>
-                
               </MenuList>
             </Menu>
+          </Td>
+        </>
+      )}
+      {type === "audit" && (
+        <>
+                  <Td>
+            <Text fontWeight="500" fontSize="13px">
+              {sn}
+            </Text>
+          </Td>
+          <Td>
+            <Text fontWeight="500" fontSize="13px">
+              {action}
+            </Text>
+          </Td>
+          <Td>
+            <HStack>
+              <Avatar size="sm" name={actor} />
+              <Box>
+                <Text fontWeight="500" fontSize="13px">
+                  {actor}
+                </Text>
+              </Box>
+            </HStack>
+          </Td>
+          <Td>
+            <Text fontWeight="400" fontSize="12px">
+              {affectedEntity}
+            </Text>
+          </Td>
+          <Td>
+            <Text fontWeight="400" fontSize="12px">
+              {new Date(createdAt).toLocaleDateString()}
+            </Text>
+          </Td>
+          <Td>
+            <Text fontWeight="400" fontSize="12px">
+              {new Date(updatedAt).toLocaleDateString()}
+            </Text>
           </Td>
         </>
       )}
