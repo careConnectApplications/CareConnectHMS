@@ -1,4 +1,3 @@
-// PharmacyOrderModal.js
 import React, { useState, useEffect, useRef } from "react";
 import {
   Modal,
@@ -212,6 +211,20 @@ export default function PharmacyOrderModal({
     (detail) => confirmationData[detail._id]?.showForm
   );
 
+  // Compute the grand total for accepted orders
+  const grandTotal =
+    orderDetails && orderDetails.prescriptiondetails
+      ? orderDetails.prescriptiondetails.reduce((sum, detail) => {
+          const conf = confirmationData[detail._id];
+          const price = Number(prices[detail._id]);
+          const qty = Number(conf?.qty);
+          if (conf?.option === "accept" && qty > 0 && !isNaN(price)) {
+            return sum + price * qty;
+          }
+          return sum;
+        }, 0)
+      : 0;
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="xl" isCentered>
       <ModalOverlay />
@@ -247,9 +260,7 @@ export default function PharmacyOrderModal({
                       <TableRowY
                         key={detail._id}
                         type="pharmacy-order"
-                        patient={`${detail.patient?.firstName || ""} ${
-                          detail.patient?.lastName || ""
-                        }`}
+                        patient={`${detail.patient?.firstName || ""} ${detail.patient?.lastName || ""}`}
                         email={detail.patient?.email}
                         mrn={detail.patient?.MRN}
                         prescription={detail.prescription}
@@ -305,21 +316,40 @@ export default function PharmacyOrderModal({
                         />
                       </FormControl>
                       {confirmationData[detail._id].option === "accept" && (
-                        <FormControl ref={quantityRef}>
-                          <Input
-                            label="Quantity"
-                            type="number"
-                            value={confirmationData[detail._id].qty}
-                            onChange={(e) =>
-                              handleConfirmationChange(detail._id, "qty", e.target.value)
-                            }
-                            placeholder="Enter quantity"
-                          />
-                        </FormControl>
+                        <>
+                          <FormControl ref={quantityRef}>
+                            <Input
+                              label="Quantity"
+                              type="number"
+                              value={confirmationData[detail._id].qty}
+                              onChange={(e) =>
+                                handleConfirmationChange(detail._id, "qty", e.target.value)
+                              }
+                              placeholder="Enter quantity"
+                            />
+                          </FormControl>
+                          {/* Display individual total for this prescription */}
+                          {confirmationData[detail._id].qty &&
+                            !isNaN(Number(prices[detail._id])) && (
+                              <Text mt={2}>
+                                Total:{" "}
+                                {(
+                                  Number(prices[detail._id]) *
+                                  Number(confirmationData[detail._id].qty)
+                                ).toFixed(2)}
+                              </Text>
+                            )}
+                        </>
                       )}
                     </Stack>
                   </Box>
                 ) : null
+              )}
+              {/* Display grand total for all accepted orders */}
+              {grandTotal > 0 && (
+                <Box mt={4} p={2} borderWidth="1px" borderRadius="md">
+                  <Text fontWeight="bold">Grand Total: {grandTotal.toFixed(2)}</Text>
+                </Box>
               )}
             </>
           ) : (
