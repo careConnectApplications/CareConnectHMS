@@ -89,7 +89,7 @@ export default function TableRowY({
   tubeFeedingTime,
   feeds,
   tubeFeedingAmount,
-  tubeFeedingSign,
+  tubeFeedingFeed,
   bloodMonitoringTime,
   testType,
   rbsFbsValue,
@@ -153,7 +153,23 @@ export default function TableRowY({
   action,
   actor,
   affectedEntity,
+  servedstatus,
+  onServe,
+  report,
+  createdTime,
+  servedBy,
+  ServedBy,
+  intakeType,
+  intakeRoute,
+  intakeAmount,
+  outputType,
+  outputRoute,
+  outputAmount,
+  tubeFeedingDatetimefeeds,
 }) {
+  const isServed = servedstatus?.toLowerCase() === "served";
+  const isUnserved = servedstatus?.toLowerCase() === "unserved";
+  const servedColor = isServed ? "#027A48" : "#FD4739";
   return (
     <Tr textTransform="capitalize" cursor="pointer">
       {type === "schedule-appointment" && (
@@ -976,7 +992,17 @@ export default function TableRowY({
           </Td>
           <Td>
             <Text fontWeight="400" fontSize="12px">
-              {ward}
+              {createdDate}
+            </Text>
+          </Td>
+          <Td>
+            <Text fontWeight="400" fontSize="12px">
+              {createdTime}
+            </Text>
+          </Td>
+          <Td>
+            <Text fontWeight="400" fontSize="12px">
+              {report}
             </Text>
           </Td>
           <Td>
@@ -984,11 +1010,7 @@ export default function TableRowY({
               {createdBy}
             </Text>
           </Td>
-          <Td>
-            <Text fontWeight="400" fontSize="12px">
-              {createdOn}
-            </Text>
-          </Td>
+
           <Td>
             <Menu>
               <MenuButton as={Box}>
@@ -1080,41 +1102,54 @@ export default function TableRowY({
       {/* Fluid Balance Chart */}
       {type === "fluid-balance-chart" && (
         <>
-          <Td>
-            <Text fontWeight="400" fontSize="12px">
-              {intravenous}
-            </Text>
-          </Td>
-          <Td>
-            <Text fontWeight="400" fontSize="12px">
-              {oral}
-            </Text>
-          </Td>
-          <Td>
-            <Text fontWeight="400" fontSize="12px">
-              {totalIntake}
-            </Text>
-          </Td>
-          <Td>
-            <Text fontWeight="400" fontSize="12px">
-              {totalOutput}
-            </Text>
-          </Td>
-          <Td>
-            <Text fontWeight="400" fontSize="12px">
-              {netFluidBalance}
-            </Text>
-          </Td>
-          <Td>
-            <Text fontWeight="400" fontSize="12px">
-              {createdBy}
-            </Text>
-          </Td>
-          <Td>
+                  <Td>
             <Text fontWeight="400" fontSize="12px">
               {createdOn}
             </Text>
           </Td>
+          {/* Intake */}
+          <Td>
+            <Text fontWeight="400" fontSize="12px">
+              {intakeType}
+            </Text>
+          </Td>
+          <Td>
+            <Text fontWeight="400" fontSize="12px">
+              {intakeRoute}
+            </Text>
+          </Td>
+          <Td>
+            <Text fontWeight="400" fontSize="12px">
+              {intakeAmount}
+            </Text>
+          </Td>
+
+          {/* Output */}
+          <Td>
+            <Text fontWeight="400" fontSize="12px">
+              {outputType}
+            </Text>
+          </Td>
+          <Td>
+            <Text fontWeight="400" fontSize="12px">
+              {outputRoute}
+            </Text>
+          </Td>
+          <Td>
+            <Text fontWeight="400" fontSize="12px">
+              {outputAmount}
+            </Text>
+          </Td>
+
+          {/* Meta */}
+          <Td>
+            <Text fontWeight="400" fontSize="12px">
+              {servedBy}
+            </Text>
+          </Td>
+
+
+          {/* Actions */}
           <Td>
             <Menu>
               <MenuButton as={Box}>
@@ -1166,7 +1201,12 @@ export default function TableRowY({
           </Td>
           <Td>
             <Text fontWeight="400" fontSize="12px">
-              {insulinSign}
+              {servedBy}
+            </Text>
+          </Td>
+          <Td>
+            <Text fontWeight="400" fontSize="12px">
+              {createdDate}
             </Text>
           </Td>
           <Td>
@@ -1193,14 +1233,11 @@ export default function TableRowY({
 
       {type === "tube-feeding-chart" && (
         <>
+
+
           <Td>
             <Text fontWeight="400" fontSize="12px">
-              {date}
-            </Text>
-          </Td>
-          <Td>
-            <Text fontWeight="400" fontSize="12px">
-              {tubeFeedingTime}
+              {tubeFeedingDatetimefeeds}
             </Text>
           </Td>
           <Td>
@@ -1210,7 +1247,17 @@ export default function TableRowY({
           </Td>
           <Td>
             <Text fontWeight="400" fontSize="12px">
-              {tubeFeedingSign}
+              {tubeFeedingFeed}
+            </Text>
+          </Td>
+          <Td>
+            <Text fontWeight="400" fontSize="12px">
+              {servedBy}
+            </Text>
+          </Td>
+          <Td>
+            <Text fontWeight="400" fontSize="12px">
+              {createdDate}
             </Text>
           </Td>
           <Td>
@@ -1260,6 +1307,11 @@ export default function TableRowY({
           <Td>
             <Text fontWeight="400" fontSize="12px">
               {bloodMonitoringSign}
+            </Text>
+          </Td>
+          <Td>
+            <Text fontWeight="400" fontSize="12px">
+              {createdAt}
             </Text>
           </Td>
           <Td>
@@ -2192,7 +2244,7 @@ export default function TableRowY({
       )}
       {type === "audit" && (
         <>
-                  <Td>
+          <Td>
             <Text fontWeight="500" fontSize="13px">
               {sn}
             </Text>
@@ -2226,6 +2278,121 @@ export default function TableRowY({
             <Text fontWeight="400" fontSize="12px">
               {new Date(updatedAt).toLocaleDateString()}
             </Text>
+          </Td>
+        </>
+      )}
+      {type === "e-prescription" && (
+        <>
+          <Td>
+            <HStack cursor={"pointer"}>
+              <Avatar
+                name={name}
+                size="sm"
+                src="https://bit.ly/tioluwani-kolawole"
+              />
+              <Box>
+                <Text color={"#101828"} fontWeight={"500"} fontSize={"13px"}>
+                  {name}
+                </Text>
+                <Text
+                  color={"#667085"}
+                  textTransform={"lowercase"}
+                  fontWeight={"400"}
+                  fontSize={"11px"}
+                >
+                  {mrn}
+                </Text>
+              </Box>
+            </HStack>
+          </Td>
+          <Td>
+            <Text fontWeight="400" fontSize={"13px"}>
+              {pharmacy}
+            </Text>
+          </Td>
+          <Td>
+            <Text fontWeight="400" fontSize={"13px"}>
+              {drug}
+            </Text>
+          </Td>
+          <Td>
+            <Text fontWeight="400" fontSize={"13px"}>
+              {doctor}
+            </Text>
+          </Td>
+          <Td>
+            <Text fontWeight="400" fontSize={"13px"}>
+              {date}
+            </Text>
+          </Td>
+
+          <Td>
+            <HStack
+              color={
+                status === "paid"
+                  ? "#027A48"
+                  : status === "pending payment"
+                  ? "#FFA30C"
+                  : "#FD4739"
+              }
+            >
+              <Box
+                rounded="100%"
+                w="8px"
+                h="8px"
+                bg={
+                  status === "paid"
+                    ? "#027A48"
+                    : status === "pending payment"
+                    ? "#FFA30C"
+                    : "#FD4739"
+                }
+              ></Box>
+              <Text fontWeight="400" fontSize={"13px"}>
+                {status}
+              </Text>
+            </HStack>
+          </Td>
+          {/*  Serve‑status cell — now always green if served, red if not  */}
+          <Td>
+            <HStack color={servedColor}>
+              <Box rounded="full" w="8px" h="8px" bg={servedColor} />
+              <Text fontWeight="400" fontSize="13px">
+                {servedstatus}
+              </Text>
+            </HStack>
+          </Td>
+
+          {/*  Action cell — only show the Menu when the row is UN‑served  */}
+          <Td>
+            {isUnserved ? (
+              <Menu isLazy>
+                <MenuButton as={Box}>
+                  <Flex justifyContent="center" color="#000" fontSize="16px">
+                    <BsThreeDots />
+                  </Flex>
+                </MenuButton>
+                <MenuList>
+                  <MenuItem
+                    onClick={onServe}
+                    textTransform="capitalize"
+                    fontWeight="500"
+                    color="#2F2F2F"
+                    _hover={{
+                      color: "#fff",
+                      bg: "blue.blue500",
+                      fontWeight: "400",
+                    }}
+                  >
+                    <HStack fontSize="14px">
+                      <Text>Serve</Text>
+                    </HStack>
+                  </MenuItem>
+                </MenuList>
+              </Menu>
+            ) : (
+              <Box />
+            )}
           </Td>
         </>
       )}
