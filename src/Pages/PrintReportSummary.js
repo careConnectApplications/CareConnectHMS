@@ -184,6 +184,14 @@ export default function PrintReportSummary() {
                     color="#000"
                     fontWeight="600"
                   >
+                    Cashier Name
+                  </Th>
+                  <Th
+                    fontSize="13px"
+                    textTransform="capitalize"
+                    color="#000"
+                    fontWeight="600"
+                  >
                     Cashier ID
                   </Th>
                   <Th
@@ -210,6 +218,7 @@ export default function PrintReportSummary() {
                     type="cashier-aggregate"
                     sn={i + 1}
                     email={item.cashieremail}
+                    name={item.cashiername}
                     id={item.cashierid}
                     total={item.totalAmount?.toLocaleString()}
                     status={item.status}
@@ -231,7 +240,7 @@ export default function PrintReportSummary() {
                 Grand Total Amount: &#8358;{" "}
                 {JSON.parse(
                   localStorage.getItem("reportGrandTotal")
-                )?.grandtotalAmount}
+                )?.grandtotalAmount.toLocaleString()}
               </Text>
             </Box>
            </>
