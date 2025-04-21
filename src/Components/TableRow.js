@@ -2692,6 +2692,11 @@ export default function TableRow({
           </Td>
           <Td>
             <Text fontWeight="400" fontSize="12px">
+              {name}
+            </Text>
+          </Td>
+          <Td>
+            <Text fontWeight="400" fontSize="12px">
               {id}
             </Text>
           </Td>
