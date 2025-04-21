@@ -3,7 +3,6 @@ import {
   Box,
   Text,
   Flex,
-  Spinner,
   HStack,
   Menu,
   MenuButton,
@@ -14,11 +13,14 @@ import {
   Tbody,
   Tr,
   Th,
+  Td, 
+  Spinner,
   TableContainer,
 } from "@chakra-ui/react";
 import { BiSearch } from "react-icons/bi";
 import { IoFilter } from "react-icons/io5";
 import { SlPlus } from "react-icons/sl";
+
 import TableRowY from "../Components/TableRowY";
 import Button from "../Components/Button";
 import Input from "../Components/Input";
@@ -28,192 +30,157 @@ import { ReadAllBloodMonitoringByAdmissionApi } from "../Utils/ApiCalls";
 import BloodMonitoringChartModal from "../Components/BloodMonitoringChartModal";
 
 const BloodMonitoringChart = () => {
-  // State for API data, filtered data, loading, error, etc.
+
   const [bloodData, setBloodData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Filter and pagination state.
   const [filter, setFilter] = useState("all");
   const [searchInput, setSearchInput] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [byDate, setByDate] = useState(false);
+
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = configuration.sizePerPage;
 
-  // Modal state for creating/editing a blood monitoring chart.
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedChart, setSelectedChart] = useState(null);
   const [modalType, setModalType] = useState("create");
   const [refreshData, setRefreshData] = useState(false);
 
-  // Retrieve admissionId from localStorage.
+  /* admissionId */
   const storedPatient = localStorage.getItem("inPatient");
-  let patient = storedPatient ? JSON.parse(storedPatient) : null;
+  const patient = storedPatient ? JSON.parse(storedPatient) : null;
   const admissionId =
     patient && patient.admission && Array.isArray(patient.admission)
       ? patient.admission[0]
       : localStorage.getItem("admissionId");
 
-  // Fetch blood monitoring data.
+  /* fetch */
   useEffect(() => {
-    if (admissionId) {
-      setLoading(true);
-      ReadAllBloodMonitoringByAdmissionApi(admissionId)
-        .then((response) => {
-          const data = response?.queryresult?.bloodmonitoringdetails || [];
-          const transformedData = data.map((item) => ({
-            id: item._id,
-            date: new Date(item.createdAt).toLocaleDateString(),
-            time: new Date(item.createdAt).toLocaleTimeString(),
-            testType: item.typeoftestRBSFBS,
-            rbsFbsValue: item.value,
-            bloodMonitoringSign: item.staffname,
-            specialization: item.admission?.admittospecialization || "N/A",
-            ward: item.admission?.referedward || "N/A",
-            createdBy: item.admission?.doctorname || "N/A",
-          }));
-          setBloodData(transformedData);
-          setFilteredData(transformedData);
-          setLoading(false);
-        })
-        .catch((err) => {
-          console.error("Error fetching blood monitoring data:", err);
-          setError(err.message);
-          setLoading(false);
-        });
-    }
+    if (!admissionId) return;
+    setLoading(true);
+    ReadAllBloodMonitoringByAdmissionApi(admissionId)
+      .then((res) => {
+        const raw = res?.queryresult?.bloodmonitoringdetails || [];
+        const mapped = raw.map((item) => ({
+          id: item._id,
+          date: new Date(item.datetime).toLocaleDateString(),         
+          time: new Date(item.datetime).toLocaleTimeString(),          
+          createdDate: new Date(item.createdAt).toLocaleDateString(),  
+          testType: item.typeoftestRBSFBS,
+          rbsFbsValue: item.value,
+          bloodMonitoringSign: item.staffname,
+          specialization: item.admission?.admittospecialization || "N/A",
+          ward: item.admission?.referedward || "N/A",
+          createdBy: item.admission?.doctorname || "N/A",
+        }));
+        setBloodData(mapped);
+        setFilteredData(mapped);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Error fetching blood monitoring data:", err);
+        setError(err.message);
+        setLoading(false);
+      });
   }, [admissionId, refreshData]);
 
-  // Filtering logic.
+  /* filter */
   useEffect(() => {
-    if (filter === "all") {
-      setFilteredData(bloodData);
-    } else if (filter === "date") {
+    let data = [...bloodData];
+    if (filter === "date") {
       if (startDate && endDate) {
-        let endDateObj = new Date(endDate);
-        endDateObj.setDate(endDateObj.getDate() + 1);
-        let formattedEndDate = endDateObj.toISOString().split("T")[0];
-        setFilteredData(
-          bloodData.filter((item) => {
-            const itemDate = new Date(item.date).toISOString().split("T")[0];
-            return itemDate >= startDate && itemDate <= formattedEndDate;
-          })
-        );
-      } else {
-        setFilteredData(bloodData);
+        const end = new Date(endDate);
+        end.setDate(end.getDate() + 1);
+        const endISO = end.toISOString().split("T")[0];
+        data = data.filter((i) => {
+          const d = new Date(i.date).toISOString().split("T")[0];
+          return d >= startDate && d <= endISO;
+        });
       }
     } else if (filter === "testType") {
-      setFilteredData(
-        bloodData.filter((item) =>
-          item.testType.toLowerCase().includes(searchInput.toLowerCase())
-        )
+      data = data.filter((i) =>
+        i.testType.toLowerCase().includes(searchInput.toLowerCase())
       );
     } else if (filter === "createdBy") {
-      setFilteredData(
-        bloodData.filter((item) =>
-          item.createdBy.toLowerCase().includes(searchInput.toLowerCase())
-        )
+      data = data.filter((i) =>
+        i.createdBy.toLowerCase().includes(searchInput.toLowerCase())
       );
     }
+    setFilteredData(data);
     setCurrentPage(1);
   }, [filter, searchInput, startDate, endDate, bloodData]);
 
-  // Pagination calculation.
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const paginatedData = filteredData.slice(indexOfFirstItem, indexOfLastItem);
+  /* pagination */
+  const indexOfLast = currentPage * itemsPerPage;
+  const indexOfFirst = indexOfLast - itemsPerPage;
+  const paginatedData = filteredData.slice(indexOfFirst, indexOfLast);
 
-  // Modal handlers.
-  const handleAddBloodMonitoringChart = () => {
+  /* modal helpers */
+  const handleAdd = () => {
     setModalType("create");
     setSelectedChart(null);
     setIsModalOpen(true);
   };
 
-  const handleEditBloodMonitoringChart = (id) => {
-    const chart = bloodData.find((item) => item.id === id);
-    if (chart) {
-      const modalChartData = {
-        id: chart.id,
-        typeoftestRBSFBS: chart.testType,
-        value: chart.rbsFbsValue,
-      };
-      setModalType("edit");
-      setSelectedChart(modalChartData);
-      setIsModalOpen(true);
-    }
+  const handleEdit = (id) => {
+    const chart = bloodData.find((i) => i.id === id);
+    if (!chart) return;
+    setModalType("edit");
+    setSelectedChart({
+      id: chart.id,
+      typeoftestRBSFBS: chart.testType,
+      value: chart.rbsFbsValue,
+      datetime: chart.datetime,
+    });
+    setIsModalOpen(true);
   };
 
+  /* ui */
   return (
     <Box p={["10px", "20px"]}>
-      {/* Header Section */}
+      {/* header */}
       <Flex justifyContent="space-between" flexWrap="wrap" mb="20px">
-        <Button
-          rightIcon={<SlPlus />}
-          onClick={handleAddBloodMonitoringChart}
-          w={["100%", "100%", "260px", "260px"]}
-        >
+        <Button rightIcon={<SlPlus />} onClick={handleAdd} w={["100%", "100%", "260px"]}>
           Add Blood Monitoring Chart
         </Button>
-        {/* Search and Filter Controls on the same line */}
-        <Flex
-          flexWrap="wrap"
-          mt={["10px", "10px", "0", "0"]}
-          alignItems="center"
-          justifyContent="flex-end"
-        >
+
+        {/* search & filter */}
+        <Flex flexWrap="wrap" mt={["10px", "10px", "0"]} alignItems="center" justifyContent="flex-end">
           <HStack spacing="4">
+            {/* search / date range */}
             <Box flex="1">
               {!byDate ? (
                 <Input
                   label="Search"
-                  
-                  onChange={(e) => setSearchInput(e.target.value)}
                   value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
                   bColor="#E4E4E4"
                   leftIcon={<BiSearch />}
                 />
               ) : (
-                <HStack spacing="2" flex="1" flexWrap="nowrap">
-                  <Input
-                    placeholder="Start Date"
-                    type="date"
-                    value={startDate}
-                    onChange={(e) => setStartDate(e.target.value)}
-                    size="md"
-                    variant="outline"
-                    borderColor="#E4E4E4"
-                    focusBorderColor="blue.blue500"
-                  />
-                  <Input
-                    placeholder="End Date"
-                    type="date"
-                    value={endDate}
-                    onChange={(e) => setEndDate(e.target.value)}
-                    size="md"
-                    variant="outline"
-                    borderColor="#E4E4E4"
-                    focusBorderColor="blue.blue500"
-                  />
+                <HStack spacing="2">
+                  <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+                  <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
                   <Flex
-                    onClick={() => setFilter("date")}
-                    cursor="pointer"
+                    bg="blue.blue500"
+                    color="#fff"
                     px="5px"
                     py="3px"
                     rounded="5px"
-                    bg="blue.blue500"
-                    color="#fff"
-                    justifyContent="center"
-                    alignItems="center"
+                    cursor="pointer"
+                    onClick={() => setFilter("date")}
                   >
                     <BiSearch />
                   </Flex>
                 </HStack>
               )}
             </Box>
+
+            {/* filter menu */}
             <Menu isLazy>
               <MenuButton as={Box}>
                 <HStack
@@ -225,7 +192,6 @@ const BloodMonitoringChart = () => {
                   bg="#f8ddd1"
                   color="blue.blue500"
                   fontWeight="500"
-                  fontSize="14px"
                 >
                   <Text>Filter</Text>
                   <IoFilter />
@@ -240,18 +206,8 @@ const BloodMonitoringChart = () => {
                     setStartDate("");
                     setEndDate("");
                   }}
-                  textTransform="capitalize"
-                  fontWeight="500"
-                  color="#2F2F2F"
-                  _hover={{
-                    color: "#fff",
-                    fontWeight: "400",
-                    bg: "blue.blue500",
-                  }}
                 >
-                  <HStack fontSize="14px">
-                    <Text>by Test Type</Text>
-                  </HStack>
+                  by Test Type
                 </MenuItem>
                 <MenuItem
                   onClick={() => {
@@ -261,36 +217,16 @@ const BloodMonitoringChart = () => {
                     setStartDate("");
                     setEndDate("");
                   }}
-                  textTransform="capitalize"
-                  fontWeight="500"
-                  color="#2F2F2F"
-                  _hover={{
-                    color: "#fff",
-                    fontWeight: "400",
-                    bg: "blue.blue500",
-                  }}
                 >
-                  <HStack fontSize="14px">
-                    <Text>by Created By</Text>
-                  </HStack>
+                  by Created By
                 </MenuItem>
                 <MenuItem
                   onClick={() => {
                     setFilter("date");
                     setByDate(true);
                   }}
-                  textTransform="capitalize"
-                  fontWeight="500"
-                  color="#2F2F2F"
-                  _hover={{
-                    color: "#fff",
-                    fontWeight: "400",
-                    bg: "blue.blue500",
-                  }}
                 >
-                  <HStack fontSize="14px">
-                    <Text>by Date</Text>
-                  </HStack>
+                  by Date
                 </MenuItem>
                 <MenuItem
                   onClick={() => {
@@ -300,18 +236,8 @@ const BloodMonitoringChart = () => {
                     setStartDate("");
                     setEndDate("");
                   }}
-                  textTransform="capitalize"
-                  fontWeight="500"
-                  color="#2F2F2F"
-                  _hover={{
-                    color: "#fff",
-                    fontWeight: "400",
-                    bg: "blue.blue500",
-                  }}
                 >
-                  <HStack fontSize="14px">
-                    <Text>Clear Filter</Text>
-                  </HStack>
+                  Clear Filter
                 </MenuItem>
               </MenuList>
             </Menu>
@@ -319,59 +245,60 @@ const BloodMonitoringChart = () => {
         </Flex>
       </Flex>
 
-      {/* Table View */}
-      <Box
-        bg="#fff"
-        border="1px solid #EFEFEF"
-        rounded="md"
-        overflowX="auto"
-        mt="12px"
-        py="15px"
-        px="15px"
-      >
+      {/* table */}
+      <Box bg="#fff" border="1px solid #EFEFEF" rounded="md" overflowX="auto" mt="12px" py="15px" px="15px">
         <TableContainer>
           <Table variant="striped">
-            <Thead bg="#fff">
+            <Thead>
               <Tr>
-                <Th fontSize="13px" fontWeight="600">
-                  Date
-                </Th>
-                <Th fontSize="13px" fontWeight="600">
-                  Time
-                </Th>
-                <Th fontSize="13px" fontWeight="600">
-                  Test Type
-                </Th>
-                <Th fontSize="13px" fontWeight="600">
-                  RBS/FBS Value
-                </Th>
-                <Th fontSize="13px" fontWeight="600">
-                  Sign
-                </Th>
-                <Th fontSize="13px" fontWeight="600">
-                  Actions
-                </Th>
+                <Th fontSize="13px" fontWeight="600">Date</Th>
+                <Th fontSize="13px" fontWeight="600">Time</Th>
+                <Th fontSize="13px" fontWeight="600">Test Type</Th>
+                <Th fontSize="13px" fontWeight="600">Value (mmol/L)</Th>
+                <Th fontSize="13px" fontWeight="600">Staff Name</Th>
+                <Th fontSize="13px" fontWeight="600">Created Date</Th> 
+                <Th fontSize="13px" fontWeight="600">Actions</Th>
               </Tr>
             </Thead>
+
             <Tbody>
-              {paginatedData.map((item) => (
-                <TableRowY
-                  key={item.id}
-                  type="blood-monitoring-chart"
-                  date={item.date}
-                  bloodMonitoringTime={item.time}
-                  testType={item.testType}
-                  rbsFbsValue={item.rbsFbsValue}
-                  bloodMonitoringSign={item.bloodMonitoringSign}
-                  onEdit={() => handleEditBloodMonitoringChart(item.id)}
-                />
-              ))}
+              {loading ? (
+                <Tr>
+                  <Td colSpan={7}>
+                    <Flex justifyContent="center" py="20px">
+                      <Spinner />
+                    </Flex>
+                  </Td>
+                </Tr>
+              ) : error ? (
+                <Tr>
+                  <Td colSpan={7}>
+                    <Text color="red.500" textAlign="center">
+                      {error}
+                    </Text>
+                  </Td>
+                </Tr>
+              ) : (
+                paginatedData.map((row) => (
+                  <TableRowY
+                    key={row.id}
+                    type="blood-monitoring-chart"
+                    date={row.date}
+                    bloodMonitoringTime={row.time}
+                    testType={row.testType}
+                    rbsFbsValue={row.rbsFbsValue}
+                    bloodMonitoringSign={row.bloodMonitoringSign}
+                    createdAt={row.createdDate}            
+                    onEdit={() => handleEdit(row.id)}
+                  />
+                ))
+              )}
             </Tbody>
           </Table>
         </TableContainer>
       </Box>
 
-      {/* Pagination */}
+      {/* pagination */}
       {filteredData.length > itemsPerPage && (
         <Pagination
           postPerPage={itemsPerPage}
@@ -381,12 +308,12 @@ const BloodMonitoringChart = () => {
         />
       )}
 
-      {/* Blood Monitoring Chart Modal Integration */}
+      {/* modal */}
       <BloodMonitoringChartModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         admissionId={admissionId}
-        onSuccess={() => setRefreshData((prev) => !prev)}
+        onSuccess={() => setRefreshData((p) => !p)}
         type={modalType}
         initialData={selectedChart}
       />

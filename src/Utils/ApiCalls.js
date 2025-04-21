@@ -5627,3 +5627,56 @@ export const ReadAllAuditApi = () => {
 };
 
 
+export const SearchProcedureApi = (searchParam) => {
+  const config = {
+    method: "get",
+    url: `${baseUrl}/settings/searchprocedure/${searchParam}`,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  };
+
+  return axios
+    .request(config)
+    .then((response) => response.data)
+    .catch((error) => {
+      console.error("Error searching procedure:", error.response || error.message);
+      if (error.response && error.response.data && error.response.data.msg) {
+        throw new Error(error.response.data.msg);
+      } else if (error.response && error.response.data) {
+        throw new Error(error.response.data);
+      } else if (error.request) {
+        throw new Error(error.message);
+      } else {
+        throw new Error(error.message);
+      }
+    });
+};
+
+export const SearchRadiologyApi = (searchParam) => {
+  const config = {
+    method: "get",
+    url: `${baseUrl}/settings/searchradiology/${searchParam}`,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  };
+
+  return axios
+    .request(config)
+    .then((response) => response.data)
+    .catch((error) => {
+      console.error("Error searching radiology:", error.response || error.message);
+      if (error.response && error.response.data && error.response.data.msg) {
+        throw new Error(error.response.data.msg);
+      } else if (error.response && error.response.data) {
+        throw new Error(error.response.data);
+      } else if (error.request) {
+        throw new Error(error.message);
+      } else {
+        throw new Error(error.message);
+      }
+    });
+};

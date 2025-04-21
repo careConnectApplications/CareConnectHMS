@@ -19,10 +19,14 @@ import {
 import Button from "../Components/Button";
 import Input from "../Components/Input";
 import ShowToast from "./ToastNotification";
-import { CreateInsulinApi, UpdateInsulinApi, SettingsApi } from "../Utils/ApiCalls";
+import {
+  CreateInsulinApi,
+  UpdateInsulinApi,
+  SettingsApi,
+} from "../Utils/ApiCalls";
 
 import { AiOutlineCalendar } from "react-icons/ai";
-import { GiWaterDrop, GiMeal, GiFruitBowl } from "react-icons/gi";
+
 import { FaHashtag } from "react-icons/fa";
 
 export default function InsulinChartModal({
@@ -30,27 +34,17 @@ export default function InsulinChartModal({
   onClose,
   admissionId,
   onSuccess,
-  // Defaults to "create" mode; pass type="edit" and initialData when updating.
+
   type = "create",
   initialData,
 }) {
+
   const initialFormState = {
-    // Blood Glucose Monitoring
-    dateandtimeofbloodglucosemonitoring: "",
-    premealbloodglucoselevel: "",
-    postmealbloodglucoselevel: "",
-    fastingbloodglucose: "",
-    // Insulin Administration
     dateandtimeofinsulinadministration: "",
     typeofinsulin: "",
     dosage: "",
     route: "",
-    // Nutritional Factors
-    mealtimes: "",
-    carbonhydrateintakeestimation: "",
-    // Hypoglycemia or Hyperglycemia Episodes
-    symtoms: "",
-    interventionprovided: "",
+    rbsvalue: "", 
   };
 
   const [formData, setFormData] = useState(initialFormState);
@@ -67,12 +61,13 @@ export default function InsulinChartModal({
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Fetch settings when the modal opens
+  
   useEffect(() => {
     if (isOpen) {
       const fetchSettings = async () => {
         try {
           const settingsData = await SettingsApi();
+          console.log("SettingsApi response:", settingsData); 
           setSettings(settingsData);
         } catch (error) {
           console.error("Error fetching settings:", error);
@@ -82,26 +77,29 @@ export default function InsulinChartModal({
     }
   }, [isOpen]);
 
-  // Pre-populate the form when editing.
+
+
   useEffect(() => {
     if (isOpen) {
       if (type === "edit" && initialData) {
         setFormData({
-          dateandtimeofbloodglucosemonitoring:
-            initialData.dateandtimeofbloodglucosemonitoring || "",
-          premealbloodglucoselevel: initialData.premealbloodglucoselevel || "",
-          postmealbloodglucoselevel: initialData.postmealbloodglucoselevel || "",
-          fastingbloodglucose: initialData.fastingbloodglucose || "",
           dateandtimeofinsulinadministration:
             initialData.dateandtimeofinsulinadministration || "",
           typeofinsulin: initialData.typeofinsulin || "",
           dosage: initialData.dosage || "",
           route: initialData.route || "",
-          mealtimes: initialData.mealtimes || "",
-          carbonhydrateintakeestimation:
-            initialData.carbonhydrateintakeestimation || "",
-          symtoms: initialData.symtoms || "",
-          interventionprovided: initialData.interventionprovided || "",
+          rbsvalue: initialData.rbsvalue || "", // ← NEW
+          /* ------------------------------------------------------
+             The following fields are no longer part of the payload
+          ------------------------------------------------------ */
+          // dateandtimeofbloodglucosemonitoring: initialData.dateandtimeofbloodglucosemonitoring || "",
+          // premealbloodglucoselevel:           initialData.premealbloodglucoselevel           || "",
+          // postmealbloodglucoselevel:          initialData.postmealbloodglucoselevel          || "",
+          // fastingbloodglucose:                initialData.fastingbloodglucose                || "",
+          // mealtimes:                          initialData.mealtimes                          || "",
+          // carbonhydrateintakeestimation:      initialData.carbonhydrateintakeestimation      || "",
+          // symtoms:                            initialData.symtoms                            || "",
+          // interventionprovided:               initialData.interventionprovided               || "",
         });
       } else {
         setFormData(initialFormState);
@@ -109,8 +107,8 @@ export default function InsulinChartModal({
     }
   }, [isOpen, type, initialData]);
 
+  /* ---------------- form submission (unchanged) ---------------- */
   const handleSubmit = async () => {
-    // Ensure all fields are completed.
     if (Object.values(formData).some((field) => field === "")) {
       showToast({ status: "error", message: "All fields are required." });
       return;
@@ -136,7 +134,9 @@ export default function InsulinChartModal({
     } catch (error) {
       showToast({
         status: "error",
-        message: `Failed to ${type === "edit" ? "update" : "create"} insulin chart: ${error.message}`,
+        message: `Failed to ${
+          type === "edit" ? "update" : "create"
+        } insulin chart: ${error.message}`,
       });
       onClose();
     } finally {
@@ -149,94 +149,31 @@ export default function InsulinChartModal({
   return (
     <>
       {toast && <ShowToast status={toast.status} message={toast.message} />}
-      <Modal 
-        isOpen={isOpen} 
-        onClose={onClose} 
-        isCentered 
+      <Modal
+        isOpen={isOpen}
+        onClose={onClose}
+        isCentered
         scrollBehavior="inside"
         size="2xl"
       >
         <ModalOverlay />
-        <ModalContent maxW={{ base: "95%", md: "80%" }} maxH={{ base: "90vh", md: "auto" }}>
+        <ModalContent
+          maxW={{ base: "95%", md: "80%" }}
+          maxH={{ base: "90vh", md: "auto" }}
+        >
           <ModalHeader>
             {type === "edit" ? "Edit Insulin Chart" : "Create Insulin Chart"}
           </ModalHeader>
           <ModalCloseButton />
           <ModalBody pb={6} mt={2}>
-            {/* Blood Glucose Monitoring Section */}
-            <Text fontSize="md" fontWeight="bold" color="blue.blue500" mb={2}>
-              Blood Glucose Monitoring
-            </Text>
-            <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
-              <FormControl>
-                <InputGroup>
-                  <InputLeftElement pointerEvents="none">
-                    <Icon as={AiOutlineCalendar} color="gray.300" />
-                  </InputLeftElement>
-                  <Input
-                    label="Date & Time of Blood Glucose Monitoring"
-                    type="datetime-local"
-                    name="dateandtimeofbloodglucosemonitoring"
-                    value={formData.dateandtimeofbloodglucosemonitoring}
-                    onChange={handleInputChange}
-                    placeholder="Select date and time"
-                  />
-                </InputGroup>
-              </FormControl>
-              <FormControl>
-                <InputGroup>
-                  <InputLeftElement pointerEvents="none">
-                    <Icon as={GiWaterDrop} color="gray.300" />
-                  </InputLeftElement>
-                  <Input
-                    label="Premeal Blood Glucose Level"
-                    type="text"
-                    name="premealbloodglucoselevel"
-                    value={formData.premealbloodglucoselevel}
-                    onChange={handleInputChange}
-                    placeholder="Enter premeal level"
-                  />
-                </InputGroup>
-              </FormControl>
-              <FormControl>
-                <InputGroup>
-                  <InputLeftElement pointerEvents="none">
-                    <Icon as={GiWaterDrop} color="gray.300" />
-                  </InputLeftElement>
-                  <Input
-                    label="Postmeal Blood Glucose Level"
-                    type="text"
-                    name="postmealbloodglucoselevel"
-                    value={formData.postmealbloodglucosemonitoring}
-                    onChange={handleInputChange}
-                    placeholder="Enter postmeal level"
-                  />
-                </InputGroup>
-              </FormControl>
-              <FormControl>
-                <InputGroup>
-                  <InputLeftElement pointerEvents="none">
-                    <Icon as={GiWaterDrop} color="gray.300" />
-                  </InputLeftElement>
-                  <Input
-                    label="Fasting Blood Glucose"
-                    type="text"
-                    name="fastingbloodglucose"
-                    value={formData.fastingbloodglucose}
-                    onChange={handleInputChange}
-                    placeholder="Enter fasting level"
-                  />
-                </InputGroup>
-              </FormControl>
-            </SimpleGrid>
-
-            <Divider my={4} />
-
-            {/* Insulin Administration Section */}
+            {/* ----------------------------------------------------
+                 ↓ ONLY the Insulin‑administration block is needed
+            ---------------------------------------------------- */}
             <Text fontSize="md" fontWeight="bold" color="blue.blue500" mb={2}>
               Insulin Administration
             </Text>
             <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
+              {/* Date & Time of Insulin Administration */}
               <FormControl>
                 <InputGroup>
                   <InputLeftElement pointerEvents="none">
@@ -252,147 +189,110 @@ export default function InsulinChartModal({
                   />
                 </InputGroup>
               </FormControl>
-              {/* Type of Insulin as Dropdown */}
+
+              {/* Type of Insulin */}
               <FormControl>
-                <InputGroup>
-                  <Select
-                    placeholder="Select Type of Insulin"
-                    name="typeofinsulin"
-                    value={formData.typeofinsulin}
-                    onChange={handleInputChange}
-                    borderWidth="2px"
-                    borderColor="#6B7280"
-                  >
-                    {settings?.typeofinsulin?.map((option, idx) => (
-                      <option key={idx} value={option}>
-                        {option}
-                      </option>
-                    ))}
-                  </Select>
-                </InputGroup>
+                <Select
+                  placeholder="Select Type of Insulin"
+                  name="typeofinsulin"
+                  value={formData.typeofinsulin}
+                  onChange={handleInputChange}
+                  borderWidth="2px"
+                  borderColor="#6B7280"
+                >
+                  {settings?.typeofinsulin?.map((option, idx) => (
+                    <option key={idx} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </Select>
               </FormControl>
+
+              {/* Dosage */}
+              {/* Dosage – in International Units */}
               <FormControl>
                 <InputGroup>
                   <InputLeftElement pointerEvents="none">
                     <Icon as={FaHashtag} color="gray.300" />
                   </InputLeftElement>
                   <Input
-                    label="Dosage"
-                    type="text"
+                    label="Dosage (IU)"
+                    type="number" // numbers only
+                    min="0"
+                    step="0.1"
                     name="dosage"
                     value={formData.dosage}
                     onChange={handleInputChange}
-                    placeholder="Enter dosage"
+                    placeholder="Enter dosage in IU"
                   />
                 </InputGroup>
               </FormControl>
-              {/* Route as Dropdown */}
+
+              {/* Route */}
+              <FormControl>
+                <Select
+                  placeholder="Select Route"
+                  name="route"
+                  value={formData.route}
+                  onChange={handleInputChange}
+                  borderWidth="2px"
+                  borderColor="#6B7280"
+                >
+                  {settings?.insulinroute?.map((option, idx) => (
+                    <option key={idx} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </Select>
+              </FormControl>
+
+              {/* RBS Value (NEW) */}
               <FormControl>
                 <InputGroup>
-                  <Select
-                    placeholder="Select Route"
-                    name="route"
-                    value={formData.route}
+                  <InputLeftElement pointerEvents="none">
+                    <Icon as={FaHashtag} color="gray.300" />
+                  </InputLeftElement>
+                  <Input
+                    label="RBS Value"
+                    type="text"
+                    name="rbsvalue"
+                    value={formData.rbsvalue}
                     onChange={handleInputChange}
-                    borderWidth="2px"
-                    borderColor="#6B7280"
-                  >
-                    {settings?.insulinroute?.map((option, idx) => (
-                      <option key={idx} value={option}>
-                        {option}
-                      </option>
-                    ))}
-                  </Select>
+                    placeholder="Enter random blood sugar value"
+                  />
                 </InputGroup>
               </FormControl>
             </SimpleGrid>
 
-            <Divider my={4} />
+            {/* ----------------------------------------------------
+               ↓ OLD sections are kept for reference but commented
+            ---------------------------------------------------- */}
 
-            {/* Nutritional Factors Section */}
+            {/*
+            <Divider my={4} />
+            <Text fontSize="md" fontWeight="bold" color="blue.blue500" mb={2}>
+              Blood Glucose Monitoring
+            </Text>
+            ...
+            */}
+
+            {/*
+            <Divider my={4} />
             <Text fontSize="md" fontWeight="bold" color="blue.blue500" mb={2}>
               Nutritional Factors
             </Text>
-            <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
-              <FormControl>
-                <InputGroup>
-                  <InputLeftElement pointerEvents="none">
-                    <Icon as={GiMeal} color="gray.300" />
-                  </InputLeftElement>
-                  <Input
-                    label="Meal Times"
-                    type="text"
-                    name="mealtimes"
-                    value={formData.mealtimes}
-                    onChange={handleInputChange}
-                    placeholder="Enter meal times"
-                  />
-                </InputGroup>
-              </FormControl>
-              <FormControl>
-                <InputGroup>
-                  <InputLeftElement pointerEvents="none">
-                    <Icon as={GiFruitBowl} color="gray.300" />
-                  </InputLeftElement>
-                  <Input
-                    label="Carbohydrate Intake Estimation"
-                    type="text"
-                    name="carbonhydrateintakeestimation"
-                    value={formData.carbonhydrateintakeestimation}
-                    onChange={handleInputChange}
-                    placeholder="Enter carbohydrate intake estimation"
-                  />
-                </InputGroup>
-              </FormControl>
-            </SimpleGrid>
+            ...
+            */}
 
+            {/*
             <Divider my={4} />
-
-            {/* Hypoglycemia or Hyperglycemia Episodes Section */}
             <Text fontSize="md" fontWeight="bold" color="blue.blue500" mb={2}>
               Hypoglycemia or Hyperglycemia Episodes
             </Text>
-            <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
-              {/* Symptoms as Dropdown */}
-              <FormControl>
-                <InputGroup>
-                  <Select
-                    placeholder="Select Symptoms"
-                    name="symtoms"
-                    value={formData.symtoms}
-                    onChange={handleInputChange}
-                    borderWidth="2px"
-                    borderColor="#6B7280"
-                  >
-                    {settings?.insulinsymptoms?.map((option, idx) => (
-                      <option key={idx} value={option}>
-                        {option}
-                      </option>
-                    ))}
-                  </Select>
-                </InputGroup>
-              </FormControl>
-              {/* Intervention Provided as Dropdown */}
-              <FormControl>
-                <InputGroup>
-                  <Select
-                    placeholder="Select Intervention Provided"
-                    name="interventionprovided"
-                    value={formData.interventionprovided}
-                    onChange={handleInputChange}
-                    borderWidth="2px"
-                    borderColor="#6B7280"
-                  >
-                    {settings?.insulininterventionprovided?.map((option, idx) => (
-                      <option key={idx} value={option}>
-                        {option}
-                      </option>
-                    ))}
-                  </Select>
-                </InputGroup>
-              </FormControl>
-            </SimpleGrid>
+            ...
+            */}
           </ModalBody>
+
           <ModalFooter>
             <Button
               colorScheme="blue"

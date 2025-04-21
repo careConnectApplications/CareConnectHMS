@@ -49,7 +49,7 @@ export default function TubeFeedingChartModal({
   const initialFormState = {
     Datetimefeeds: "",
     amount: "",
-    sign: "",
+    feed: "",
   };
 
   const [formData, setFormData] = useState(initialFormState);
@@ -72,7 +72,7 @@ export default function TubeFeedingChartModal({
         setFormData({
           Datetimefeeds: initialData.Datetimefeeds || "",
           amount: initialData.amount || "",
-          sign: initialData.sign || "",
+          feed: initialData.feed || "",
         });
       } else {
         setFormData(initialFormState);
@@ -169,12 +169,12 @@ export default function TubeFeedingChartModal({
                     <Icon as={FaSignature} color="gray.300" />
                   </InputLeftElement>
                   <Input
-                    label="Sign"
+                    label="Feed"
                     type="text"
-                    name="sign"
-                    value={formData.sign}
+                    name="feed"
+                    value={formData.feed}
                     onChange={handleInputChange}
-                    placeholder="Enter sign"
+                    placeholder="Enter Feed"
                   />
                 </InputGroup>
               </FormControl>

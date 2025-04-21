@@ -61,12 +61,12 @@ function NurseCare() {
           >
             Admission Daily Register
           </Tab>
-          <Tab
+          {/* <Tab
             _focus={{ outline: "none" }}
             _selected={{ color: "blue.blue500", fontWeight: "700" }}
           >
             Bed Status Report
-          </Tab>
+          </Tab> */}
           <Tab
             _focus={{ outline: "none" }}
             _selected={{ color: "blue.blue500", fontWeight: "700" }}
@@ -93,9 +93,9 @@ function NurseCare() {
           <TabPanel p="0">
             <AdmissionDailyReport />
           </TabPanel>
-          <TabPanel p="0">
+          {/* <TabPanel p="0">
             <BedStatusReport />
-          </TabPanel>
+          </TabPanel> */}
           <TabPanel p="0">
             <DailyWardReport />
           </TabPanel>

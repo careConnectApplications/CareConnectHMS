@@ -25,149 +25,169 @@ import {
 import { FaPills, FaSyringe } from "react-icons/fa";
 import { MdNote } from "react-icons/md";
 
+/**
+ * Props
+ * -----
+ * isOpen, onClose        : chakra modal controls
+ * admissionId            : optional; auto‑detected otherwise
+ * onSuccess              : callback after backend success
+ * type                   : "create" | "edit"
+ * initialData            : for edit mode
+ * selectedDrug           : prefill text
+ * selectedPrescriptionId : row _id (needed for payload/parent refresh)
+ */
 export default function MedicalChartModal({
   isOpen,
   onClose,
   admissionId,
   onSuccess,
-  // Default to "create" mode; pass type="edit" and initialData when updating.
   type = "create",
   initialData,
+  selectedDrug = "",
+  selectedPrescriptionId = "",
 }) {
+  
   let storedAdmission = localStorage.getItem("inPatient");
   let finalAdmissionId = admissionId;
   if (!finalAdmissionId && storedAdmission) {
     try {
       const patient = JSON.parse(storedAdmission);
-      if (patient.admission && Array.isArray(patient.admission)) {
+      if (Array.isArray(patient?.admission)) {
         finalAdmissionId = patient.admission[0];
       } else {
         finalAdmissionId = localStorage.getItem("admissionId");
       }
-    } catch (err) {
+    } catch {
       finalAdmissionId = localStorage.getItem("admissionId");
     }
   }
 
-  const initialFormState = {
-    drug: "",
-    note: "",
-    dose: "",
-    frequency: "",
-    route: "",
+
+  const blank = { drug: "", note: "", dose: "", frequency: "", route: "" };
+  const [formData, setFormData]   = useState(blank);
+  const [loading, setLoading]     = useState(false);
+  const [toast, setToast]         = useState(null);
+  const [settings, setSettings]   = useState({});
+
+  const showToast = (t) => {
+    setToast(t);
+    setTimeout(() => setToast(null), 2500);
   };
 
-  const [formData, setFormData] = useState(initialFormState);
-  const [loading, setLoading] = useState(false);
-  const [toast, setToast] = useState(null);
-  const [settings, setSettings] = useState({});
+  const handleInputChange = ({ target }) =>
+    setFormData((p) => ({ ...p, [target.name]: target.value }));
 
-  const showToast = (toastData) => {
-    setToast(toastData);
-    setTimeout(() => setToast(null), 2000);
-  };
-
-  const handleInputChange = ({ target: { name, value } }) => {
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  // Fetch settings when the modal opens
-  useEffect(() => {
-    if (isOpen) {
-      const fetchSettings = async () => {
-        try {
-          const settingsData = await SettingsApi();
-          setSettings(settingsData);
-        } catch (error) {
-          console.error("Error fetching settings:", error);
-        }
-      };
-      fetchSettings();
-    }
-  }, [isOpen]);
-
-  // Pre-populate the form when editing.
-  useEffect(() => {
-    if (isOpen) {
-      if (type === "edit" && initialData) {
-        setFormData({
-          drug: initialData.drug || "",
-          note: initialData.note || "",
-          dose: initialData.dose || "",
-          frequency: initialData.frequency || "",
-          route: initialData.route || "",
-        });
-      } else {
-        setFormData(initialFormState);
-      }
-    }
-  }, [isOpen, type, initialData]);
-
+ 
   const handleSubmit = async () => {
-    // Ensure all fields are completed.
-    if (Object.values(formData).some((field) => field === "")) {
-      showToast({ status: "error", message: "All fields are required." });
+    const payload = { ...formData, prescription: selectedPrescriptionId };
+    const required = ["drug", "dose", "frequency", "route", "prescription"];
+    if (required.some((k) => !payload[k])) {
+      showToast({ status: "error", message: "All required fields must be filled" });
       return;
     }
+
     setLoading(true);
     try {
+      let res;
       if (type === "edit") {
-        // Update the existing medical chart.
-        await UpdateMedicalChartApi(formData, initialData.id);
-        showToast({
-          status: "success",
-          message: "Medical chart updated successfully!",
-        });
+        res = await UpdateMedicalChartApi(payload, initialData.id);
       } else {
-        // Create a new medical chart.
-        await CreateMedicationChartApi(formData, finalAdmissionId);
-        showToast({
-          status: "success",
-          message: "Medical chart created successfully!",
-        });
+        res = await CreateMedicationChartApi(payload, finalAdmissionId);
       }
-      if (onSuccess) {
-        onSuccess();
-      }
-      onClose();
-      setFormData(initialFormState);
-    } catch (error) {
-      showToast({
-        status: "error",
-        message: `Failed to ${
-          type === "edit" ? "update" : "create"
-        } medical chart: ${error.message}`,
+
+ 
+      const saved =
+        res?.queryresult?.medicationchartdetails ??
+        res?.data?.medicationchart ??
+        null;
+
+      const medication = saved
+        ? {
+            id: saved._id,
+            drug: saved.drug,
+            note: saved.note,
+            dose: saved.dose,
+            frequency: saved.frequency,
+            route: saved.route,
+            createdBy: saved.createdBy ?? saved.staffname ?? "Unknown",
+            createdOn: new Date(saved.createdAt).toISOString().split("T")[0],
+          }
+        : {
+            id: type === "edit" ? initialData.id : Date.now().toString(),
+            drug: formData.drug,
+            note: formData.note,
+            dose: formData.dose,
+            frequency: formData.frequency,
+            route: formData.route,
+            createdBy: "You",
+            createdOn: new Date().toISOString().split("T")[0],
+          };
+
+      onSuccess?.({
+        message: res?.message || "Medical chart saved!",
+        status : res?.status  ? "success" : "error",
+        prescriptionId: selectedPrescriptionId,
+        servedstatus  : "served",
+        medication,                  
       });
+
       onClose();
+      setFormData(blank);
+    } catch (err) {
+      showToast({ status: "error", message: err.message || "Request failed" });
     } finally {
       setLoading(false);
     }
   };
 
-  const isFormComplete = Object.values(formData).every((field) => field);
+  
+  useEffect(() => {
+    if (!isOpen) return;
+    (async () => {
+      try {
+        const cfg = await SettingsApi();
+        setSettings(cfg);
+      } catch (err) {
+        console.error("Settings load error:", err);
+      }
+    })();
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    if (type === "edit" && initialData) {
+      setFormData({
+        drug     : initialData.drug ?? "",
+        note     : initialData.note ?? "",
+        dose     : initialData.dose ?? "",
+        frequency: initialData.frequency ?? "",
+        route    : initialData.route ?? "",
+      });
+    } else {
+      setFormData({ ...blank, drug: selectedDrug });
+    }
+  }, [isOpen, type, initialData, selectedDrug]);
+
+  
+  const canSubmit =
+    ["drug", "dose", "frequency", "route"].every((k) => formData[k]) &&
+    selectedPrescriptionId;
+
 
   return (
     <>
       {toast && <ShowToast status={toast.status} message={toast.message} />}
-      <Modal
-        isOpen={isOpen}
-        onClose={onClose}
-        size="lg"
-        isCentered
-        scrollBehavior="inside"
-      >
+      <Modal isOpen={isOpen} onClose={onClose} size="lg" isCentered>
         <ModalOverlay />
-        <ModalContent
-          maxW={{ base: "95%", md: "60%" }}
-          maxH={{ base: "90vh", md: "auto" }}
-        >
-          <ModalHeader fontSize={{ base: "lg", md: "xl" }}>
+        <ModalContent maxW={{ base: "95%", md: "60%" }}>
+          <ModalHeader>
             {type === "edit" ? "Edit Medical Chart" : "Create Medical Chart"}
           </ModalHeader>
           <ModalCloseButton />
+
           <ModalBody>
             <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
-              {/* Drug remains a text input */}
+              {/* Drug */}
               <FormControl>
                 <InputGroup>
                   <InputLeftElement pointerEvents="none">
@@ -175,7 +195,6 @@ export default function MedicalChartModal({
                   </InputLeftElement>
                   <Input
                     label="Drug"
-                    type="text"
                     name="drug"
                     value={formData.drug}
                     onChange={handleInputChange}
@@ -183,23 +202,24 @@ export default function MedicalChartModal({
                   />
                 </InputGroup>
               </FormControl>
-              {/* Note remains a text input */}
+
+              {/* Note */}
               <FormControl>
                 <InputGroup>
                   <InputLeftElement pointerEvents="none">
                     <Icon as={MdNote} color="gray.300" />
                   </InputLeftElement>
                   <Input
-                    label="Note  (optional)"
-                    type="text"
+                    label="Note (optional)"
                     name="note"
                     value={formData.note}
                     onChange={handleInputChange}
-                    placeholder="Enter note  (optional)"
+                    placeholder="Enter note"
                   />
                 </InputGroup>
               </FormControl>
-              {/* Dose remains a text input */}
+
+              {/* Dose */}
               <FormControl>
                 <InputGroup>
                   <InputLeftElement pointerEvents="none">
@@ -207,7 +227,6 @@ export default function MedicalChartModal({
                   </InputLeftElement>
                   <Input
                     label="Dose"
-                    type="text"
                     name="dose"
                     value={formData.dose}
                     onChange={handleInputChange}
@@ -215,51 +234,50 @@ export default function MedicalChartModal({
                   />
                 </InputGroup>
               </FormControl>
-              {/* Frequency as a dropdown */}
+
+              {/* Frequency */}
               <FormControl>
-                <InputGroup>
-                  <Select
-                    placeholder="Select Frequency"
-                    name="frequency"
-                    value={formData.frequency}
-                    onChange={handleInputChange}
-                    borderWidth="2px"
-                    borderColor="#6B7280"
-                  >
-                    {settings?.medicationchartfrequency?.map((option, idx) => (
-                      <option key={idx} value={option}>
-                        {option}
-                      </option>
-                    ))}
-                  </Select>
-                </InputGroup>
+                <Select
+                  placeholder="Select Frequency"
+                  name="frequency"
+                  value={formData.frequency}
+                  onChange={handleInputChange}
+                  borderWidth="2px"
+                  borderColor="#6B7280"
+                >
+                  {settings?.medicationchartfrequency?.map((f) => (
+                    <option key={f} value={f}>
+                      {f}
+                    </option>
+                  ))}
+                </Select>
               </FormControl>
-              {/* Route as a dropdown */}
+
+              {/* Route */}
               <FormControl>
-                <InputGroup>
-                  <Select
-                    placeholder="Select Route"
-                    name="route"
-                    value={formData.route}
-                    onChange={handleInputChange}
-                    borderWidth="2px"
-                    borderColor="#6B7280"
-                  >
-                    {settings?.medicationchartroute?.map((option, idx) => (
-                      <option key={idx} value={option}>
-                        {option}
-                      </option>
-                    ))}
-                  </Select>
-                </InputGroup>
+                <Select
+                  placeholder="Select Route"
+                  name="route"
+                  value={formData.route}
+                  onChange={handleInputChange}
+                  borderWidth="2px"
+                  borderColor="#6B7280"
+                >
+                  {settings?.medicationchartroute?.map((r) => (
+                    <option key={r} value={r}>
+                      {r}
+                    </option>
+                  ))}
+                </Select>
               </FormControl>
             </SimpleGrid>
           </ModalBody>
+
           <ModalFooter>
             <Button
               colorScheme="blue"
               onClick={handleSubmit}
-              disabled={!isFormComplete || loading}
+              disabled={!canSubmit || loading}
               isLoading={loading}
             >
               {type === "edit" ? "Update" : "Submit"}

@@ -3,41 +3,42 @@ import {
   Box,
   Text,
   Flex,
-  Spinner,
-  Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
   HStack,
   Menu,
   MenuButton,
   MenuList,
   MenuItem,
+  Table,
+  Thead,
+  Tbody,
+  Tr,
+  Th,
   TableContainer,
 } from "@chakra-ui/react";
 import { BiSearch } from "react-icons/bi";
 import { IoFilter } from "react-icons/io5";
 import { SlPlus } from "react-icons/sl";
+
 import Pagination from "../Components/Pagination";
 import Button from "../Components/Button";
 import Input from "../Components/Input";
 import TableRowY from "../Components/TableRowY";
-import { configuration } from "../Utils/Helpers";
-import { ReadAllFluidBalanceByAdmissionApi } from "../Utils/ApiCalls";
 import FluidBalanceModal from "../Components/FluidBalanceModal";
 
-// Helper to retrieve admissionId.
+import { configuration } from "../Utils/Helpers";
+import { ReadAllFluidBalanceByAdmissionApi } from "../Utils/ApiCalls";
+
+
 const getAdmissionId = () => {
   let admissionId = localStorage.getItem("admissionId");
-  const storedAdmission = localStorage.getItem("inPatient");
-  if (!admissionId && storedAdmission) {
+  const stored = localStorage.getItem("inPatient");
+  if (!admissionId && stored) {
     try {
-      const patient = JSON.parse(storedAdmission);
+      const patient = JSON.parse(stored);
       if (patient.admission && Array.isArray(patient.admission)) {
         admissionId = patient.admission[0];
       }
-    } catch (err) {
+    } catch {
       admissionId = localStorage.getItem("admissionId");
     }
   }
@@ -45,171 +46,129 @@ const getAdmissionId = () => {
 };
 
 const FluidBalanceChart = () => {
+
   const [fluidData, setFluidData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
+
   const [searchInput, setSearchInput] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = configuration.sizePerPage;
-  
-  // States for date filtering and filter criteria.
-  const [ByDate, setByDate] = useState(false);
-  const [StartDate, setStartDate] = useState("");
-  const [EndDate, setEndDate] = useState("");
   const [filterByCriteria, setFilterByCriteria] = useState("all");
 
-  // Modal state for Fluid Balance creation/editing.
+  const [byDate, setByDate] = useState(false);
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = configuration.sizePerPage;
+
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalType, setModalType] = useState("create"); // "create" or "edit"
+  const [modalType, setModalType] = useState("create");
   const [selectedFluidBalance, setSelectedFluidBalance] = useState(null);
 
-  // Trigger for refreshing data.
   const [trigger, setTrigger] = useState(false);
 
   const admissionId = getAdmissionId();
 
-  // Fetch fluid balance data on mount and when trigger changes.
+
   useEffect(() => {
     const fetchFluidData = async () => {
-      if (!admissionId) {
-        console.error("No admission ID found");
-        return;
-      }
+      if (!admissionId) return;
       try {
-        const result = await ReadAllFluidBalanceByAdmissionApi(admissionId);
-        const balances =
-          result &&
-          result.queryresult &&
-          Array.isArray(result.queryresult.fluidbalancesdetails)
-            ? result.queryresult.fluidbalancesdetails
+        const res = await ReadAllFluidBalanceByAdmissionApi(admissionId);
+        const list =
+          res?.queryresult?.fluidbalancesdetails && Array.isArray(res.queryresult.fluidbalancesdetails)
+            ? res.queryresult.fluidbalancesdetails
             : [];
-        setFluidData(balances);
-        setFilteredData(balances);
-      } catch (error) {
-        console.error("Error fetching fluid balance data:", error);
+        setFluidData(list);
+        setFilteredData(list);
+      } catch (e) {
+        console.error("Error fetching fluid balance data:", e);
       }
     };
     fetchFluidData();
   }, [admissionId, trigger]);
 
-  // Filtering logic.
+
   useEffect(() => {
-    if (filterByCriteria === "all") {
-      setFilteredData(fluidData);
-    } else if (filterByCriteria === "createdBy") {
-      setFilteredData(
-        fluidData.filter((item) =>
-          item.staffname.toLowerCase().includes(searchInput.toLowerCase())
-        )
-      );
-    } else if (filterByCriteria === "date") {
-      if (StartDate && EndDate) {
-        let endDateObj = new Date(EndDate);
-        endDateObj.setDate(endDateObj.getDate() + 1);
-        let formattedEndDate = endDateObj.toISOString().split("T")[0];
-        setFilteredData(
-          fluidData.filter((item) => {
-            const createdOn = new Date(item.createdAt)
-              .toISOString()
-              .split("T")[0];
-            return createdOn >= StartDate && createdOn <= formattedEndDate;
-          })
-        );
-      } else {
-        setFilteredData(fluidData);
-      }
+    let data = [...fluidData];
+
+    if (filterByCriteria === "servedBy") {
+      data = data.filter((i) => i.staffname.toLowerCase().includes(searchInput.toLowerCase()));
+    } else if (filterByCriteria === "date" && startDate && endDate) {
+      const end = new Date(endDate);
+      end.setDate(end.getDate() + 1);
+      const endISO = end.toISOString().split("T")[0];
+      data = data.filter((i) => {
+        const d = new Date(i.createdAt).toISOString().split("T")[0];
+        return d >= startDate && d <= endISO;
+      });
     }
+
+    setFilteredData(data);
     setCurrentPage(1);
-  }, [filterByCriteria, searchInput, StartDate, EndDate, fluidData]);
+  }, [filterByCriteria, searchInput, startDate, endDate, fluidData]);
 
-  // Pagination calculation.
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const paginatedData = filteredData.slice(indexOfFirstItem, indexOfLastItem);
+ 
+  const indexOfLast = currentPage * itemsPerPage;
+  const indexOfFirst = indexOfLast - itemsPerPage;
+  const paginatedData = filteredData.slice(indexOfFirst, indexOfLast);
 
-  // Modal handlers.
-  const handleAddFluidBalance = () => {
+
+  const handleAdd = () => {
     setModalType("create");
     setSelectedFluidBalance(null);
     setIsModalOpen(true);
   };
-
-  const handleEditFluidBalance = (fluidBalance) => {
+  const handleEdit = (record) => {
     setModalType("edit");
-    setSelectedFluidBalance(fluidBalance);
+    setSelectedFluidBalance(record);
     setIsModalOpen(true);
   };
-
-  const handleViewFluidBalance = (id) => {
-    const selected = fluidData.find((item) => item._id === id);
-    if (selected) {
-      handleEditFluidBalance(selected);
-    }
+  const handleViewFluidBalance = (id) => {      
+    const rec = fluidData.find((r) => r._id === id);
+    if (rec) handleEdit(rec);
   };
+
 
   return (
     <Box p={["10px", "20px"]}>
-      {/* Header Section */}
+      {/* header */}
       <Flex justifyContent="space-between" flexWrap="wrap" mb="20px">
-        <Button
-          rightIcon={<SlPlus />}
-          onClick={handleAddFluidBalance}
-          w={["100%", "100%", "250px", "250px"]}
-        >
+        <Button rightIcon={<SlPlus />} onClick={handleAdd} w={["100%", "100%", "250px"]}>
           Add Fluid Balance Chart
         </Button>
-        {/* Search and Filter Controls on the same line */}
-        <Flex
-flexWrap="wrap" mt={["10px", "10px", "0", "0"]} alignItems="center" justifyContent="flex-end"
-        >
-          <HStack spacing="4" >
+
+        <Flex flexWrap="wrap" mt={["10px", "10px", "0"]} alignItems="center" justifyContent="flex-end">
+          <HStack spacing="4">
+            {/* search / dates */}
             <Box flex="1">
-              {!ByDate ? (
+              {!byDate ? (
                 <Input
                   label="Search"
-                
-                  onChange={(e) => setSearchInput(e.target.value)}
                   value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
                   bColor="#E4E4E4"
                   leftIcon={<BiSearch />}
                 />
               ) : (
-                <HStack spacing="2" flex="1" flexWrap="nowrap">
-                  <Input
-                    placeholder="Start Date"
-                    type="date"
-                    value={StartDate}
-                    onChange={(e) => setStartDate(e.target.value)}
-                    size="md"
-                    variant="outline"
-                    borderColor="#E4E4E4"
-                    focusBorderColor="blue.blue500"
-                  />
-                  <Input
-                    placeholder="End Date"
-                    type="date"
-                    value={EndDate}
-                    onChange={(e) => setEndDate(e.target.value)}
-                    size="md"
-                    variant="outline"
-                    borderColor="#E4E4E4"
-                    focusBorderColor="blue.blue500"
-                  />
+                <HStack spacing="2">
+                  <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+                  <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
                   <Flex
-                    onClick={() => setFilterByCriteria("date")}
-                    cursor="pointer"
+                    bg="blue.blue500"
+                    color="#fff"
                     px="5px"
                     py="3px"
                     rounded="5px"
-                    bg="blue.blue500"
-                    color="#fff"
-                    justifyContent="center"
-                    alignItems="center"
+                    cursor="pointer"
+                    onClick={() => setFilterByCriteria("date")}
                   >
                     <BiSearch />
                   </Flex>
                 </HStack>
               )}
             </Box>
+
+            {/* filter */}
             <Menu isLazy>
               <MenuButton as={Box}>
                 <HStack
@@ -221,7 +180,6 @@ flexWrap="wrap" mt={["10px", "10px", "0", "0"]} alignItems="center" justifyConte
                   bg="#f8ddd1"
                   color="blue.blue500"
                   fontWeight="500"
-                  fontSize="14px"
                 >
                   <Text>Filter</Text>
                   <IoFilter />
@@ -230,34 +188,22 @@ flexWrap="wrap" mt={["10px", "10px", "0", "0"]} alignItems="center" justifyConte
               <MenuList>
                 <MenuItem
                   onClick={() => {
-                    setFilterByCriteria("createdBy");
+                    setFilterByCriteria("servedBy");
                     setByDate(false);
                     setSearchInput("");
                     setStartDate("");
                     setEndDate("");
                   }}
-                  textTransform="capitalize"
-                  fontWeight="500"
-                  color="#2F2F2F"
-                  _hover={{ color: "#fff", fontWeight: "400", bg: "blue.blue500" }}
                 >
-                  <HStack fontSize="14px">
-                    <Text>by Created By</Text>
-                  </HStack>
+                  by Served By
                 </MenuItem>
                 <MenuItem
                   onClick={() => {
                     setFilterByCriteria("date");
                     setByDate(true);
                   }}
-                  textTransform="capitalize"
-                  fontWeight="500"
-                  color="#2F2F2F"
-                  _hover={{ color: "#fff", fontWeight: "400", bg: "blue.blue500" }}
                 >
-                  <HStack fontSize="14px">
-                    <Text>by Date</Text>
-                  </HStack>
+                  by Date
                 </MenuItem>
                 <MenuItem
                   onClick={() => {
@@ -267,14 +213,8 @@ flexWrap="wrap" mt={["10px", "10px", "0", "0"]} alignItems="center" justifyConte
                     setStartDate("");
                     setEndDate("");
                   }}
-                  textTransform="capitalize"
-                  fontWeight="500"
-                  color="#2F2F2F"
-                  _hover={{ color: "#fff", fontWeight: "400", bg: "blue.blue500" }}
                 >
-                  <HStack fontSize="14px">
-                    <Text>Clear Filter</Text>
-                  </HStack>
+                  Clear Filter
                 </MenuItem>
               </MenuList>
             </Menu>
@@ -282,41 +222,39 @@ flexWrap="wrap" mt={["10px", "10px", "0", "0"]} alignItems="center" justifyConte
         </Flex>
       </Flex>
 
-      {/* Table View */}
-      <Box
-        bg="#fff"
-        border="1px solid #EFEFEF"
-        rounded="md"
-        overflowX="auto"
-        mt="12px"
-        py="15px"
-        px="15px"
-      >
+      {/* table */}
+      <Box bg="#fff" border="1px solid #EFEFEF" rounded="md" overflowX="auto" mt="12px" py="15px" px="15px">
         <TableContainer>
           <Table variant="striped">
-            <Thead bg="#fff">
+            <Thead>
               <Tr>
-                <Th fontSize="13px" fontWeight="600">IV Fluid Volume</Th>
-                <Th fontSize="13px" fontWeight="600">Oral Fluids</Th>
-                <Th fontSize="13px" fontWeight="600">Total Intake</Th>
-                <Th fontSize="13px" fontWeight="600">Total Output</Th>
-                <Th fontSize="13px" fontWeight="600">Net Fluid Balance</Th>
-                <Th fontSize="13px" fontWeight="600">Created By</Th>
-                <Th fontSize="13px" fontWeight="600">Created On</Th>
+              <Th fontSize="13px" fontWeight="600">Created On</Th>
+                <Th fontSize="13px" fontWeight="600">Intake Type</Th>
+                <Th fontSize="13px" fontWeight="600">Intake Route</Th>
+                <Th fontSize="13px" fontWeight="600">Intake Amount (ml)</Th>
+                <Th fontSize="13px" fontWeight="600">Output Type</Th>
+                <Th fontSize="13px" fontWeight="600">Output Route</Th>
+                <Th fontSize="13px" fontWeight="600">Output Amount (ml)</Th>
+                <Th fontSize="13px" fontWeight="600">Staff Name</Th>
+                
                 <Th fontSize="13px" fontWeight="600">Actions</Th>
               </Tr>
             </Thead>
+
             <Tbody>
               {paginatedData.map((item) => (
                 <TableRowY
                   key={item._id}
+                  
                   type="fluid-balance-chart"
-                  intravenous={item.IVfluidvolume}
-                  oral={item.oralfluids}
-                  totalIntake={item.totalintake}
-                  totalOutput={item.totaloutput}
-                  netFluidBalance={item.netfliudbalancefor24hours}
-                  createdBy={item.staffname}
+                  createdOn={new Date(item.createdAt).toLocaleString()}
+                  intakeType={item.intaketype}
+                  intakeRoute={item.intakeroute}
+                  intakeAmount={item.intakeamount}
+                  outputType={item.outputtype}
+                  outputRoute={item.outputroute}
+                  outputAmount={item.outputamount}
+                  servedBy={item.staffname}
                   createdOn={new Date(item.createdAt).toLocaleString()}
                   onEdit={() => handleViewFluidBalance(item._id)}
                 />
@@ -326,7 +264,7 @@ flexWrap="wrap" mt={["10px", "10px", "0", "0"]} alignItems="center" justifyConte
         </TableContainer>
       </Box>
 
-      {/* Pagination */}
+      {/* pagination */}
       {filteredData.length > itemsPerPage && (
         <Pagination
           postPerPage={itemsPerPage}
@@ -336,30 +274,12 @@ flexWrap="wrap" mt={["10px", "10px", "0", "0"]} alignItems="center" justifyConte
         />
       )}
 
-      {/* Fluid Balance Modal Integration */}
+      {/* modal */}
       <FluidBalanceModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         admissionId={getAdmissionId()}
-        onSuccess={() => {
-          // Refresh data after modal closes.
-          (async () => {
-            const admissionId = getAdmissionId();
-            try {
-              const result = await ReadAllFluidBalanceByAdmissionApi(admissionId);
-              const balances =
-                result &&
-                result.queryresult &&
-                Array.isArray(result.queryresult.fluidbalancesdetails)
-                  ? result.queryresult.fluidbalancesdetails
-                  : [];
-              setFluidData(balances);
-              setFilteredData(balances);
-            } catch (error) {
-              console.error("Error refreshing fluid balance data:", error);
-            }
-          })();
-        }}
+        onSuccess={() => setTrigger((p) => !p)}
         type={modalType}
         initialData={modalType === "edit" ? selectedFluidBalance : null}
       />
