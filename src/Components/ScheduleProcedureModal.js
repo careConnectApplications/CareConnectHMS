@@ -12,20 +12,25 @@ import {
   ModalFooter,
   ModalBody,
   ModalCloseButton,
+  Stack,
 } from "@chakra-ui/react";
 import Button from "../Components/Button";
-import Input from "./Input";
+import Input from "../Components/Input";
+import ShowToast from "./ToastNotification";
 import { IoIosCloseCircle } from "react-icons/io";
+import { FiSearch } from "react-icons/fi";
 import { FaNoteSticky } from "react-icons/fa6";
 import { FaCalendarAlt } from "react-icons/fa";
-import { FiSearch } from "react-icons/fi";
+import { SlPlus } from "react-icons/sl";
 import {
   SettingsApi,
   AddProcedureAPI,
   UpdateProcedureAPI,
   GetAllClinicApi,
   SearchPatientApi,
+  SearchProcedureApi,
 } from "../Utils/ApiCalls";
+import Preloader from "./Preloader";
 
 export default function ScheduleProcedureModal({
   isOpen,
@@ -34,13 +39,11 @@ export default function ScheduleProcedureModal({
   type,
   oldPayload,
 }) {
-  // Loading & data fetching state
   const [Loading, setLoading] = useState(false);
   const [Clinics, setClinics] = useState([]);
-  const [Settings, setSettings] = useState("");
+  const [Settings, setSettings] = useState(null);
 
-  // Two separate form states: one for new entries, one for edit mode.
-  const [Payload, setPayload] = useState({
+  const emptyForm = {
     patientId: "",
     clinic: "",
     indicationdiagnosisprocedure: "",
@@ -48,199 +51,142 @@ export default function ScheduleProcedureModal({
     appointmentdate: "",
     cptcodes: "",
     dxcodes: "",
-  });
-  const [UpdatedPayload, setUpdatedPayload] = useState({
-    patientId: "",
-    clinic: "",
-    indicationdiagnosisprocedure: "",
-    procedure: "",
-    appointmentdate: "",
-    cptcodes: "",
-    dxcodes: "",
-  });
+  };
 
-  // Arrays for handling multiple values (removable tags)
+  const [Payload, setPayload] = useState({ ...emptyForm });
+  const [UpdatedPayload, setUpdatedPayload] = useState({ ...emptyForm });
   const [ProcedureArr, setProcedureArr] = useState([]);
   const [CptcodesArr, setCptcodesArr] = useState([]);
   const [DxcodesArr, setDxcodesArr] = useState([]);
-
-  // Patient search state (applies to both modes)
-  const [searchMRN, setSearchMRN] = useState("");
   const [Patients, setPatients] = useState([]);
   const [isLoadingPatients, setIsLoadingPatients] = useState(false);
+  const [searchMRN, setSearchMRN] = useState("");
 
-  // Determine which form state and handler to use based on mode.
+  // Procedure search
+  const [searchProcedureQuery, setSearchProcedureQuery] = useState("");
+  const [procedureSearchResults, setProcedureSearchResults] = useState([]);
+  const [isLoadingProcedures, setIsLoadingProcedures] = useState(false);
+
   const formState = type === "edit" ? UpdatedPayload : Payload;
   const formHandler = type === "edit" ? handleUpdatedPayload : handlePayload;
 
-  // Handler for new mode inputs
-  function handlePayload(e) {
-    const { id, value } = e.target;
-    setPayload({ ...Payload, [id]: value });
-    if (id === "procedure") {
-      setProcedureArr([...ProcedureArr, value]);
+  // Fetch clinics & settings, prefill if editing
+  useEffect(() => {
+    if (isOpen) {
+      fetchClinics();
+      fetchSettings();
+      if (type === "edit" && oldPayload) prefillEdit();
     }
-    if (id === "cptcodes") {
-      setCptcodesArr([...CptcodesArr, value]);
-    }
-    if (id === "dxcodes") {
-      setDxcodesArr([...DxcodesArr, value]);
-    }
-  }
+  }, [isOpen]);
 
-  // Handler for edit mode inputs
-  function handleUpdatedPayload(e) {
-    const { id, value } = e.target;
-    setUpdatedPayload({ ...UpdatedPayload, [id]: value });
-    if (id === "procedure") {
-      setProcedureArr([...ProcedureArr, value]);
+  // Reset all fields when the modal closes
+  useEffect(() => {
+    if (!isOpen) {
+      setPayload({ ...emptyForm });
+      setUpdatedPayload({ ...emptyForm });
+      setProcedureArr([]);
+      setCptcodesArr([]);
+      setDxcodesArr([]);
+      setPatients([]);
+      setSearchMRN("");
+      setSearchProcedureQuery("");
+      setProcedureSearchResults([]);
     }
-    if (id === "cptcodes") {
-      setCptcodesArr([...CptcodesArr, value]);
-    }
-    if (id === "dxcodes") {
-      setDxcodesArr([...DxcodesArr, value]);
-    }
-  }
+  }, [isOpen]);
 
-  const removeProcedureArr = (item) => {
-    setProcedureArr(ProcedureArr.filter((p) => p !== item));
-  };
-  const removeCptcodesArr = (item) => {
-    setCptcodesArr(CptcodesArr.filter((c) => c !== item));
-  };
-  const removeDxcodesArr = (item) => {
-    setDxcodesArr(DxcodesArr.filter((d) => d !== item));
-  };
+  // Live-search for procedures
+  useEffect(() => {
+    async function fetchProcedures() {
+      if (searchProcedureQuery.trim()) {
+        setIsLoadingProcedures(true);
+        try {
+          const res = await SearchProcedureApi(searchProcedureQuery);
+          setProcedureSearchResults(res.queryresult || []);
+        } catch {
+          setProcedureSearchResults([]);
+        } finally {
+          setIsLoadingProcedures(false);
+        }
+      } else {
+        setProcedureSearchResults([]);
+      }
+    }
+    fetchProcedures();
+  }, [searchProcedureQuery]);
 
-  const getSettings = async () => {
+  async function fetchSettings() {
     try {
-      const result = await SettingsApi();
-      setSettings(result);
+      const r = await SettingsApi();
+      setSettings(r);
     } catch (e) {
       console.error(e);
     }
-  };
+  }
 
-  const getAllClinic = async () => {
+  async function fetchClinics() {
     try {
-      const result = await GetAllClinicApi();
-      setClinics(result.queryresult.clinicdetails);
+      const r = await GetAllClinicApi();
+      setClinics(r.queryresult.clinicdetails || []);
     } catch (e) {
-      console.error(e.message);
+      console.error(e);
     }
-  };
+  }
 
-  // Handler for patient search
+  function prefillEdit() {
+    const p = oldPayload;
+    setUpdatedPayload({
+      patientId: p.patientId || p.patient?._id || "",
+      clinic: p.clinic || "",
+      indicationdiagnosisprocedure: p.indicationdiagnosisprocedure || "",
+      procedure: Array.isArray(p.procedure) ? p.procedure[0] : p.procedure || "",
+      appointmentdate: p.appointmentdate || "",
+      cptcodes: Array.isArray(p.cptcodes) ? p.cptcodes[0] : p.cptcodes || "",
+      dxcodes: Array.isArray(p.dxcodes) ? p.dxcodes[0] : p.dxcodes || "",
+    });
+    setProcedureArr(Array.isArray(p.procedure) ? p.procedure : p.procedure ? [p.procedure] : []);
+    setCptcodesArr(Array.isArray(p.cptodes) ? p.cptodes : p.cptodes ? [p.cptodes] : []);
+    setDxcodesArr(Array.isArray(p.dxcodes) ? p.dxcodes : p.dxcodes ? [p.dxcodes] : []);
+    if (p.patient) setPatients([p.patient]);
+  }
+
+  function handlePayload(e) {
+    const { id, value } = e.target;
+    setPayload((prev) => ({ ...prev, [id]: value }));
+    if (id === "procedure") setProcedureArr((prev) => [...prev, value]);
+    if (id === "cptcodes") setCptcodesArr((prev) => [...prev, value]);
+    if (id === "dxcodes") setDxcodesArr((prev) => [...prev, value]);
+  }
+
+  function handleUpdatedPayload(e) {
+    const { id, value } = e.target;
+    setUpdatedPayload((prev) => ({ ...prev, [id]: value }));
+    if (id === "procedure") setProcedureArr((prev) => [...prev, value]);
+    if (id === "cptcodes") setCptcodesArr((prev) => [...prev, value]);
+    if (id === "dxcodes") setDxcodesArr((prev) => [...prev, value]);
+  }
+
+  const removeProcedureArr = (item) => setProcedureArr((arr) => arr.filter((p) => p !== item));
+  const removeCptcodesArr = (item) => setCptcodesArr((arr) => arr.filter((c) => c !== item));
+  const removeDxcodesArr = (item) => setDxcodesArr((arr) => arr.filter((d) => d !== item));
+
   const handleSearchPatient = async () => {
     setIsLoadingPatients(true);
     try {
-      const results = await SearchPatientApi(searchMRN);
-      if (results?.queryresult?.patientdetails) {
-        setPatients(results.queryresult.patientdetails);
-      } else {
-        setPatients([]);
-      }
-    } catch (error) {
-      console.error("Error searching patient:", error);
+      const res = await SearchPatientApi(searchMRN);
+      setPatients(res.queryresult.patientdetails || []);
+    } catch (e) {
+      console.error(e);
     } finally {
       setIsLoadingPatients(false);
     }
   };
 
-  // When the modal opens, fetch clinics and settings.
-  // In edit mode, prefill the form fields—including the patient.
-  useEffect(() => {
-    getAllClinic();
-    getSettings();
+  const handleSubmit = type === "edit" ? handleSubmitEdit : handleSubmitNew;
 
-    if (type === "edit" && oldPayload) {
-      // If the patient is stored inside oldPayload.patient, use that.
-      const preselectedPatient =
-        oldPayload?.patientId ||
-        (oldPayload?.patient && oldPayload.patient._id) ||
-        "";
-      setUpdatedPayload({
-        patientId: preselectedPatient,
-        clinic: oldPayload?.clinic || "",
-        indicationdiagnosisprocedure:
-          oldPayload?.indicationdiagnosisprocedure || "",
-        procedure:
-          Array.isArray(oldPayload?.procedure) &&
-          oldPayload.procedure.length > 0
-            ? oldPayload.procedure[0]
-            : oldPayload?.procedure || "",
-        appointmentdate: oldPayload?.appointmentdate || "",
-        cptcodes:
-          Array.isArray(oldPayload?.cptcodes) && oldPayload.cptcodes.length > 0
-            ? oldPayload.cptcodes[0]
-            : oldPayload?.cptcodes || "",
-        dxcodes:
-          Array.isArray(oldPayload?.dxcodes) && oldPayload.dxcodes.length > 0
-            ? oldPayload.dxcodes[0]
-            : oldPayload?.dxcodes || "",
-      });
-      setProcedureArr(
-        oldPayload?.procedure
-          ? Array.isArray(oldPayload.procedure)
-            ? oldPayload.procedure
-            : [oldPayload.procedure]
-          : []
-      );
-      setCptcodesArr(
-        oldPayload?.cptcodes
-          ? Array.isArray(oldPayload.cptcodes)
-            ? oldPayload.cptcodes
-            : [oldPayload.cptcodes]
-          : []
-      );
-      setDxcodesArr(
-        oldPayload?.dxcodes
-          ? Array.isArray(oldPayload.dxcodes)
-            ? oldPayload.dxcodes
-            : [oldPayload.dxcodes]
-          : []
-      );
-      // Ensure the patient appears in the dropdown by adding it to Patients.
-      if (oldPayload?.patient) {
-        setPatients([oldPayload.patient]);
-      }
-    }
-  }, [isOpen, oldPayload, type]);
-
-  // When modal closes, clear all form state so the next open is empty.
-  useEffect(() => {
-    if (!isOpen) {
-      setPayload({
-        patientId: "",
-        clinic: "",
-        indicationdiagnosisprocedure: "",
-        procedure: "",
-        appointmentdate: "",
-        cptcodes: "",
-        dxcodes: "",
-      });
-      setUpdatedPayload({
-        patientId: "",
-        clinic: "",
-        indicationdiagnosisprocedure: "",
-        procedure: "",
-        appointmentdate: "",
-        cptcodes: "",
-        dxcodes: "",
-      });
-      setProcedureArr([]);
-      setCptcodesArr([]);
-      setDxcodesArr([]);
-      setSearchMRN("");
-      setPatients([]);
-    }
-  }, [isOpen]);
-
-  const handleSubmitNew = async () => {
+  async function handleSubmitNew() {
     setLoading(true);
     try {
-      const result = await AddProcedureAPI(
+      await AddProcedureAPI(
         {
           clinic: Payload.clinic,
           indicationdiagnosisprocedure: Payload.indicationdiagnosisprocedure,
@@ -251,160 +197,149 @@ export default function ScheduleProcedureModal({
         },
         Payload.patientId
       );
-      if (result.status === 200) {
-        setLoading(false);
-        activateNotifications("Procedure Scheduled Successfully", "success");
-        onClose();
-      }
+      activateNotifications("Procedure Scheduled Successfully", "success");
+      onClose();
     } catch (e) {
-      setLoading(false);
       activateNotifications(e.message, "error");
+    } finally {
+      setLoading(false);
     }
-  };
+  }
 
-  const handleSubmitEdit = async () => {
+  async function handleSubmitEdit() {
     setLoading(true);
     try {
-      // Pass the procedure id (oldPayload._id) to the update endpoint.
-      const result = await UpdateProcedureAPI(
+      await UpdateProcedureAPI(
         {
           clinic: UpdatedPayload.clinic,
-          indicationdiagnosisprocedure:
-            UpdatedPayload.indicationdiagnosisprocedure,
+          indicationdiagnosisprocedure: UpdatedPayload.indicationdiagnosisprocedure,
           procedure: ProcedureArr,
           appointmentdate: UpdatedPayload.appointmentdate,
           cptcodes: CptcodesArr,
           dxcodes: DxcodesArr,
         },
-        oldPayload._id // procedure id passed here
+        oldPayload._id
       );
-      if (result.status === 200) {
-        setLoading(false);
-        activateNotifications("Procedure Updated Successfully", "success");
-        onClose();
-      }
+      activateNotifications("Procedure Updated Successfully", "success");
+      onClose();
     } catch (e) {
-      setLoading(false);
       activateNotifications(e.message, "error");
+    } finally {
+      setLoading(false);
     }
-  };
-
-  // Determine which submit handler to use based on mode.
-  const handleSubmit = type === "edit" ? handleSubmitEdit : handleSubmitNew;
+  }
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} isCentered size="lg">
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      isCentered
+      scrollBehavior="inside"
+      size="lg"
+    >
       <ModalOverlay />
-      <ModalContent
-        maxW={{ base: "90%", md: "60%" }}
-        maxH="80vh"
-        overflowY="auto"
-      >
-        <ModalHeader>
-          {type === "new"
-            ? "Add New Procedure"
-            : type === "edit"
-            ? "Edit Procedure"
-            : "Procedure Details"}
-        </ModalHeader>
+      <ModalContent maxW={{ base: "90%", md: "60%" }} maxH="80vh">
+        <ModalHeader>{type === "new" ? "Add New Procedure" : "Edit Procedure"}</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
-          {/* Patient Search & Selection (common for new and edit) */}
-          <SimpleGrid mb="5" columns={1} spacing={5}>
-            <Box>
-              <Flex mb={2} gap={4}>
-                <Input
-                  label="Search for Patient"
-                  placeholder="Enter MRN, first name, or last name"
-                  value={searchMRN}
-                  onChange={(e) => setSearchMRN(e.target.value)}
-                  leftIcon={<FiSearch size={16} color="blue.500" />}
-                  flex="1"
-                />
-                <Button
-                  onClick={handleSearchPatient}
-                  w={["100%", "100%", "165px", "205px"]}
-                >
-                  Search
-                </Button>
-              </Flex>
-              <Select
-                onChange={formHandler}
-                placeholder={
-                  isLoadingPatients ? "Loading patients..." : "Select Patient"
-                }
-                id="patientId"
-                value={formState.patientId}
-                fontSize={formState.patientId !== "" ? "16px" : "13px"}
-                size="lg"
-                border="2px solid"
-                borderColor="gray.500"
-                mt={4}
-                isDisabled={isLoadingPatients}
-              >
-                {Patients?.map((item, i) => (
-                  <option key={i} value={item._id}>
-                    {`${item.firstName} ${item.lastName} ~ ${item.MRN}`}
-                  </option>
-                ))}
-              </Select>
-            </Box>
-          </SimpleGrid>
+          {/* Patient Search */}
+          <Box mb={4}>
+            <Flex mb={2} gap={4}>
+              <Input
+                label="Search for Patient"
+                placeholder="Enter MRN, first name, or last name"
+                value={searchMRN}
+                onChange={(e) => setSearchMRN(e.target.value)}
+                leftIcon={<FiSearch size={16} />}
+                flex="1"
+              />
+              <Button onClick={handleSearchPatient}>Search</Button>
+            </Flex>
+            <Select
+              onChange={formHandler}
+              id="patientId"
+              value={formState.patientId}
+              placeholder={isLoadingPatients ? "Loading patients..." : "Select Patient"}
+              size="lg"
+              fontSize={formState.patientId ? "16px" : "13px"}
+              border="2px solid"
+              borderColor="gray.500"
+              mt={2}
+              isDisabled={isLoadingPatients}
+            >
+              {Patients.map((p, i) => (
+                <option key={i} value={p._id}>
+                  {`${p.firstName} ${p.lastName} ~ ${p.MRN}`}
+                </option>
+              ))}
+            </Select>
+          </Box>
 
-          {/* Main Form Fields */}
-          <SimpleGrid mt="18px" mb="5" columns={1} spacing={5}>
+          {/* Main Form */}
+          <SimpleGrid columns={1} spacing={5}>
             <Select
               onChange={formHandler}
               placeholder="Select Clinic"
               id="clinic"
               value={formState.clinic}
-              fontSize={formState.clinic !== "" ? "16px" : "13px"}
               size="lg"
+              fontSize={formState.clinic ? "16px" : "13px"}
               border="2px solid"
               borderColor="gray.500"
             >
-              {Clinics.filter((item) => item.type === "clinic")?.map(
-                (item, i) => (
-                  <option key={i} value={item.clinic}>
-                    {item.clinic}
-                  </option>
-                )
-              )}
+              {Clinics.filter((c) => c.type === "clinic").map((c, i) => (
+                <option key={i} value={c.clinic}>
+                  {c.clinic}
+                </option>
+              ))}
             </Select>
+
             <Input
-              val={formState.indicationdiagnosisprocedure !== "" ? true : false}
+              label="Indication Diagnosis Procedure"
               leftIcon={<FaNoteSticky />}
-              onChange={formHandler}
               id="indicationdiagnosisprocedure"
               value={formState.indicationdiagnosisprocedure}
-              label="Indication Diagnosis Procedure"
+              onChange={formHandler}
+            />
+
+            {/* Procedure Search */}
+            <Input
+              label="Search for Procedure"
+              placeholder="Enter procedure name"
+              value={searchProcedureQuery}
+              onChange={(e) => setSearchProcedureQuery(e.target.value)}
+              leftIcon={<FiSearch size={16} />}
             />
             <Select
               onChange={formHandler}
-              placeholder="Select Procedure"
+              placeholder={isLoadingProcedures ? "Loading procedures..." : "Select Procedure"}
               id="procedure"
               value={formState.procedure}
-              fontSize={formState.procedure !== "" ? "16px" : "13px"}
               size="lg"
+              fontSize={formState.procedure ? "16px" : "13px"}
               border="2px solid"
               borderColor="gray.500"
             >
-              {Settings?.servicecategory
-                ?.filter((item) => item.category === "Procedure")[0]
-                ?.type?.map((item, i) => (
-                  <option key={i} value={item}>
-                    {item}
-                  </option>
-                ))}
+              {searchProcedureQuery.trim() === ""
+                ? Settings?.servicecategory?.find((s) => s.category === "Procedure")?.type?.map((item, i) => (
+                    <option key={i} value={item}>
+                      {item}
+                    </option>
+                  ))
+                : procedureSearchResults.map((item, i) => (
+                    <option key={i} value={item.servicetype}>
+                      {item.servicetype}
+                    </option>
+                  ))}
             </Select>
-            <SimpleGrid mt="12px" columns={{ base: 2, md: 4 }} spacing={2}>
-              {ProcedureArr?.map((item, i) => (
+            <SimpleGrid columns={{ base: 2, md: 4 }} spacing={2}>
+              {ProcedureArr.map((item, i) => (
                 <Flex
                   key={i}
                   cursor="pointer"
                   px="10px"
                   py="10px"
-                  rounded="25px"
+                  rounded="full"
                   fontSize="13px"
                   _hover={{ bg: "blue.blue400" }}
                   bg="blue.blue500"
@@ -412,55 +347,47 @@ export default function ScheduleProcedureModal({
                   justifyContent="space-between"
                   alignItems="center"
                 >
-                  <Text
-                    color="#fff"
-                    fontWeight="500"
-                    textTransform="capitalize"
-                  >
+                  <Text color="#fff" fontWeight="500" textTransform="capitalize">
                     {item}
                   </Text>
-                  <Box
-                    fontSize="20px"
-                    color="#fff"
-                    onClick={() => removeProcedureArr(item)}
-                  >
-                    <IoIosCloseCircle />
-                  </Box>
+                  <IoIosCloseCircle fontSize="20px" color="#fff" onClick={() => removeProcedureArr(item)} />
                 </Flex>
               ))}
             </SimpleGrid>
+
             <Input
               leftIcon={<FaCalendarAlt />}
               label="Appointment Date"
               type="datetime-local"
+              id="appointmentdate"
               value={formState.appointmentdate}
               onChange={formHandler}
-              id="appointmentdate"
             />
+
             <Select
               onChange={formHandler}
               placeholder="Select CPT Codes"
               id="cptcodes"
               value={formState.cptcodes}
-              fontSize={formState.cptcodes !== "" ? "16px" : "13px"}
               size="lg"
+              fontSize={formState.cptcodes ? "16px" : "13px"}
               border="2px solid"
               borderColor="gray.500"
             >
-              {Settings?.cptcodes?.map((item, i) => (
-                <option key={i} value={item}>
-                  {item}
+              {Settings?.cptcodes?.map((c, i) => (
+                <option key={i} value={c}>
+                  {c}
                 </option>
               ))}
             </Select>
-            <SimpleGrid mt="12px" columns={{ base: 2, md: 2 }} spacing={2}>
-              {CptcodesArr?.map((item, i) => (
+            <SimpleGrid columns={{ base: 2, md: 2 }} spacing={2}>
+              {CptcodesArr.map((item, i) => (
                 <Flex
                   key={i}
                   cursor="pointer"
                   px="10px"
                   py="10px"
-                  rounded="25px"
+                  rounded="full"
                   fontSize="13px"
                   _hover={{ bg: "blue.blue400" }}
                   bg="blue.blue500"
@@ -468,47 +395,38 @@ export default function ScheduleProcedureModal({
                   justifyContent="space-between"
                   alignItems="center"
                 >
-                  <Text
-                    color="#fff"
-                    fontWeight="500"
-                    textTransform="capitalize"
-                  >
+                  <Text color="#fff" fontWeight="500" textTransform="capitalize">
                     {item}
                   </Text>
-                  <Box
-                    fontSize="20px"
-                    color="#fff"
-                    onClick={() => removeCptcodesArr(item)}
-                  >
-                    <IoIosCloseCircle />
-                  </Box>
+                  <IoIosCloseCircle fontSize="20px" color="#fff" onClick={() => removeCptcodesArr(item)} />
                 </Flex>
               ))}
             </SimpleGrid>
+
             <Select
               onChange={formHandler}
               placeholder="Select DX Codes"
               id="dxcodes"
               value={formState.dxcodes}
-              fontSize={formState.dxcodes !== "" ? "16px" : "13px"}
               size="lg"
+              fontSize={formState.dxcodes ? "16px" : "13px"}
               border="2px solid"
               borderColor="gray.500"
             >
-              {Settings?.dxcodes?.map((item, i) => (
-                <option key={i} value={item}>
-                  {item}
+              {Settings?.dxcodes?.map((d, i) => (
+                <option key={i} value={d}>
+                  {d}
                 </option>
               ))}
             </Select>
-            <SimpleGrid mt="12px" columns={{ base: 2, md: 2 }} spacing={2}>
-              {DxcodesArr?.map((item, i) => (
+            <SimpleGrid columns={{ base: 2, md: 2 }} spacing={2}>
+              {DxcodesArr.map((item, i) => (
                 <Flex
                   key={i}
                   cursor="pointer"
                   px="10px"
                   py="10px"
-                  rounded="25px"
+                  rounded="full"
                   fontSize="13px"
                   _hover={{ bg: "blue.blue400" }}
                   bg="blue.blue500"
@@ -516,29 +434,20 @@ export default function ScheduleProcedureModal({
                   justifyContent="space-between"
                   alignItems="center"
                 >
-                  <Text
-                    color="#fff"
-                    fontWeight="500"
-                    textTransform="capitalize"
-                  >
+                  <Text color="#fff" fontWeight="500" textTransform="capitalize">
                     {item}
                   </Text>
-                  <Box
-                    fontSize="20px"
-                    color="#fff"
-                    onClick={() => removeDxcodesArr(item)}
-                  >
-                    <IoIosCloseCircle />
-                  </Box>
+                  <IoIosCloseCircle fontSize="20px" color="#fff" onClick={() => removeDxcodesArr(item)} />
                 </Flex>
               ))}
             </SimpleGrid>
           </SimpleGrid>
+
           <Button mt="32px" isLoading={Loading} onClick={handleSubmit}>
             {type === "edit" ? "Update Procedure" : "Proceed"}
           </Button>
         </ModalBody>
-        <ModalFooter></ModalFooter>
+        <ModalFooter />
       </ModalContent>
     </Modal>
   );

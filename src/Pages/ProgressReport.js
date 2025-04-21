@@ -61,15 +61,22 @@ const ProgressReport = () => {
       setLoading(true);
       ReadAllProgressReportByAdmissionApi(admissionId)
         .then((response) => {
-          const data = response?.queryresult?.readallprogressreportdetails || [];
-          const transformedData = data.map((item) => ({
-            id: item._id,
-            report: item.report,
-            specialization: item.admission?.admittospecialization || "N/A",
-            ward: item.admission?.referedward || "N/A",
-            createdBy: item.admission?.doctorname || "N/A",
-            createdOn: new Date(item.createdAt).toISOString().split("T")[0],
-          }));
+          const data =
+            response?.queryresult?.readallprogressreportdetails || [];
+          const transformedData = data.map((item) => {
+            const dateObj = new Date(item.createdAt);
+            return {
+              id: item._id,
+              report: item.report,
+              specialization: item.admission?.admittospecialization || "N/A",
+              ward: item.admission?.referedward || "N/A",
+              createdBy: item.staffname || "N/A",
+              /* NEW ↓ */
+              createdDate: dateObj.toISOString().split("T")[0],
+              createdTime: dateObj.toISOString().split("T")[1]?.slice(0, 8),
+            };
+          });
+
           setProgressData(transformedData);
           setFilteredData(transformedData);
           setLoading(false);
@@ -328,15 +335,19 @@ const ProgressReport = () => {
                   <Th fontSize="13px" color="#534D59" fontWeight="600">
                     Specialization
                   </Th>
-                  <Th fontSize="13px" color="#534D59" fontWeight="600">
-                    Ward
+                  <Th fontSize="13px" fontWeight="600" color="#534D59">
+                    Created Date
+                  </Th>
+                  <Th fontSize="13px" fontWeight="600" color="#534D59">
+                    Created Time
                   </Th>
                   <Th fontSize="13px" color="#534D59" fontWeight="600">
-                    Created By
+                    Report
                   </Th>
                   <Th fontSize="13px" color="#534D59" fontWeight="600">
-                    Created On
+                    Staff Name
                   </Th>
+
                   <Th fontSize="13px" color="#534D59" fontWeight="600">
                     Actions
                   </Th>
@@ -348,9 +359,10 @@ const ProgressReport = () => {
                     key={item.id}
                     type="progress-report"
                     specialization={item.specialization}
-                    ward={item.ward}
+                    createdDate={item.createdDate}
+                    createdTime={item.createdTime}
+                    report={item.report}
                     createdBy={item.createdBy}
-                    createdOn={item.createdOn}
                     onEdit={() => handleEditReport(item)}
                     onView={() => handleViewReport(item)}
                   />

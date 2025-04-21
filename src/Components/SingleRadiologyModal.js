@@ -13,7 +13,6 @@ import {
   Flex,
   Stack,
   Select,
-  HStack,
 } from "@chakra-ui/react";
 import Button from "../Components/Button";
 import Input from "../Components/Input";
@@ -21,169 +20,175 @@ import ShowToast from "./ToastNotification";
 import { IoIosCloseCircle } from "react-icons/io";
 import { SlPlus } from "react-icons/sl";
 import { MdNote } from "react-icons/md";
-import { FiSearch } from "react-icons/fi"; // Importing the search icon
+import { FiSearch } from "react-icons/fi";
 import {
   CreateRadiologyOrderApi,
   UpdateRadiologyApi,
   SettingsApi,
   SearchPatientApi,
+  SearchRadiologyApi,
 } from "../Utils/ApiCalls";
-import Preloader from "./Preloader";
 
 export default function SingleRadiologyModal({
   isOpen,
   onClose,
   onSuccess,
-  // Mode can be "create" or "edit"
-  type = "create",
+  type = "create", 
   initialData,
 }) {
+
   const [note, setNote] = useState("");
   const [testNames, setTestNames] = useState([]);
   const [testNameInput, setTestNameInput] = useState("");
   const [availableTests, setAvailableTests] = useState([]);
-  // Remove pre-loading all patients – rely on search results only
+
   const [availablePatients, setAvailablePatients] = useState([]);
   const [selectedPatientId, setSelectedPatientId] = useState("");
   const [searchMRN, setSearchMRN] = useState("");
   const [isLoadingPatients, setIsLoadingPatients] = useState(false);
+
+  const [searchTestQuery, setSearchTestQuery] = useState("");
+  const [testSearchResults, setTestSearchResults] = useState([]);
+  const [isLoadingTests, setIsLoadingTests] = useState(false);
+
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState(null);
 
-  // Utility to show toast notifications
-  const showToastFn = (toastData) => {
-    setToast(toastData);
-    setTimeout(() => setToast(null), 2000);
+
+  const showToastFn = ({ status, message }) => {
+    setToast({ status, message });
+    setTimeout(() => setToast(null), 2500);
   };
 
-  // Pre-populate the form when editing/viewing
   useEffect(() => {
-    if (isOpen) {
-      if ((type === "edit" || type === "view") && initialData) {
-        setNote(initialData.note || "");
-        setTestNames(
-          Array.isArray(initialData.testname)
-            ? initialData.testname
-            : initialData.testname
-            ? [initialData.testname]
-            : []
-        );
-        setSelectedPatientId(initialData.patientId || "");
-      } else {
-        setNote("");
-        setTestNames([]);
-        setTestNameInput("");
-        setSelectedPatientId("");
-      }
+    if (!isOpen) return;
+
+    if ((type === "edit" || type === "view") && initialData) {
+      setNote(initialData.note || "");
+      setTestNames(
+        Array.isArray(initialData.testname)
+          ? initialData.testname
+          : initialData.testname
+          ? [initialData.testname]
+          : []
+      );
+      setSelectedPatientId(initialData.patientId || "");
+    } else {
+      setNote("");
+      setTestNames([]);
+      setTestNameInput("");
+      setSelectedPatientId("");
     }
   }, [isOpen, type, initialData]);
 
-  // Fetch available radiology tests from the settings endpoint
+
   useEffect(() => {
-    if (isOpen) {
-      const fetchAvailableTests = async () => {
-        try {
-          const result = await SettingsApi();
-          const radiologyCategory = result?.servicecategory?.find(
-            (item) => item.category.toLowerCase() === "radiology"
-          );
-          if (radiologyCategory && Array.isArray(radiologyCategory.type)) {
-            setAvailableTests(radiologyCategory.type);
-          }
-        } catch (error) {
-          console.error("Error fetching settings:", error);
-        }
-      };
-      fetchAvailableTests();
-    }
+    if (!isOpen) return;
+    const fetchAvailableTests = async () => {
+      try {
+        const res = await SettingsApi();
+        const radiologyCat = res?.servicecategory?.find(
+          (c) => c.category.toLowerCase() === "radiology"
+        );
+        if (radiologyCat?.type) setAvailableTests(radiologyCat.type);
+      } catch (err) {
+        console.error("Error fetching settings:", err);
+      }
+    };
+    fetchAvailableTests();
   }, [isOpen]);
 
-  // Clear search when modal closes
-  useEffect(() => {
-    if (!isOpen) {
-      setSearchMRN("");
-    }
-  }, [isOpen]);
-
-  // Handler to add a test name from the dropdown
-  const addTestName = () => {
-    if (testNameInput.trim() !== "") {
-      setTestNames([...testNames, testNameInput.trim()]);
-      setTestNameInput("");
-    }
-  };
-
-  // Handler to remove a test name
-  const removeTestName = (name) => {
-    setTestNames(testNames.filter((t) => t !== name));
-  };
-
-  // Handler for searching a patient using MRN (or first/last name)
   const handleSearchPatient = async () => {
+    if (!searchMRN.trim()) return;
     setIsLoadingPatients(true);
     try {
-      const results = await SearchPatientApi(searchMRN);
-      if (results?.queryresult?.patientdetails) {
-        // Update availablePatients with search results
-        setAvailablePatients(results.queryresult.patientdetails);
-      } else {
-        setAvailablePatients([]);
-      }
-    } catch (error) {
-      console.error("Error searching patient:", error.message);
+      const res = await SearchPatientApi(searchMRN.trim());
+      setAvailablePatients(res?.queryresult?.patientdetails || []);
+    } catch (err) {
+      console.error("Error searching patient:", err.message);
     } finally {
       setIsLoadingPatients(false);
     }
   };
 
+  useEffect(() => {
+    const fetchTests = async () => {
+      if (!searchTestQuery.trim()) {
+        setTestSearchResults([]);
+        return;
+      }
+      setIsLoadingTests(true);
+      try {
+        const res = await SearchRadiologyApi(searchTestQuery.trim());
+        setTestSearchResults(res?.queryresult || []);
+      } catch (err) {
+        console.error("Error searching radiology:", err.message);
+        setTestSearchResults([]);
+      } finally {
+        setIsLoadingTests(false);
+      }
+    };
+    fetchTests();
+  }, [searchTestQuery]);
+
+  useEffect(() => {
+    if (isOpen) return;
+    setSearchMRN("");
+    setSearchTestQuery("");
+    setTestSearchResults([]);
+    setSelectedPatientId("");        
+    setAvailablePatients([]);        
+  }, [isOpen]);
+
+  const addTestName = () => {
+    if (!testNameInput.trim()) return;
+    setTestNames([...testNames, testNameInput.trim()]);
+    setTestNameInput("");
+  };
+  const removeTestName = (name) =>
+    setTestNames(testNames.filter((t) => t !== name));
+
+
   const handleSubmit = async () => {
     if (!selectedPatientId) {
-      showToastFn({
+      return showToastFn({
         status: "error",
         message: "Please select a patient.",
       });
-      return;
     }
     if (testNames.length === 0) {
-      showToastFn({
+      return showToastFn({
         status: "error",
         message: "At least one test name is required.",
       });
-      return;
     }
-    if (!note.trim()) {
-      showToastFn({ status: "error", message: "Note field is required." });
-      return;
-    }
-    setLoading(true);
 
+    setLoading(true);
     const payload = {
       testname: testNames,
-      note: note.trim(),
+      note: note.trim(), 
     };
 
     try {
       if (type === "edit" && initialData) {
-        const requestOrderId = initialData.id || initialData._id;
-        await UpdateRadiologyApi(payload, requestOrderId);
+        const id = initialData.id || initialData._id;
+        await UpdateRadiologyApi(payload, id);
       } else {
         await CreateRadiologyOrderApi(payload, selectedPatientId);
       }
-      const successMessage =
+      const msg =
         type === "edit"
           ? "Radiology order updated successfully!"
           : "Radiology order created successfully!";
-      showToastFn({ status: "success", message: successMessage });
-      if (onSuccess) onSuccess(successMessage, "success");
+      showToastFn({ status: "success", message: msg });
+      if (onSuccess) onSuccess(msg, "success");
       onClose();
-      setNote("");
-      setTestNames([]);
-      setTestNameInput("");
-      setSelectedPatientId("");
-    } catch (error) {
+    } catch (err) {
       showToastFn({
         status: "error",
-        message: `Failed to ${type === "edit" ? "update" : "create"} radiology order: ${error.message}`,
+        message: `Failed to ${
+          type === "edit" ? "update" : "create"
+        } radiology order: ${err.message}`,
       });
       onClose();
     } finally {
@@ -191,9 +196,13 @@ export default function SingleRadiologyModal({
     }
   };
 
+  const isSubmitDisabled =
+    loading || !selectedPatientId || testNames.length === 0;
+
   return (
     <>
       {toast && <ShowToast status={toast.status} message={toast.message} />}
+
       <Modal isOpen={isOpen} onClose={onClose} isCentered size="lg">
         <ModalOverlay />
         <ModalContent maxW={["90%", "600px"]} borderRadius="md" boxShadow="lg">
@@ -206,10 +215,12 @@ export default function SingleRadiologyModal({
               ? "Edit Radiology Order Request"
               : "Create Radiology Order Request"}
           </ModalHeader>
+
           <ModalCloseButton />
+
           <ModalBody>
             <Stack spacing={4}>
-              {/* Patient Selection with Search */}
+              {/* -------- Patient search & select -------- */}
               <Flex mb={2} gap={4}>
                 <Input
                   label="Search for Patient"
@@ -226,8 +237,11 @@ export default function SingleRadiologyModal({
                   Search
                 </Button>
               </Flex>
+
               <Select
-                placeholder={isLoadingPatients ? "Loading patients..." : "Select Patient"}
+                placeholder={
+                  isLoadingPatients ? "Loading patients..." : "Select Patient"
+                }
                 value={selectedPatientId}
                 onChange={(e) => setSelectedPatientId(e.target.value)}
                 variant="outline"
@@ -235,68 +249,91 @@ export default function SingleRadiologyModal({
                 _hover={{ borderColor: "blue.400" }}
                 isDisabled={isLoadingPatients}
               >
-                {availablePatients.map((patient) => (
-                  <option key={patient._id} value={patient._id}>
-                    {patient.firstName} {patient.lastName} - {patient.MRN}
+                {availablePatients.map((p) => (
+                  <option key={p._id} value={p._id}>
+                    {p.firstName} {p.lastName} - {p.MRN}
                   </option>
                 ))}
               </Select>
 
-              {/* Test Name Selection */}
-              <Box>
-                <Flex direction={{ base: "column", md: "row" }} alignItems="center" mb={2}>
-                  <Box flex="1" mr={{ base: 0, md: 2 }}>
-                    <Select
-                      placeholder={availableTests.length > 0 ? "Select test name" : "Loading tests..."}
-                      value={testNameInput}
-                      onChange={(e) => setTestNameInput(e.target.value)}
-                      variant="outline"
-                      borderColor="gray.300"
-                      _hover={{ borderColor: "blue.400" }}
-                    >
-                      {availableTests.map((test, index) => (
-                        <option key={index} value={test}>
-                          {test}
-                        </option>
-                      ))}
-                    </Select>
-                  </Box>
-                  <Button
-                    mt={{ base: 2, md: 0 }}
-                    w={{ base: "100%", md: "150px" }}
-                    onClick={addTestName}
-                    rightIcon={<SlPlus />}
-                    size="sm"
-                    disabled={!testNameInput}
+              {/* -------- Test search & select -------- */}
+              <Input
+                label="Search for Test"
+                placeholder="Enter test name"
+                value={searchTestQuery}
+                onChange={(e) => setSearchTestQuery(e.target.value)}
+                leftIcon={<FiSearch size={16} color="blue.500" />}
+              />
+
+              <Flex
+                direction={{ base: "column", md: "row" }}
+                alignItems="center"
+              >
+                <Box flex="1" mr={{ base: 0, md: 2 }} mt={2}>
+                  <Select
+                    placeholder={
+                      isLoadingTests ? "Loading tests..." : "Select test name"
+                    }
+                    value={testNameInput}
+                    onChange={(e) => setTestNameInput(e.target.value)}
+                    variant="outline"
+                    borderColor="gray.300"
+                    _hover={{ borderColor: "blue.400" }}
+                    isDisabled={isLoadingTests}
                   >
-                    Add Test
-                  </Button>
-                </Flex>
-                <SimpleGrid columns={{ base: 2, md: 4 }} spacing={2}>
-                  {testNames.map((item, idx) => (
-                    <Flex
-                      key={idx}
-                      cursor="pointer"
-                      px="10px"
-                      py="10px"
-                      rounded="full"
-                      bg="blue.blue500"
-                      color="white"
-                      fontSize="sm"
-                      _hover={{ bg: "blue.blue400" }}
-                      alignItems="center"
-                      justifyContent="space-between"
-                    >
-                      <Text fontWeight="medium" textTransform="capitalize">
-                        {item}
-                      </Text>
-                      <Box fontSize="lg" onClick={() => removeTestName(item)}>
-                        <IoIosCloseCircle />
-                      </Box>
-                    </Flex>
-                  ))}
-                </SimpleGrid>
-              </Box>
+                    {(searchTestQuery.trim()
+                      ? testSearchResults
+                      : availableTests
+                    ).map((t, idx) => (
+                      <option
+                        key={searchTestQuery.trim() ? t._id : idx}
+                        value={searchTestQuery.trim() ? t.servicetype : t}
+                      >
+                        {searchTestQuery.trim() ? t.servicetype : t}
+                      </option>
+                    ))}
+                  </Select>
+                </Box>
+
+                <Button
+                  mt={{ base: 2, md: 0 }}
+                  w={{ base: "100%", md: "150px" }}
+                  onClick={addTestName}
+                  rightIcon={<SlPlus />}
+                  size="sm"
+                  disabled={!testNameInput}
+                >
+                  Add Test
+                </Button>
+              </Flex>
+
+
+              <SimpleGrid columns={{ base: 2, md: 4 }} spacing={2}>
+                {testNames.map((item, idx) => (
+                  <Flex
+                    key={idx}
+                    cursor="pointer"
+                    px="10px"
+                    py="10px"
+                    rounded="full"
+                    bg="blue.blue500"
+                    color="white"
+                    fontSize="sm"
+                    _hover={{ bg: "blue.blue400" }}
+                    alignItems="center"
+                    justifyContent="space-between"
+                  >
+                    <Text fontWeight="medium" textTransform="capitalize">
+                      {item}
+                    </Text>
+                    <Box fontSize="lg" onClick={() => removeTestName(item)}>
+                      <IoIosCloseCircle />
+                    </Box>
+                  </Flex>
+                ))}
+              </SimpleGrid>
+
+              {/* -------- Optional note -------- */}
               <Input
                 id="note"
                 value={note}
@@ -307,11 +344,12 @@ export default function SingleRadiologyModal({
               />
             </Stack>
           </ModalBody>
+
           <ModalFooter borderTop="1px" borderColor="gray.200">
             <Button
               colorScheme="blue"
               onClick={handleSubmit}
-              disabled={loading || !selectedPatientId || testNames.length === 0 || !note.trim()}
+              disabled={isSubmitDisabled}
               isLoading={loading}
             >
               {type === "edit" ? "Update" : "Submit"}
