@@ -2748,6 +2748,35 @@ export const GetAllFilteredPatientsApi = (key, value,pageNo,postPerPage) => {
       }
     });
 };
+export const GetAllFilteredScheduledApi = (key, value,pageNo,postPerPage) => {
+  // Configure the GET request
+  let config = {
+    method: "get",
+    url: `${baseUrl}/appointment/getallschedulesoptimized?${key}=${value}&page=${pageNo}&size=${postPerPage}`,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  };
+
+  return axios
+    .request(config)
+    .then((response) => {
+      return response.data;
+    })
+    .catch((error) => {
+      console.log("Error  details:", error.response);
+      if (error.response && error.response.data.msg) {
+        throw new Error(error.response.data.msg);
+      } else if (error.response && error.response.data) {
+        throw new Error(error.response);
+      } else if (error.request) {
+        throw new Error(error.msg);
+      } else {
+        throw new Error(error.msg);
+      }
+    });
+};
 
 export const SettingsApi = () => {
   let config = {
@@ -2903,11 +2932,11 @@ export const ScheduleAppointmentApi = (payload) => {
     });
 };
 
-export const GetAllSchedulesApi = () => {
+export const GetAllSchedulesApi = (pageNo, postPerPage) => {
   let config = {
     method: "get",
     maxBodyLength: Infinity,
-    url: `${baseUrl}/appointment/getallschedules`,
+    url: `${baseUrl}/appointment/getallschedulesoptimized?page=${pageNo}&size=${postPerPage}`,
     headers: {
       Authorization: `Bearer ${token}`,
     },

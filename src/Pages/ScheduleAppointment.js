@@ -24,7 +24,7 @@ import { SlPlus } from "react-icons/sl";
 import CreateAppointmentModal from "../Components/CreateAppointmentModal";
 import moment from "moment";
 import Seo from "../Utils/Seo";
-import { GetAllSchedulesApi } from "../Utils/ApiCalls";
+import { GetAllSchedulesApi, GetAllFilteredScheduledApi } from "../Utils/ApiCalls";
 import { configuration } from "../Utils/Helpers";
 import Pagination from "../Components/Pagination";
 import Preloader from "../Components/Preloader";
@@ -51,12 +51,9 @@ export default function ScheduleAppointment() {
   // Pagination settings to follow
   const [CurrentPage, setCurrentPage] = useState(1);
   const [PostPerPage, setPostPerPage] = useState(configuration.sizePerPage);
+  const [TotalData, setTotalData] = useState("");
 
-  //get current post
-  const indexOfLastSra = CurrentPage * PostPerPage;
-  const indexOfFirstSra = indexOfLastSra - PostPerPage;
-  const PaginatedData = FilterData.slice(indexOfFirstSra, indexOfLastSra);
-  //change page
+
   const paginate = (pageNumber) => {
     setCurrentPage(pageNumber);
   };
@@ -64,35 +61,46 @@ export default function ScheduleAppointment() {
   const [SearchInput, setSearchInput] = useState("");
   const [FilteredData, setFilteredData] = useState(null);
 
+  const [Key, setKey] = useState("");
+  const [Value, setValue] = useState("");
+
+
+  const getFilteredScheduled = async (key, value) => {
+    setKey(key)
+    setValue(value)
+
+    try {
+      setIsLoading(true);
+      const result = await GetAllFilteredScheduledApi(key, value, CurrentPage, PostPerPage);
+      console.log("all fitlered scheduled", result);
+      if (result.status === true) {
+        setFilteredData(result.queryresult.appointmentdetails);
+        setTotalData(result.queryresult.totalappointentdetails)
+      }
+    } catch (e) {
+      console.error(e.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const filterBy = (title) => {
-    if (title === "appointment") {
-      let filter = Data.filter((item) =>
-        item.appointmentcategory
-          ?.toLowerCase()
-          .includes(SearchInput.toLowerCase())
-      );
-      setFilteredData(filter);
+    if (title === "mrn") {
+      getFilteredScheduled("MRN", SearchInput)
+    } else if (title === "appointment") {
+      getFilteredScheduled("appointmentcategory", SearchInput)
+
+    } else if (title === "firstName") {
+
+      getFilteredScheduled("firstName", SearchInput)
+
+    } else if (title === "lastName") {
+
+      getFilteredScheduled("lastName", SearchInput)
+
     } else if (title === "type") {
-      let filter = Data.filter((item) =>
-        item.appointmenttype?.toLowerCase().includes(SearchInput.toLowerCase())
-      );
-      setFilteredData(filter);
-    } else if (title === "patient") {
-      let filter = Data.filter(
-        (item) =>
-          item.patient?.firstName
-            ?.toLowerCase()
-            .includes(SearchInput.toLowerCase()) ||
-          item.patient?.lastName
-            ?.toLowerCase()
-            .includes(SearchInput.toLowerCase())
-      );
-      setFilteredData(filter);
-    } else if (title === "mrn") {
-      let filter = Data.filter((item) =>
-        item.patient?.MRN?.toLowerCase().includes(SearchInput.toLowerCase())
-      );
-      setFilteredData(filter);
+
+      getFilteredScheduled("appointmenttype", SearchInput)
     } else if (title === "date") {
       // add 1 day to end date
       let endDate = new Date(EndDate);
@@ -121,18 +129,19 @@ export default function ScheduleAppointment() {
   const getSchedules = async () => {
     setIsLoading(true);
     try {
-      let response = await GetAllSchedulesApi();
+      let response = await GetAllSchedulesApi(CurrentPage, PostPerPage);
+
+      console.log("response", response)
       if (response.status === true) {
         setIsLoading(false);
         setData(response.queryresult.appointmentdetails);
         setFilterData(response.queryresult.appointmentdetails);
+        setTotalData(response.queryresult.totalappointentdetails);
       }
-    } catch (e) {}
+    } catch (e) { }
   };
 
-  useEffect(() => {
-    getSchedules();
-  }, [Trigger, isOpen]);
+
 
   const filterAll = () => {
     setAll(true);
@@ -179,6 +188,16 @@ export default function ScheduleAppointment() {
     setModalState("new");
     onOpen();
   };
+
+  useEffect(() => {
+    if (FilteredData?.length > 0 || FilteredData !== null) {
+      getFilteredScheduled(Key, Value)
+    } else {
+
+
+      getSchedules();
+    }
+  }, [Trigger, isOpen, CurrentPage]);
   return (
     <MainLayout>
       {IsLoading && <Preloader />}
@@ -192,7 +211,7 @@ export default function ScheduleAppointment() {
           Scheduled Appointments
         </Text>
         <Text color="#667085" fontWeight="400" fontSize="18px">
-          ({Data?.length})
+          ({TotalData})
         </Text>
       </HStack>
       <Text color="#686C75" mt="9px" fontWeight="400" fontSize="15px">
@@ -219,7 +238,7 @@ export default function ScheduleAppointment() {
             cursor="pointer"
             mt={["10px", "10px", "0px", "0px"]}
           >
-            <Box borderRight="1px solid #EDEFF2" pr="5px" onClick={filterAll}>
+            <Box borderRight="1px solid #EDEFF2" pr="5px" >
               <Text
                 py="8.5px"
                 px="12px"
@@ -231,11 +250,11 @@ export default function ScheduleAppointment() {
               >
                 All
                 <Box color="#667085" as="span" fontWeight="400" fontSize="13px">
-                  ({Data?.length})
+                  ({TotalData})
                 </Box>
               </Text>
             </Box>
-            <Box
+            {/* <Box
               borderRight="1px solid #EDEFF2"
               pr="5px"
               onClick={filterScheduled}
@@ -268,7 +287,7 @@ export default function ScheduleAppointment() {
               >
                 Pending
               </Text>
-            </Box>
+            </Box> */}
           </Flex>
 
           <Flex
@@ -281,7 +300,11 @@ export default function ScheduleAppointment() {
               {ByDate === false ? (
                 <Input
                   label="Search"
-                  onChange={(e) => setSearchInput(e.target.value)}
+                  onChange={(e) => {
+                    setSearchInput(e.target.value)
+                    setCurrentPage(1)
+                  }
+                  }
                   value={SearchInput}
                   bColor="#E4E4E4"
                   leftIcon={<BiSearch />}
@@ -355,7 +378,7 @@ export default function ScheduleAppointment() {
                     </HStack>
                   </MenuItem>
                   <MenuItem
-                    onClick={() => filterBy("patient")}
+                    onClick={() => filterBy("firstName")}
                     textTransform="capitalize"
                     fontWeight={"500"}
                     color="#2F2F2F"
@@ -366,7 +389,22 @@ export default function ScheduleAppointment() {
                     }}
                   >
                     <HStack fontSize="14px">
-                      <Text>by Patient</Text>
+                      <Text>by First Name</Text>
+                    </HStack>
+                  </MenuItem>
+                  <MenuItem
+                    onClick={() => filterBy("lastName")}
+                    textTransform="capitalize"
+                    fontWeight={"500"}
+                    color="#2F2F2F"
+                    _hover={{
+                      color: "#fff",
+                      fontWeight: "400",
+                      bg: "blue.blue500",
+                    }}
+                  >
+                    <HStack fontSize="14px">
+                      <Text>by Last Name</Text>
                     </HStack>
                   </MenuItem>
                   <MenuItem
@@ -421,6 +459,8 @@ export default function ScheduleAppointment() {
                       setByDate(false);
                       setStartDate("");
                       setEndDate("");
+                      getSchedules();
+                      setCurrentPage(1)
                     }}
                     textTransform="capitalize"
                     fontWeight={"500"}
@@ -478,14 +518,7 @@ export default function ScheduleAppointment() {
                   >
                     Date
                   </Th>
-                  <Th
-                    fontSize="13px"
-                    textTransform="capitalize"
-                    color="#534D59"
-                    fontWeight="600"
-                  >
-                    Reason
-                  </Th>
+                 
                   <Th
                     fontSize="13px"
                     textTransform="capitalize"
@@ -546,7 +579,7 @@ export default function ScheduleAppointment() {
               </Thead>
               <Tbody>
                 {SearchInput === "" || FilteredData === null ? (
-                  PaginatedData?.map((item, i) => (
+                  FilterData?.map((item, i) => (
                     <TableRowY
                       key={i}
                       type="schedule-appointment"
@@ -554,8 +587,8 @@ export default function ScheduleAppointment() {
                       reason={item.reason}
                       appointment={item.appointmentcategory}
                       appointmentType={item.appointmenttype}
-                      patient={`${item.patient?.firstName} ${item.patient?.lastName}`}
-                      mrn={item.patient?.MRN}
+                      patient={`${item.firstName} ${item.lastName}`}
+                      mrn={item.MRN}
                       clinic={item.clinic}
                       status={item.status}
                       onEdit={() => onEdit(item._id)}
@@ -570,8 +603,8 @@ export default function ScheduleAppointment() {
                       reason={item.reason}
                       appointment={item.appointmentcategory}
                       appointmentType={item.appointmenttype}
-                      patient={`${item.patient?.firstName} ${item.patient?.lastName}`}
-                      mrn={item.patient?.MRN}
+                      patient={`${item.firstName} ${item.lastName}`}
+                      mrn={item.MRN}
                       clinic={item.clinic}
                       status={item.status}
                       onEdit={() => onEdit(item._id)}
@@ -588,7 +621,7 @@ export default function ScheduleAppointment() {
           <Pagination
             postPerPage={PostPerPage}
             currentPage={CurrentPage}
-            totalPosts={FilterData.length}
+            totalPosts={TotalData}
             paginate={paginate}
           />
         </Box>

@@ -179,11 +179,7 @@ export default function TableRowY({
               {date}
             </Text>
           </Td>
-          <Td>
-            <Text fontWeight="400" fontSize="12px">
-              {reason}
-            </Text>
-          </Td>
+         
           <Td>
             <Text fontWeight="400" fontSize="12px">
               {appointment}

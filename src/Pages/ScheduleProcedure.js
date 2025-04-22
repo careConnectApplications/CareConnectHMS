@@ -43,6 +43,8 @@ import {
 import Pagination from "../Components/Pagination";
 import { configuration } from "../Utils/Helpers";
 import Preloader from "../Components/Preloader";
+import { FaCalendarAlt } from "react-icons/fa";
+
 
 export default function ScheduleProcedure() {
   const [IsLoading, setIsLoading] = useState(false);
@@ -57,6 +59,10 @@ export default function ScheduleProcedure() {
 
   const [Data, setData] = useState([]);
   const [QueueData, setQueueData] = useState([]);
+  const [ByDate, setByDate] = useState(false);
+  const [StartDate, setStartDate] = useState("");
+  const [EndDate, setEndDate] = useState("");
+
   const [FilterData, setFilterData] = useState(Data);
   const [OpenProcedureModal, setOpenProcedureModal] = useState(false);
   const [ModalState, setModalState] = useState("");
@@ -109,12 +115,25 @@ export default function ScheduleProcedure() {
         item.procedure?.toLowerCase().includes(SearchInput.toLowerCase())
       );
       setFilteredData(filter);
-    }else if (title === "mrn") {
+    } else if (title === "mrn") {
       let filter = Data.filter((item) =>
         item.patient?.MRN?.toLowerCase().includes(SearchInput.toLowerCase())
       );
       setFilteredData(filter);
+    } else if (title === "date") {
+      // add 1 day to end date
+      let endDate = new Date(EndDate);
+      endDate.setDate(endDate.getDate() + 1);
+      // format date back
+      let formatedEndDate = endDate.toISOString().split("T")[0];
+      let filter = Data.filter(
+        (item) =>
+          item.appointmentdate >= StartDate && item.appointmentdate <= formatedEndDate
+      );
+      setFilteredData(filter);
+      setSearchInput("s");
     }
+
   };
 
   const [showToast, setShowToast] = useState({
@@ -446,15 +465,49 @@ export default function ScheduleProcedure() {
             alignItems="center"
             justifyContent="flex-end"
           >
-            <HStack>
-              <Input
-                label="Search"
-                onChange={(e) => setSearchInput(e.target.value)}
-                value={SearchInput}
-                bColor="#E4E4E4"
-                leftIcon={<BiSearch />}
-              />
+            <HStack flexWrap={["wrap", "nowrap"]}>
+              {ByDate === false ? (
+                <Input
+                  label="Search"
+                  onChange={(e) => setSearchInput(e.target.value)}
+                  value={SearchInput}
+                  bColor="#E4E4E4"
+                  leftIcon={<BiSearch />}
+                />
+              ) : (
+                <HStack flexWrap={["wrap", "nowrap"]}>
+                  <Input
+                    label="Start Date"
+                    type="date"
+                    onChange={(e) => setStartDate(e.target.value)}
+                    value={StartDate}
+                    bColor="#E4E4E4"
+                    leftIcon={<FaCalendarAlt />}
+                  />
+                  <Input
+                    label="End Date"
+                    type="date"
+                    onChange={(e) => setEndDate(e.target.value)}
+                    value={EndDate}
+                    bColor="#E4E4E4"
+                    leftIcon={<FaCalendarAlt />}
+                  />
 
+                  <Flex
+                    onClick={() => filterBy("date")}
+                    cursor="pointer"
+                    px="5px"
+                    py="3px"
+                    rounded="5px"
+                    bg="blue.blue500"
+                    color="#fff"
+                    justifyContent="center"
+                    alignItems="center"
+                  >
+                    <BiSearch />
+                  </Flex>
+                </HStack>
+              )}
               <Menu isLazy>
                 <MenuButton as={Box}>
                   <HStack
@@ -549,9 +602,27 @@ export default function ScheduleProcedure() {
                     </HStack>
                   </MenuItem>
                   <MenuItem
+                    onClick={() => setByDate(true)}
+                    textTransform="capitalize"
+                    fontWeight={"500"}
+                    color="#2F2F2F"
+                    _hover={{
+                      color: "#fff",
+                      fontWeight: "400",
+                      bg: "blue.blue500",
+                    }}
+                  >
+                    <HStack fontSize="14px">
+                      <Text>by date</Text>
+                    </HStack>
+                  </MenuItem>
+                  <MenuItem
                     onClick={() => {
                       setFilteredData(null);
                       setSearchInput("");
+                      setByDate(false);
+                      setStartDate("");
+                      setEndDate("");
                     }}
                     textTransform="capitalize"
                     fontWeight="500"
@@ -637,7 +708,7 @@ export default function ScheduleProcedure() {
                       date={moment(item.appointmentdate).format("lll")}
                       testName={item.procedure}
                       status={item.status}
-                      PaymentStatus={item.patient?.isHMOCover === "Yes" ? "paid": item.payment?.status}
+                      PaymentStatus={item.patient?.isHMOCover === "Yes" ? "paid" : item.payment?.status}
                       onEdit={() => handleEdit(item)}
                       onView={() => handleView(item)}
                       onViewResult={() =>
@@ -657,7 +728,7 @@ export default function ScheduleProcedure() {
                       date={moment(item.appointmentdate).format("lll")}
                       testName={item.procedure}
                       status={item.status}
-                      PaymentStatus={item.patient?.isHMOCover === "Yes" ? "paid": item.payment?.status}
+                      PaymentStatus={item.patient?.isHMOCover === "Yes" ? "paid" : item.payment?.status}
                       onEdit={() => handleEdit(item)}
                       onView={() => handleView(item)}
                       onViewResult={() =>

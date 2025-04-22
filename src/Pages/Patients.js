@@ -53,7 +53,7 @@ export default function Patients() {
   const [ByDate, setByDate] = useState(false);
   const [StartDate, setStartDate] = useState("");
   const [EndDate, setEndDate] = useState("");
-  
+
   const [Key, setKey] = useState("");
   const [Value, setValue] = useState("");
 
@@ -63,11 +63,11 @@ export default function Patients() {
 
     try {
       setIsLoading(true);
-      const result = await GetAllFilteredPatientsApi(key,value,CurrentPage,PostPerPage);
+      const result = await GetAllFilteredPatientsApi(key, value, CurrentPage, PostPerPage);
       console.log("all fitlered patient", result);
       if (result.status === true) {
-       setFilteredData(result.queryresult.patientdetails);
-       setTotalData(result.queryresult.totalpatientdetails)
+        setFilteredData(result.queryresult.patientdetails);
+        setTotalData(result.queryresult.totalpatientdetails)
       }
     } catch (e) {
       console.error(e.message);
@@ -83,18 +83,18 @@ export default function Patients() {
       getFilteredPatient("MRN", SearchInput)
     } else if (title === "email") {
       getFilteredPatient("email", SearchInput)
-     
+
     } else if (title === "FirstName") {
-      
-      getFilteredPatient("firstName", SearchInput)   
-      
+
+      getFilteredPatient("firstName", SearchInput)
+
     } else if (title === "LastName") {
-      
+
       getFilteredPatient("lastName", SearchInput)
-      
+
     } else if (title === "phoneNumber") {
       getFilteredPatient("phoneNumber", SearchInput)
-    }else if (title === "hmoId") {
+    } else if (title === "hmoId") {
       getFilteredPatient("HMOId", SearchInput)
     } else if (title === "date") {
       // add 1 day to end date
@@ -153,7 +153,7 @@ export default function Patients() {
   const filterInactive = () => {
     setAll(false);
     setPaid(false);
-    setPendingPayment(true); 
+    setPendingPayment(true);
     const inactivePatients = Data.filter(
       (item) => item.status?.toLowerCase() === "inactive"
     );
@@ -165,7 +165,7 @@ export default function Patients() {
   const getAllPatient = async () => {
     try {
       setIsLoading(true);
-      const result = await GetAllPatientsApi(CurrentPage,PostPerPage);
+      const result = await GetAllPatientsApi(CurrentPage, PostPerPage);
       console.log("all patient", result);
       if (result.status === true) {
         setData(result.queryresult.patientdetails);
@@ -193,7 +193,7 @@ export default function Patients() {
     onOpen();
   };
 
- 
+
 
   const CreatePatient = () => {
     setModalState("new");
@@ -205,13 +205,13 @@ export default function Patients() {
   };
 
   useEffect(() => {
-    if(FilteredData?.length > 0 || FilteredData !== null ){
-      getFilteredPatient(Key,Value) 
-    }else{
+    if (FilteredData?.length > 0 || FilteredData !== null) {
+      getFilteredPatient(Key, Value)
+    } else {
 
       getAllPatient();
     }
-  }, [isOpen, Trigger,CurrentPage]);
+  }, [isOpen, Trigger, CurrentPage]);
 
   const navigateToPatientDetails = (id) => {
     router(`/dashboard/patient/${id}`);
@@ -270,7 +270,7 @@ export default function Patients() {
               >
                 All{" "}
                 <Box color="#667085" as="span" fontWeight="400" fontSize="13px">
-                ({Data?.length.toLocaleString()})
+                  ({Data?.length.toLocaleString()})
                 </Box>
               </Text>
             </Box>
@@ -316,8 +316,11 @@ export default function Patients() {
               {ByDate === false ? (
                 <Input
                   label="Search"
-                  onChange={(e) => setSearchInput(e.target.value)}
-                  value={SearchInput}
+                  onChange={(e) => {
+                    setSearchInput(e.target.value)
+                    setCurrentPage(1)
+                  }
+                  } value={SearchInput}
                   bColor="#E4E4E4"
                   leftIcon={<BiSearch />}
                 />
