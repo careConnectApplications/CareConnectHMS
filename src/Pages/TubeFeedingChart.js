@@ -238,7 +238,7 @@ const TubeFeedingChart = () => {
             <Table variant="striped">
               <Thead>
                 <Tr>
-                  <Th fontSize="13px" fontWeight="600">Datetimefeeds</Th>
+                  <Th fontSize="13px" fontWeight="600">Date / Time</Th>
                   <Th fontSize="13px" fontWeight="600">Amount (ml)</Th>
                   <Th fontSize="13px" fontWeight="600">Feed</Th>
                   <Th fontSize="13px" fontWeight="600">Staff Name</Th>
