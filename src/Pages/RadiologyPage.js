@@ -35,6 +35,7 @@ import {
 import TableRowY from "../Components/TableRowY";
 import SingleRadiologyModal from "../Components/SingleRadiologyModal";
 import ConfirmRadiologyOrderModal from "../Components/ConfirmRadiologyOrderModal";
+import RadiologyResultModal from "../Components/RadiologyResultModal";
 import MainLayout from "../Layouts/Index";
 
 export default function RadiologyPage() {
@@ -173,14 +174,12 @@ export default function RadiologyPage() {
         if (title === "testid") {
           filtered = Data.filter(
             (item) =>
-              item.testid &&
-              item.testid.toLowerCase().includes(lowerValue)
+              item.testid && item.testid.toLowerCase().includes(lowerValue)
           );
         } else if (title === "testname") {
           filtered = Data.filter(
             (item) =>
-              item.testname &&
-              item.testname.toLowerCase().includes(lowerValue)
+              item.testname && item.testname.toLowerCase().includes(lowerValue)
           );
         } else if (title === "department") {
           filtered = Data.filter(
@@ -192,16 +191,16 @@ export default function RadiologyPage() {
           filtered = Data.filter(
             (item) =>
               item.patient &&
-              (
-                (item.patient.firstName &&
-                  item.patient.firstName.toLowerCase().includes(lowerValue)) ||
+              ((item.patient.firstName &&
+                item.patient.firstName.toLowerCase().includes(lowerValue)) ||
                 (item.patient.lastName &&
-                  item.patient.lastName.toLowerCase().includes(lowerValue))
-              )
+                  item.patient.lastName.toLowerCase().includes(lowerValue)))
           );
         } else if (title === "mrn") {
           filtered = Data.filter((item) => {
-            const mrn = String(item.mrn || item.patient?.MRN || "").toLowerCase();
+            const mrn = String(
+              item.mrn || item.patient?.MRN || ""
+            ).toLowerCase();
             return mrn.includes(lowerValue);
           });
         }
@@ -416,6 +415,32 @@ export default function RadiologyPage() {
       hour: "2-digit",
       minute: "2-digit",
     })}`;
+  };
+  const {
+    isOpen: isResultOpen,
+    onOpen: onResultOpen,
+    onClose: onResultClose,
+  } = useDisclosure();
+
+  const [selectedResultId, setSelectedResultId] = useState(null);
+
+  // ❷ Called when the “Enter Result” menu item is clicked
+  const handleEnterResultClick = (orderId) => {
+    setSelectedResultId(orderId);
+    onResultOpen();
+  };
+  const {
+    isOpen: isViewOpen,
+    onOpen: onViewOpen,
+    onClose: onViewClose,
+  } = useDisclosure();
+  const [selectedForView, setSelectedForView] = useState([]);
+  const [selectedViewRecord, setSelectedViewRecord] = useState(null);
+
+  const handleViewManualClick = (manualArray, record) => {
+    setSelectedForView(manualArray || []);
+    setSelectedViewRecord(record);
+    onViewOpen();
   };
 
   return (
@@ -823,6 +848,12 @@ export default function RadiologyPage() {
                             onView={() => handleView(item.testresult)}
                             onUpload={() => handleUploadClick(item._id)}
                             onEdit={() => handleEdit(item)}
+                            onEnterResult={() =>
+                              handleEnterResultClick(item._id)
+                            }
+                            onViewManualResult={() =>
+                              handleViewManualClick(item.typetestresult, item)
+                            }
                             // Pass the entire radiology order to nconfirm
                             onConfirm={() => nconfirm(item)}
                           />
@@ -848,6 +879,10 @@ export default function RadiologyPage() {
                           onView={() => handleView(item.testresult)}
                           onUpload={() => handleUploadClick(item._id)}
                           onEdit={() => handleEdit(item)}
+                          onEnterResult={() => handleEnterResultClick(item._id)}
+                          onViewManualResult={() =>
+                            handleViewManualClick(item.typetestresult, item)
+                          }
                           // Pass the entire radiology order to nconfirm
                           onConfirm={() => nconfirm(item)}
                         />
@@ -893,6 +928,24 @@ export default function RadiologyPage() {
           // Pass the radiology order id from the full order object
           radiologyId={selectedConfirmOrder?._id}
           onSuccess={() => setTrigger((prev) => !prev)}
+        />
+
+        <RadiologyResultModal
+          isOpen={isResultOpen}
+          onClose={onResultClose}
+          recordId={selectedResultId} // ❸ Pass the selected ID
+          oldResults={[]} // or existing result array
+          activateNotifications={(msg, status) =>
+            setToast({ show: true, message: msg, status })
+          }
+          onSuccess={() => setTrigger((prev) => !prev)}
+        />
+        <RadiologyResultModal
+          isOpen={isViewOpen}
+          onClose={onViewClose}
+          oldResults={selectedForView}
+          mode="view"
+          record={selectedViewRecord}
         />
       </Box>
     </MainLayout>

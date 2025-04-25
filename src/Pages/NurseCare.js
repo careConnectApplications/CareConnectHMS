@@ -16,6 +16,7 @@ import BedStatusReport from "./BedStatusReport";
 import DailyWardReport from "./DailyWardReport";
 import BedReport from "./BedReport";
 import Preloader from "../Components/Preloader";
+import ManageDailyWardReports from "./ManageDailyWardReports";
 
 function NurseCare() {
 
@@ -97,7 +98,7 @@ function NurseCare() {
             <BedStatusReport />
           </TabPanel> */}
           <TabPanel p="0">
-            <DailyWardReport />
+            <ManageDailyWardReports />
           </TabPanel>
           <TabPanel p="0">
             <BedReport />
