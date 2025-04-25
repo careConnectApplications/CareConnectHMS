@@ -1436,6 +1436,67 @@ export default function Report() {
                             </TableContainer>
                             ) 
                         }
+
+                        {
+                            QueryType === "secondaryservicereport" && (
+                                <TableContainer>
+                                <Table variant="striped">
+                                    <Thead bg="#fff">
+                                        <Tr>
+                                            <Th
+                                                fontSize="13px"
+                                                textTransform="capitalize"
+                                                color="#534D59"
+                                                fontWeight="600"
+                                            >
+                                                patient name
+                                            </Th>
+                                            <Th
+                                                fontSize="13px"
+                                                textTransform="capitalize"
+                                                color="#534D59"
+                                                fontWeight="600"
+                                            >
+                                                authorization code 
+                                            </Th>
+                                           
+                            
+                                            <Th
+                                                fontSize="13px"
+                                                textTransform="capitalize"
+                                                color="#534D59"
+                                                fontWeight="600"
+                                            >
+                                                date created
+                                            </Th>
+                                           
+                                           
+                                        </Tr>
+                                    </Thead>
+                                    <Tbody>
+
+                                    {
+                                        FilterData.map((item,i)=> (
+                                            <TableRow
+                                            key={i}
+                                            type="secondaryService-report"
+                                            name={`${item.patient?.firstName} ${item.patient?.lastName}`}
+                                            mrn={item.patient?.MRN}                                        
+                                            code={item.patient?.authorizationcode}
+                                            date={moment(item.createdAt).format("lll")}
+                                          
+                                           
+                                        />
+                                        ))
+                                    }
+
+                                       
+
+                                    </Tbody>
+                                </Table>
+                            </TableContainer>
+                            )
+                        }
                            
 
 
