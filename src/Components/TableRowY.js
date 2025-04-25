@@ -166,6 +166,18 @@ export default function TableRowY({
   outputRoute,
   outputAmount,
   tubeFeedingDatetimefeeds,
+  bedspecialization,
+  wardname,
+  wardid,
+  totalbed,
+  occupiedbed,
+  vacantbed,
+  wardreport,
+  staffname,
+  onEditDailyWardReport,
+  onViewDailyWardReport,
+  onEnterResult,
+  onViewManualResult,
 }) {
   const isServed = servedstatus?.toLowerCase() === "served";
   const isUnserved = servedstatus?.toLowerCase() === "unserved";
@@ -179,7 +191,7 @@ export default function TableRowY({
               {date}
             </Text>
           </Td>
-         
+
           <Td>
             <Text fontWeight="400" fontSize="12px">
               {appointment}
@@ -1098,7 +1110,7 @@ export default function TableRowY({
       {/* Fluid Balance Chart */}
       {type === "fluid-balance-chart" && (
         <>
-                  <Td>
+          <Td>
             <Text fontWeight="400" fontSize="12px">
               {createdOn}
             </Text>
@@ -1143,7 +1155,6 @@ export default function TableRowY({
               {servedBy}
             </Text>
           </Td>
-
 
           {/* Actions */}
           <Td>
@@ -1229,8 +1240,6 @@ export default function TableRowY({
 
       {type === "tube-feeding-chart" && (
         <>
-
-
           <Td>
             <Text fontWeight="400" fontSize="12px">
               {tubeFeedingDatetimefeeds}
@@ -1477,7 +1486,7 @@ export default function TableRowY({
                     ? "#FFA30C"
                     : "#FD4739"
                 }
-              ></Box>
+              />
               <Text fontWeight="400" fontSize="13px">
                 {status}
               </Text>
@@ -1531,6 +1540,29 @@ export default function TableRowY({
                       onClick={onEdit}
                     >
                       Edit
+                    </MenuItem>
+                    {status === "inprogress" && (
+                      <MenuItem
+                        _hover={{
+                          color: "#fff",
+                          fontWeight: "400",
+                          bg: "blue.blue500",
+                        }}
+                        onClick={onEnterResult}
+                      >
+                        Enter Result
+                      </MenuItem>
+                    )}
+                    {/* New action: View Manual Result */}
+                    <MenuItem
+                      _hover={{
+                        color: "#fff",
+                        fontWeight: "400",
+                        bg: "blue.blue500",
+                      }}
+                      onClick={onViewManualResult}
+                    >
+                      View Manual Result
                     </MenuItem>
                   </>
                 )}
@@ -2389,6 +2421,101 @@ export default function TableRowY({
             ) : (
               <Box />
             )}
+          </Td>
+        </>
+      )}
+      {type === "dailywardreport" && (
+        <>
+          <Td>
+            <Text fontWeight="400" fontSize="12px">
+              {wardid}
+            </Text>
+          </Td>
+          <Td>
+            <Text fontWeight="400" fontSize="12px">
+              {wardname}
+            </Text>
+          </Td>
+
+          <Td>
+            <Text fontWeight="400" fontSize="12px">
+              {bedspecialization}
+            </Text>
+          </Td>
+
+          <Td>
+            <Text fontWeight="400" fontSize="12px">
+              {totalbed}
+            </Text>
+          </Td>
+          <Td>
+            <Text fontWeight="400" fontSize="12px">
+              {occupiedbed}
+            </Text>
+          </Td>
+          <Td>
+            <Text fontWeight="400" fontSize="12px">
+              {vacantbed}
+            </Text>
+          </Td>
+
+          <Td>
+            <Text fontWeight="400" fontSize="12px">
+              {staffname}
+            </Text>
+          </Td>
+          {/* New status column */}
+          <Td>
+            <HStack color={status === "active" ? "#027A48" : "#FD4739"}>
+              <Box
+                rounded="100%"
+                w="8px"
+                h="8px"
+                bg={status === "active" ? "#027A48" : "#FD4739"}
+              />
+              <Text fontWeight="400" fontSize="13px">
+                {status}
+              </Text>
+            </HStack>
+          </Td>
+          <Td>
+            <Text fontWeight="400" fontSize="12px">
+              {new Date(createdAt).toLocaleString()}
+            </Text>
+          </Td>
+          <Td>
+            <Text fontWeight="400" fontSize="12px">
+              {new Date(updatedAt).toLocaleString()}
+            </Text>
+          </Td>
+          <Td>
+            <Menu>
+              <MenuButton as={Box}>
+                <BsThreeDots />
+              </MenuButton>
+              <MenuList>
+                <MenuItem
+                  _hover={{
+                    color: "#fff",
+                    fontWeight: "400",
+                    bg: "blue.blue500",
+                  }}
+                  onClick={onViewDailyWardReport}
+                >
+                  View
+                </MenuItem>
+                <MenuItem
+                  _hover={{
+                    color: "#fff",
+                    fontWeight: "400",
+                    bg: "blue.blue500",
+                  }}
+                  onClick={onEditDailyWardReport}
+                >
+                  Edit
+                </MenuItem>
+              </MenuList>
+            </Menu>
           </Td>
         </>
       )}

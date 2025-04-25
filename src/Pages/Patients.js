@@ -547,6 +547,12 @@ export default function Patients() {
                     MRN
                   </Th>
                   <Th fontSize="12px" fontWeight="600" color="#534D59">
+                    Patient Type
+                  </Th>
+                  <Th fontSize="12px" fontWeight="600" color="#534D59">
+                    Authorization Code
+                  </Th>
+                  <Th fontSize="12px" fontWeight="600" color="#534D59">
                     Phone Number
                   </Th>
                   <Th fontSize="12px" fontWeight="600" color="#534D59">
@@ -582,6 +588,8 @@ export default function Patients() {
                       email={item.email}
                       mrn={item.MRN}
                       phone={item.phoneNumber}
+                      code={item.authorizationcode}
+                      patientType={item.patienttype}
                       age={item.age}
                       gender={item.gender}
                       status={item.status}
@@ -602,6 +610,8 @@ export default function Patients() {
                       email={item.email}
                       mrn={item.MRN}
                       phone={item.phoneNumber}
+                      code={item.authorizationcode}
+                      patientType={item.patienttype}
                       age={item.age}
                       gender={item.gender}
                       status={item.status}

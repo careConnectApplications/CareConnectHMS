@@ -137,6 +137,7 @@ export default function CreatePatientModal({
     nextOfKinName: "",
     nextOfKinRelationship: "",
     nextOfKinPhoneNumber: "",
+    authorizationcode:"",
     nextOfKinAddress: "",
     maritalStatus: "",
     disability: "",
@@ -254,6 +255,8 @@ export default function CreatePatientModal({
       setMessage(""); // Reset message on close
       setMessageStatus(""); // Reset message status on close
     }
+
+    console.log("filteredpatient", filteredpatient)
     setUpdatedPayload({
       title: filteredpatient[0]?.title,
       firstName: filteredpatient[0]?.firstName,
@@ -278,6 +281,7 @@ export default function CreatePatientModal({
       disability: filteredpatient[0]?.disability,
       occupation: filteredpatient[0]?.occupation,
       isHMOCover: filteredpatient[0]?.isHMOCover,
+      authorizationcode: filteredpatient[0]?.authorizationcode,
       HMOName: filteredpatient[0]?.HMOName,
       HMOId: filteredpatient[0]?.HMOId,
       HMOPlan: filteredpatient[0]?.HMOPlan,
@@ -949,7 +953,16 @@ export default function CreatePatientModal({
                     value={patientData.HMOId}
                     onChange={handleInputChange}
                     name="HMOId"
-                    placeholder="Old"
+                    
+                    leftIcon={<FaMedkit />}
+                  />
+                  <Input
+                    id="authorizationcode"
+                    label="Authorization Code"
+                    value={patientData.authorizationcode}
+                    onChange={handleInputChange}
+                    name="authorizationcode"
+                   
                     leftIcon={<FaMedkit />}
                   />
                 </SimpleGrid>
@@ -1448,6 +1461,7 @@ export default function CreatePatientModal({
                 <SimpleGrid columns={{ base: 1, md: 4 }} spacing={4}>
                   <FormControl>
                     <Select
+                      isDisabled={true}
                       name="isHMOCover"
                       value={UpdatedPayload.isHMOCover}
                       onChange={handleUpdatedPayload}
@@ -1488,6 +1502,15 @@ export default function CreatePatientModal({
                     onChange={handleUpdatedPayload}
                     name="HMOId"
                     placeholder="Old"
+                    leftIcon={<FaMedkit />}
+                  />
+                   <Input
+                    id="authorizationcode"
+                    label="Authorization Code"
+                    value={UpdatedPayload.authorizationcode}
+                    onChange={handleUpdatedPayload}
+                    name="authorizationcode"
+                   
                     leftIcon={<FaMedkit />}
                   />
                 </SimpleGrid>

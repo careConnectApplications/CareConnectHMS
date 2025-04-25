@@ -8,7 +8,7 @@ import {
 import { BsThreeDots } from "react-icons/bs"
 import { useNavigate } from 'react-router-dom'
 
-export default function TableRowX({ type, name, mrn, phone, age, email,status, date, onEdit, hmoId, onRemove, onView, onChangeStatus, onClick, gender,hmoStatus }) {
+export default function TableRowX({ type, name, mrn, phone, code, age,patientType, email,status, date, onEdit, hmoId, onRemove, onView, onChangeStatus, onClick, gender,hmoStatus }) {
     const router = useNavigate()
     return (
 
@@ -30,6 +30,8 @@ export default function TableRowX({ type, name, mrn, phone, age, email,status, d
 
                     </Td>
                     <Td><Text fontWeight="400" fontSize={"12px"}>{mrn}</Text></Td>
+                    <Td><Text fontWeight="400" fontSize={"12px"}>{patientType}</Text></Td>
+                    <Td><Text fontWeight="400" fontSize={"12px"}>{code}</Text></Td>
                     <Td><Text fontWeight="400" fontSize={"12px"} >{phone}</Text></Td>
                     <Td><Text fontWeight="400" fontSize={"12px"} >{age}</Text></Td>
                     <Td><Text fontWeight="400" fontSize={"12px"} >{gender}</Text></Td>

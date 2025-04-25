@@ -18,7 +18,7 @@ export default function TableRow({
   type,
   name,
   email,
-  labName,
+  labName,code,
   physicianName,
   collectedDate,
   reportedDate,
@@ -2649,6 +2649,45 @@ export default function TableRow({
               {status}
             </Text>
           </Td>
+        </>
+      )}
+      {type === "secondaryService-report" && (
+        <>
+        <Td>
+            <HStack cursor={"pointer"}>
+              <Avatar
+                name={name}
+                size="sm"
+                src="https://bit.ly/tioluwani-kolawole"
+              />
+              <Box>
+                <Text color={"#101828"} fontWeight={"500"} fontSize={"13px"}>
+                  {name}
+                </Text>
+                <Text
+                  color={"#667085"}
+                  textTransform={"lowercase"}
+                  fontWeight={"400"}
+                  fontSize={"11px"}
+                >
+                  {mrn}
+                </Text>
+              </Box>
+            </HStack>
+          </Td>
+          <Td>
+            <Text fontWeight="400" fontSize="12px">
+              {code}
+            </Text>
+          </Td>
+          
+           
+          <Td>
+            <Text fontWeight="400" fontSize="12px">
+              {date}
+            </Text>
+          </Td>
+        
         </>
       )}
       {type === "financial-aggregate" && (

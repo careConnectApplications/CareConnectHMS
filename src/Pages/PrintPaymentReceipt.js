@@ -50,7 +50,20 @@ export default function PrintPaymentReceipt() {
         }, 2000);
     }
 
-    useEffect(() => {
+    // async function getRealTime() {
+    //     try {
+    //       const response = await fetch('https://worldtimeapi.org/api/ip');
+    //       const data = await response.json();
+    //       console.log('Current UTC Date & Time:', data.utc_datetime);
+    //       // or local datetime
+    //       console.log('Local Date & Time:', data.datetime);
+    //     } catch (error) {
+    //       console.error('Failed to fetch time:', error);
+    //     }
+    //   }
+      
+      useEffect(() => {
+        
         getPaymentReceipt();
     }, []);
 

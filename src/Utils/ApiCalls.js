@@ -312,9 +312,9 @@ export const GetReportSummarySettingsApi = () => {
     });
 };
 export const GetDiagnosisICApi = (payload) => {
-  console.log("paylaodAPIIIII",payload)
+  console.log("paylaodAPIIIII", payload);
 
-  let data = JSON.stringify(payload)
+  let data = JSON.stringify(payload);
   // Configure the GET request
   let config = {
     method: "POST",
@@ -323,7 +323,7 @@ export const GetDiagnosisICApi = (payload) => {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
-    data: data
+    data: data,
   };
 
   return axios
@@ -2472,7 +2472,7 @@ export const ExaminePatientApi = (payload, id) => {
     });
 };
 export const TakeVitalApi = (payload, id) => {
-  console.log("TakeVitalApi payload",payload)
+  console.log("TakeVitalApi payload", payload);
   let data = JSON.stringify(payload);
   let config = {
     method: "PUT",
@@ -2504,7 +2504,7 @@ export const TakeVitalApi = (payload, id) => {
     });
 };
 export const RequestLabOrderApi = (payload, id) => {
-  console.log("payloadrequest...", payload, "id", id)
+  console.log("payloadrequest...", payload, "id", id);
   let data = JSON.stringify(payload);
   let config = {
     method: "POST",
@@ -2661,7 +2661,7 @@ export const GetAllPatientsApi = (pageNo, postPerPage) => {
       }
     });
 };
-export const GetAllPaymentGroupOptApi = (pageNo, postPerPage,status) => {
+export const GetAllPaymentGroupOptApi = (pageNo, postPerPage, status) => {
   // Configure the GET request
   let config = {
     method: "get",
@@ -2690,7 +2690,13 @@ export const GetAllPaymentGroupOptApi = (pageNo, postPerPage,status) => {
       }
     });
 };
-export const GetAllFilteredPaymentGroupOptApi = (status,key, value,pageNo,postPerPage) => {
+export const GetAllFilteredPaymentGroupOptApi = (
+  status,
+  key,
+  value,
+  pageNo,
+  postPerPage
+) => {
   // Configure the GET request
   let config = {
     method: "get",
@@ -2719,7 +2725,7 @@ export const GetAllFilteredPaymentGroupOptApi = (status,key, value,pageNo,postPe
       }
     });
 };
-export const GetAllFilteredPatientsApi = (key, value,pageNo,postPerPage) => {
+export const GetAllFilteredPatientsApi = (key, value, pageNo, postPerPage) => {
   // Configure the GET request
   let config = {
     method: "get",
@@ -2748,7 +2754,7 @@ export const GetAllFilteredPatientsApi = (key, value,pageNo,postPerPage) => {
       }
     });
 };
-export const GetAllFilteredScheduledApi = (key, value,pageNo,postPerPage) => {
+export const GetAllFilteredScheduledApi = (key, value, pageNo, postPerPage) => {
   // Configure the GET request
   let config = {
     method: "get",
@@ -5473,8 +5479,12 @@ export const GroupReadAllPharmacyApi = () => {
       }
     });
 };
-export const GroupReadAllPharmacyOptApi = (status,currentPage,postPerPage) => {
-  console.log("status change", status)
+export const GroupReadAllPharmacyOptApi = (
+  status,
+  currentPage,
+  postPerPage
+) => {
+  console.log("status change", status);
   let config = {
     method: "get",
     maxBodyLength: Infinity,
@@ -5487,7 +5497,6 @@ export const GroupReadAllPharmacyOptApi = (status,currentPage,postPerPage) => {
   return axios
     .request(config)
     .then((response) => {
-      
       return response.data;
     })
     .catch((error) => {
@@ -5503,8 +5512,14 @@ export const GroupReadAllPharmacyOptApi = (status,currentPage,postPerPage) => {
       }
     });
 };
-export const GroupReadAllFilteredPharmacyOptApi = (status,currentPage,postPerPage,key,value) => {
-  console.log("status change", status)
+export const GroupReadAllFilteredPharmacyOptApi = (
+  status,
+  currentPage,
+  postPerPage,
+  key,
+  value
+) => {
+  console.log("status change", status);
   let config = {
     method: "get",
     maxBodyLength: Infinity,
@@ -5517,7 +5532,6 @@ export const GroupReadAllFilteredPharmacyOptApi = (status,currentPage,postPerPag
   return axios
     .request(config)
     .then((response) => {
-      
       return response.data;
     })
     .catch((error) => {
@@ -5655,7 +5669,6 @@ export const ReadAllAuditApi = () => {
     });
 };
 
-
 export const SearchProcedureApi = (searchParam) => {
   const config = {
     method: "get",
@@ -5670,7 +5683,10 @@ export const SearchProcedureApi = (searchParam) => {
     .request(config)
     .then((response) => response.data)
     .catch((error) => {
-      console.error("Error searching procedure:", error.response || error.message);
+      console.error(
+        "Error searching procedure:",
+        error.response || error.message
+      );
       if (error.response && error.response.data && error.response.data.msg) {
         throw new Error(error.response.data.msg);
       } else if (error.response && error.response.data) {
@@ -5697,11 +5713,147 @@ export const SearchRadiologyApi = (searchParam) => {
     .request(config)
     .then((response) => response.data)
     .catch((error) => {
-      console.error("Error searching radiology:", error.response || error.message);
+      console.error(
+        "Error searching radiology:",
+        error.response || error.message
+      );
       if (error.response && error.response.data && error.response.data.msg) {
         throw new Error(error.response.data.msg);
       } else if (error.response && error.response.data) {
         throw new Error(error.response.data);
+      } else if (error.request) {
+        throw new Error(error.message);
+      } else {
+        throw new Error(error.message);
+      }
+    });
+};
+// In your Utils/ApiCalls.js
+
+export const CreateDailyWardReportApi = (payload) => {
+  console.log("CreateDailyWardReportApi", payload);
+
+  const data = JSON.stringify(payload);
+  const config = {
+    method: "post",
+    maxBodyLength: Infinity,
+    // remove the duplicated /api/v1
+    url: `${baseUrl}/nursingcare/createdailywardreport`,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    data,
+  };
+
+  return axios
+    .request(config)
+    .then((response) => response)
+    .catch((error) => {
+      console.log("Error in Create Daily Ward Report:", error.response);
+      if (error.response?.data?.msg) {
+        throw new Error(error.response.data.msg);
+      } else if (error.response?.data) {
+        throw new Error(error.response);
+      } else if (error.request) {
+        throw new Error(error.message);
+      } else {
+        throw new Error(error.message);
+      }
+    });
+};
+
+export const UpdateDailyWardReportApi = (payload, id) => {
+  console.log("UpdateDailyWardReportApi", payload, id);
+
+  const data = JSON.stringify(payload);
+  const config = {
+    method: "put",
+    maxBodyLength: Infinity,
+    url: `${baseUrl}/nursingcare/updatedailywardreport/${id}`,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    data,
+  };
+
+  return axios
+    .request(config)
+    .then((response) => {
+      console.log("Updated Daily Ward Report:", response.data);
+      return response;
+    })
+    .catch((error) => {
+      console.log("Error in Update Daily Ward Report:", error.response);
+      if (error.response && error.response.data.msg) {
+        throw new Error(error.response.data.msg);
+      } else if (error.response && error.response.data) {
+        throw new Error(error.response);
+      } else if (error.request) {
+        throw new Error(error.msg);
+      } else {
+        throw new Error(error.msg);
+      }
+    });
+};
+export const GetAllDailyWardReportsByWardApi = (wardId) => {
+  const config = {
+    method: "get",
+    maxBodyLength: Infinity,
+    url: `${baseUrl}/nursingcare/readalldailywardreportsByward/${wardId}`,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  };
+
+  return axios
+    .request(config)
+    .then((response) => {
+      return response.data;
+    })
+    .catch((error) => {
+      console.log("Error fetching daily ward reports:", error.response);
+      if (error.response && error.response.data.msg) {
+        throw new Error(error.response.data.msg);
+      } else if (error.response && error.response.data) {
+        throw new Error(error.response);
+      } else if (error.request) {
+        throw new Error(error.msg);
+      } else {
+        throw new Error(error.msg);
+      }
+    });
+};
+export const EnterRadiologyResultApi = (payload, recordId) => {
+  console.log("EnterRadiologyResultApi", payload, recordId);
+
+  const data = JSON.stringify(payload);
+  console.log("EnterRadiologyResultApi payload, id:", payload, recordId);
+  const config = {
+    method: "post",
+    maxBodyLength: Infinity,
+    url: `${baseUrl}/radiology/enterradiologyresult/${recordId}`,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    data,
+  };
+
+  return axios
+    .request(config)
+    .then((response) => {
+      console.log("EnterRadiologyResultApi response:", response);
+      return response;
+    })
+    .catch((error) => {
+      console.log("Error in EnterRadiologyResultApi:", error.response);
+      if (error.response && error.response.data?.msg) {
+        throw new Error(error.response.data.msg);
+      } else if (error.response && error.response.data) {
+        throw new Error(error.response);
       } else if (error.request) {
         throw new Error(error.message);
       } else {
