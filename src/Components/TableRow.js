@@ -2681,6 +2681,12 @@ export default function TableRow({
             </Text>
           </Td>
           
+          <Td>
+            <Text fontWeight="400" fontSize="12px">
+              {serviceType}
+            </Text>
+          </Td>
+          
            
           <Td>
             <Text fontWeight="400" fontSize="12px">
