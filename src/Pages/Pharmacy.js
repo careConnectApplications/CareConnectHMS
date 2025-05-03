@@ -30,6 +30,7 @@ import Seo from "../Utils/Seo";
 import { configuration } from "../Utils/Helpers";
 import PharmacyModal from "../Components/PharmacyModal";
 import PharmacyOrderModal from "../Components/PharmacyOrderModal";
+import PharmacyWithoutConfirmationModal from "../Components/PharmacyWithoutConfirmationModal";
 import {
   ReadAllPharmacyApi,
   GroupReadAllPharmacyApi,
@@ -729,24 +730,35 @@ export default function Pharmacy() {
         )}
       </Box>
 
-      {/* Render the appropriate modal */}
       {modalType === "confirm" ? (
         <ConfirmPharmacyOrderModal
           isOpen={isOpen}
-          onClose={onClose}
+         onClose={onClose}
           pharmacyId={selectedPharmacy}
-          onSuccess={handleSuccess}
-          order={selectedOrderData}
-        />
-      ) : (
-        <PharmacyModal
-          isOpen={isOpen}
+         onSuccess={handleSuccess}
+           order={selectedOrderData}
+         />
+       ) : (
+         // <PharmacyModal
+         //   isOpen={isOpen}
+         //   onClose={onClose}
+         //   type={modalType}
+        //   selectedPharmacy={selectedPharmacy}
+        //   onSuccess={handleSuccess}
+        // />
+        <PharmacyWithoutConfirmationModal
+         isOpen={isOpen}
           onClose={onClose}
-          type={modalType}
-          selectedPharmacy={selectedPharmacy}
-          onSuccess={handleSuccess}
-        />
-      )}
+           onSuccess={handleSuccess}
+         />
+       )}
+
+
+
+
+
+
+
 
       {orderModalOpen && (
         <PharmacyOrderModal
