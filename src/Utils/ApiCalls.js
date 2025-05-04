@@ -5861,3 +5861,77 @@ export const EnterRadiologyResultApi = (payload, recordId) => {
       }
     });
 };
+export const PlaceOrderWithoutConfirmationApi = async (payload, patientId) => {
+  const data = JSON.stringify(payload);
+  console.log("PlaceOrderWithoutConfirmationApi", patientId, payload);
+
+  const config = {
+    method: "post",
+    maxBodyLength: Infinity,
+    url: `${baseUrl}/pharmacy/pharmacyorderwithoutconfirmation/${patientId}`,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    data,
+  };
+
+  return axios
+    .request(config)
+    .then((response) => {
+      console.log("Response data:", JSON.stringify(response.data));
+      return response.data;
+    })
+    .catch((error) => {
+      console.error(
+        "Error placing order without confirmation:",
+        error.response
+      );
+
+      if (error.response?.data?.msg) {
+        throw new Error(error.response.data.msg);
+      } else if (error.response?.data) {
+        throw new Error(JSON.stringify(error.response.data));
+      } else if (error.request) {
+        throw new Error("No response received from the server.");
+      } else {
+        throw new Error(error.message);
+      }
+    });
+};
+export const ReadDrugPriceApi = async (payload, patientId) => {
+  const data = JSON.stringify(payload);
+  console.log("ReadDrugPriceApi", patientId, payload);
+
+  const config = {
+    method: "post",
+    maxBodyLength: Infinity,
+    url: `${baseUrl}/pharmacy/readdrugprice/${patientId}`,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    data,
+  };
+
+  return axios
+    .request(config)
+    .then(response => {
+      console.log("Drug price response:", JSON.stringify(response.data));
+      return response.data;
+    })
+    .catch(error => {
+      console.error("Error reading drug price:", error.response);
+
+      if (error.response?.data?.msg) {
+        throw new Error(error.response.data.msg);
+      } else if (error.response?.data) {
+        throw new Error(JSON.stringify(error.response.data));
+      } else if (error.request) {
+        throw new Error("No response received from the server.");
+      } else {
+        throw new Error(error.message);
+      }
+    });
+};
+
