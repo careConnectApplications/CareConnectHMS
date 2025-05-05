@@ -1818,7 +1818,7 @@ export default function TableRowY({
           </Td>
           {/* Patient Info with Avatar */}
           <Td>
-            <HStack cursor="pointer">
+            <HStack cursor="pointer" onClick={onView}>
               <Avatar
                 size="sm"
                 name={patient ? `${patient.firstName} ${patient.lastName}` : ""}
