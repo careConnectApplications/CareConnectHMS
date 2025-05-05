@@ -49,6 +49,7 @@ import UserManagementRoutes from "./UserManagementRoutes";
 import ReferTheatreRoutes from "./ReferTheatreRoutes";
 import ClinicalReportRoutes from "./ClinicalReportRoutes";
 import SingleTheatreReferPage from "../Pages/SingleTheatreReferPage";
+import TheatreTimeline from "../Pages/TheatreTimeline";
 import CashierReport from "../Pages/CashierReport";
 
 export default function IndexRoutes() {
@@ -188,6 +189,10 @@ export default function IndexRoutes() {
             <Route
               path="/dashboard/single-theatre"
               element={<SingleTheatreReferPage />}
+            />
+            <Route
+              path="/dashboard/single-theatre/patient-timeline/:id"
+              element={<TheatreTimeline />}
             />
           </Route>
         </Route>

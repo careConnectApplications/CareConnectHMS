@@ -225,6 +225,18 @@ export default function SingleTheatreReferPage() {
     setCurrentPage(1);
   };
 
+  
+    const location = useLocation().pathname
+    
+      const theateTimeline = (PatientId, AppointmentID, Name) => {
+        localStorage.setItem('pathLocation', location)
+        nav(`/dashboard/single-theatre/patient-timeline/${PatientId}`);
+        localStorage.setItem('appointmentId', AppointmentID)
+        localStorage.setItem('PatientName', Name)
+      
+    
+      }
+
   useEffect(() => {
     applyFilters();
   }, [
@@ -733,6 +745,7 @@ export default function SingleTheatreReferPage() {
                     <TableRowY
                       key={i}
                       type="single-refer-theatre-admission"
+                      onView={()=>theateTimeline(item.patient._id,item.theatreadmissionid,item.patient.firstName + " " + item.patient.lastName)}
                       sn={indexOfFirst + i + 1}
                       theatreadmissionid={item.theatreadmissionid}
                       appointmentdate={

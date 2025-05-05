@@ -85,6 +85,7 @@ export default function TheatreManagement() {
     setFilterData(filtered);
   };
 
+
   // Status change function
   const onChangeStatus = async (id) => {
     try {

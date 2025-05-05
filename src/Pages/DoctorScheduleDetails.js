@@ -23,6 +23,7 @@ import PathographyChart from "./PathographyChart"
 import SingleReferral from "./SingleReferral"
 import SingleDeliveryNote from "./SingleDeliveryNote"
 import ReferTheatreAdmissionPage from './ReferTheatreAdmissionPage'
+import NutritionPage from './NutritionPage'
 
 export default function DoctorScheduleDetails() {
 
@@ -69,6 +70,7 @@ export default function DoctorScheduleDetails() {
                     <Tab _focus={{outline: "none"}} _selected={{ color: "blue.blue500", fontWeight: "700" }}>Delivery Note </Tab>
                     <Tab _focus={{outline: "none"}} _selected={{ color: "blue.blue500", fontWeight: "700" }}>Referral </Tab>
                     <Tab _focus={{outline: "none"}} _selected={{ color: "blue.blue500", fontWeight: "700" }}>Theater </Tab>
+                    <Tab _focus={{outline: "none"}} _selected={{ color: "blue.blue500", fontWeight: "700" }}>Nutrition </Tab>
 
                 </TabList>
                 {/* <TabIndicator mt='-1.5px' height='2px' bg='blue.blue500' borderRadius='1px' /> */}
@@ -138,6 +140,9 @@ export default function DoctorScheduleDetails() {
                     </TabPanel>
                     <TabPanel p="0">
                      <ReferTheatreAdmissionPage/>
+                    </TabPanel>
+                    <TabPanel p="0">
+                     <NutritionPage/>
                     </TabPanel>
 
 

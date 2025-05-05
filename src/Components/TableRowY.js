@@ -178,6 +178,21 @@ export default function TableRowY({
   onViewDailyWardReport,
   onEnterResult,
   onViewManualResult,
+  ageinmonths,
+  typeofvisit,
+  infactandyoungchildfeeding,
+  complementaryfeeding,
+  counsellingprovided,
+  referedtosupportgroup,
+  anthropometryheight,
+  anthropometryweight,
+  anthropometrybilateraloedema,
+  muacred,
+  muacyellow,
+  muacgreen,
+  growthaccordingtothechildhealthcard,
+  vitaminasupplement,
+  deworming,
 }) {
   const isServed = servedstatus?.toLowerCase() === "served";
   const isUnserved = servedstatus?.toLowerCase() === "unserved";
@@ -1803,7 +1818,7 @@ export default function TableRowY({
           </Td>
           {/* Patient Info with Avatar */}
           <Td>
-            <HStack cursor="pointer">
+            <HStack cursor="pointer" onClick={onView}>
               <Avatar
                 size="sm"
                 name={patient ? `${patient.firstName} ${patient.lastName}` : ""}
@@ -2511,6 +2526,109 @@ export default function TableRowY({
                     bg: "blue.blue500",
                   }}
                   onClick={onEditDailyWardReport}
+                >
+                  Edit
+                </MenuItem>
+              </MenuList>
+            </Menu>
+          </Td>
+        </>
+      )}
+      {type === "nutrition" && (
+        <>
+          <Td>
+            <Text fontWeight="400" fontSize="12px">
+              {date}
+            </Text>
+          </Td>
+          <Td>
+            <Text fontWeight="400" fontSize="12px">
+              {ageinmonths}
+            </Text>
+          </Td>
+          <Td>
+            <Text fontWeight="400" fontSize="12px">
+              {typeofvisit}
+            </Text>
+          </Td>
+          <Td>
+            <Text fontWeight="400" fontSize="12px">
+              {infactandyoungchildfeeding}
+            </Text>
+          </Td>
+          <Td>
+            <Text fontWeight="400" fontSize="12px">
+              {complementaryfeeding}
+            </Text>
+          </Td>
+          <Td>
+            <Text fontWeight="400" fontSize="12px">
+              {counsellingprovided}
+            </Text>
+          </Td>
+          <Td>
+            <Text fontWeight="400" fontSize="12px">
+              {referedtosupportgroup}
+            </Text>
+          </Td>
+          <Td>
+            <Text fontWeight="400" fontSize="12px">
+              {anthropometryheight}
+            </Text>
+          </Td>
+          <Td>
+            <Text fontWeight="400" fontSize="12px">
+              {anthropometryweight}
+            </Text>
+          </Td>
+          <Td>
+            <Text fontWeight="400" fontSize="12px">
+              {anthropometrybilateraloedema}
+            </Text>
+          </Td>
+          <Td>
+            <Text fontWeight="400" fontSize="12px">
+              {muacred}
+            </Text>
+          </Td>
+          <Td>
+            <Text fontWeight="400" fontSize="12px">
+              {muacyellow}
+            </Text>
+          </Td>
+          <Td>
+            <Text fontWeight="400" fontSize="12px">
+              {muacgreen}
+            </Text>
+          </Td>
+          <Td>
+            <Text fontWeight="400" fontSize="12px">
+              {growthaccordingtothechildhealthcard}
+            </Text>
+          </Td>
+          <Td>
+            <Text fontWeight="400" fontSize="12px">
+              {vitaminasupplement}
+            </Text>
+          </Td>
+          <Td>
+            <Text fontWeight="400" fontSize="12px">
+              {deworming}
+            </Text>
+          </Td>
+          <Td>
+            <Menu>
+              <MenuButton as={Box}>
+                <BsThreeDots />
+              </MenuButton>
+              <MenuList>
+                <MenuItem
+                  _hover={{
+                    color: "#fff",
+                    fontWeight: "400",
+                    bg: "blue.blue500",
+                  }}
+                  onClick={onEdit}
                 >
                   Edit
                 </MenuItem>
