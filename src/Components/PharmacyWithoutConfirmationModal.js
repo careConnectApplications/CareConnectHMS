@@ -46,20 +46,20 @@ export default function PharmacyWithoutConfirmationModal({
   const [products, setProducts] = useState([
     {
       pharmacy: "",
+      drugSearch: "",
       drug: "",
       drugOptions: [],
-      frequency: "",
-      duration: "",
-      dosage: "",
       qty: "",
-      drugSearch: "",
       price: null,
+      // frequency: "",
+      // duration: "",
+      // dosage: "",
     },
   ]);
 
   const patientSelectRef = useRef(null);
 
-  // Load clinics & settings when modal opens
+  // Load clinics & settings
   useEffect(() => {
     if (!isOpen) return;
     setIsLoadingModal(true);
@@ -78,29 +78,30 @@ export default function PharmacyWithoutConfirmationModal({
     })();
   }, [isOpen]);
 
-  // Search patients
+  // Search patients by MRN/name
   const handleSearchPatient = async () => {
     setIsLoadingPatients(true);
     try {
       const res = await SearchPatientApi(searchMRN);
       setPatients(res?.queryresult?.patientdetails || []);
-    } catch (err) {
-      console.error("Patient search error:", err);
+    } catch {
       setPatients([]);
     } finally {
       setIsLoadingPatients(false);
     }
   };
+
   const handlePatientChange = (e) => {
     const id = e.target.value;
     setFormData({ patient: id, patientId: id });
   };
 
-  // Handle product changes & price lookup
+  // Handle product field changes
   const handleProductChange = (index, field, value) => {
     const newProducts = [...products];
     newProducts[index][field] = value;
 
+    // If pharmacy changes → reload drug options
     if (field === "pharmacy") {
       newProducts[index].drug = "";
       newProducts[index].drugOptions = [];
@@ -114,8 +115,7 @@ export default function PharmacyWithoutConfirmationModal({
             ];
             setProducts(newProducts);
           })
-          .catch((err) => {
-            console.error("Stock fetch error:", err);
+          .catch(() => {
             newProducts[index].drugOptions = [];
             setProducts(newProducts);
           });
@@ -125,19 +125,23 @@ export default function PharmacyWithoutConfirmationModal({
       return;
     }
 
-    if (field === "drug" || field === "qty") {
+    // If drug or qty changes → fetch price
+    if ((field === "drug" || field === "qty") && newProducts[index].pharmacy) {
       newProducts[index].price = null;
       setProducts(newProducts);
+
       const { pharmacy, drug, qty } = newProducts[index];
       if (pharmacy && drug && qty && formData.patientId) {
-        const payload = { drug, pharmacy, qty: Number(qty) };
-        ReadDrugPriceApi(payload, formData.patientId)
+        ReadDrugPriceApi(
+          { pharmacy, drug, qty: Number(qty) },
+          formData.patientId
+        )
           .then((res) => {
             const updated = [...newProducts];
             updated[index].price = res.queryresult;
             setProducts(updated);
           })
-          .catch((err) => console.error(err));
+          .catch(console.error);
       }
       return;
     }
@@ -145,46 +149,44 @@ export default function PharmacyWithoutConfirmationModal({
     setProducts(newProducts);
   };
 
-  // Add / remove products
+  // Add / remove rows
   const addProduct = () =>
     setProducts((prev) => [
       ...prev,
       {
         pharmacy: "",
+        drugSearch: "",
         drug: "",
         drugOptions: [],
-        frequency: "",
-        duration: "",
-        dosage: "",
         qty: "",
-        drugSearch: "",
         price: null,
+        // frequency: "",
+        // duration: "",
+        // dosage: "",
       },
     ]);
   const removeProduct = (i) =>
-    products.length > 1 && setProducts((prev) => prev.filter((_, idx) => idx !== i));
+    products.length > 1 &&
+    setProducts((prev) => prev.filter((_, idx) => idx !== i));
 
-  const isProductComplete = (p) =>
-    p.pharmacy && p.drug && p.frequency && p.duration && p.dosage && p.qty;
+  // Only require pharmacy, drug, qty now
+  const isProductComplete = (p) => p.pharmacy && p.drug && p.qty;
 
-  // Submit order
+  // Submit
   const handleSubmit = async () => {
     if (!formData.patient) {
       alert("Please select a patient.");
       return;
     }
     if (!products.every(isProductComplete)) {
-      alert("Please fill all fields, including quantity.");
+      alert("Please fill all product fields and quantity.");
       return;
     }
     setIsSubmitting(true);
     const payload = {
-      products: products.map(({ pharmacy, drug, frequency, duration, dosage, qty }) => ({
+      products: products.map(({ pharmacy, drug, qty }) => ({
         pharmacy,
         drug,
-        frequency,
-        duration,
-        dosage,
         qty: Number(qty),
       })),
     };
@@ -203,7 +205,7 @@ export default function PharmacyWithoutConfirmationModal({
     }
   };
 
-  // Close modal: reset patient & other fields, but keep pharmacy & drugOptions
+  // Reset & close
   const handleClose = () => {
     setIsLoadingModal(true);
     setTimeout(() => {
@@ -216,43 +218,56 @@ export default function PharmacyWithoutConfirmationModal({
           pharmacy: prod.pharmacy,
           drugOptions: prod.drugOptions,
           drug: "",
-          frequency: "",
-          duration: "",
-          dosage: "",
           qty: "",
           drugSearch: "",
           price: null,
+          // frequency: "",
+          // duration: "",
+          // dosage: "",
         }))
       );
       setIsSubmitting(false);
       setIsLoadingModal(false);
     }, 200);
   };
-
-  const isFormComplete =
-    formData.patient && products.length > 0 && products.every(isProductComplete);
+  // compute grand total of all line‐item prices
+  const grandTotal = products.reduce((sum, prod) => sum + (prod.price || 0), 0);
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} isCentered size="xl" scrollBehavior="inside">
+    <Modal
+      isOpen={isOpen}
+      onClose={handleClose}
+      isCentered
+      size="xl"
+      scrollBehavior="inside"
+    >
       <ModalOverlay />
       {isLoadingModal ? (
-        <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
+        <Box
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          height="100vh"
+        >
           <Preloader />
         </Box>
       ) : (
         <ModalContent maxW={{ base: "90%", md: "70%" }} borderRadius="lg" p={4}>
           <ModalHeader>
-            <Text fontSize="lg" fontWeight="bold">Place Order</Text>
+            <Text fontSize="lg" fontWeight="bold">
+              Place Order
+            </Text>
             <ModalCloseButton onClick={handleClose} />
           </ModalHeader>
+
           <ModalBody pb={6} mt={2}>
             {/* Patient Search */}
             <FormControl mb={4}>
               <FormLabel>Search for Patient</FormLabel>
               <Flex mb={2} gap={4}>
                 <Input
-                  label="Search for Patient"
-                  placeholder="MRN, first or last name"
+                  label="MRN, first or last name"
+                  placeholder="Type to search"
                   value={searchMRN}
                   onChange={(e) => setSearchMRN(e.target.value)}
                   leftIcon={<FiSearch size={16} />}
@@ -269,8 +284,6 @@ export default function PharmacyWithoutConfirmationModal({
                 placeholder={isLoadingPatients ? "Loading…" : "Select Patient"}
                 borderWidth="2px"
                 borderColor="gray.500"
-                w="100%"
-                mt={2}
               >
                 {patients.map((p) => (
                   <option key={p._id} value={p._id}>
@@ -282,7 +295,9 @@ export default function PharmacyWithoutConfirmationModal({
 
             {/* Medicines */}
             <Box mb={4}>
-              <Text fontWeight="bold" mb={2}>Medicines</Text>
+              <Text fontWeight="bold" mb={2}>
+                Medicines
+              </Text>
               {products.map((prod, idx) => (
                 <Box key={idx} p={4} borderWidth="1px" borderRadius="md" mb={4}>
                   <Flex justify="space-between" align="center" mb={4}>
@@ -299,31 +314,41 @@ export default function PharmacyWithoutConfirmationModal({
                       <Select
                         placeholder="Select Pharmacy"
                         value={prod.pharmacy}
-                        onChange={(e) => handleProductChange(idx, "pharmacy", e.target.value)}
+                        onChange={(e) =>
+                          handleProductChange(idx, "pharmacy", e.target.value)
+                        }
                         borderWidth="2px"
                         borderColor="gray.500"
                       >
                         {pharmacies.map((c) => (
-                          <option key={c.clinic} value={c.clinic}>{c.clinic}</option>
+                          <option key={c.clinic} value={c.clinic}>
+                            {c.clinic}
+                          </option>
                         ))}
                       </Select>
                     </FormControl>
+
                     <FormControl>
                       <FormLabel>Search Medicine</FormLabel>
                       <Input
-                        value={prod.drugSearch}
-                        onChange={(e) => handleProductChange(idx, "drugSearch", e.target.value)}
                         placeholder="Type to filter"
+                        value={prod.drugSearch}
+                        onChange={(e) =>
+                          handleProductChange(idx, "drugSearch", e.target.value)
+                        }
                         borderWidth="2px"
                         borderColor="gray.500"
                       />
                     </FormControl>
+
                     <FormControl>
                       <FormLabel>Medicine</FormLabel>
                       <Select
                         placeholder="Select Medicine"
                         value={prod.drug}
-                        onChange={(e) => handleProductChange(idx, "drug", e.target.value)}
+                        onChange={(e) =>
+                          handleProductChange(idx, "drug", e.target.value)
+                        }
                         disabled={!prod.pharmacy || !prod.drugOptions.length}
                         borderWidth="2px"
                         borderColor="gray.500"
@@ -331,79 +356,86 @@ export default function PharmacyWithoutConfirmationModal({
                         {prod.drugOptions
                           .filter((d) =>
                             prod.drugSearch
-                              ? d.toLowerCase().includes(prod.drugSearch.toLowerCase())
+                              ? d
+                                  .toLowerCase()
+                                  .includes(prod.drugSearch.toLowerCase())
                               : true
                           )
                           .map((d) => (
-                            <option key={d} value={d}>{d}</option>
+                            <option key={d} value={d}>
+                              {d}
+                            </option>
                           ))}
                       </Select>
                     </FormControl>
+
                     <FormControl>
                       <FormLabel>Quantity</FormLabel>
                       <Input
                         type="number"
-                        value={prod.qty}
-                        onChange={(e) => handleProductChange(idx, "qty", e.target.value)}
                         placeholder="Enter Qty"
+                        value={prod.qty}
+                        onChange={(e) =>
+                          handleProductChange(idx, "qty", e.target.value)
+                        }
                         borderWidth="2px"
                         borderColor="gray.500"
                       />
                     </FormControl>
+
+                    {/* Price display */}
+                    {prod.price != null && (
+                      <Box gridColumn="1 / -1">
+                        <Text fontWeight="semibold" color="blue.blue500">
+                          Price ({prod.qty}× {prod.drug}): ₦{prod.price}
+                        </Text>
+                      </Box>
+                    )}
+
+                    {/* 
+                    // Frequency / Duration / Dosage fields are intentionally commented out
                     <FormControl>
                       <FormLabel>Frequency</FormLabel>
-                      <Select
-                        placeholder="Select Frequency"
-                        value={prod.frequency}
-                        onChange={(e) => handleProductChange(idx, "frequency", e.target.value)}
-                        borderWidth="2px"
-                        borderColor="gray.500"
-                      >
-                        {settings?.medicationchartfrequency?.map((opt) => (
+                      <Select placeholder="Select Frequency" value={prod.frequency} onChange={...}>
+                        {settings.medicationchartfrequency.map(opt => (
                           <option key={opt} value={opt}>{opt}</option>
                         ))}
                       </Select>
                     </FormControl>
                     <FormControl>
                       <FormLabel>Duration</FormLabel>
-                      <Input
-                        value={prod.duration}
-                        onChange={(e) => handleProductChange(idx, "duration", e.target.value)}
-                        placeholder="Enter Duration"
-                        borderWidth="2px"
-                        borderColor="gray.500"
-                      />
+                      <Input value={prod.duration} onChange={...} placeholder="Enter Duration" />
                     </FormControl>
                     <FormControl>
                       <FormLabel>Dosage</FormLabel>
-                      <Input
-                        value={prod.dosage}
-                        onChange={(e) => handleProductChange(idx, "dosage", e.target.value)}
-                        placeholder="Enter Dosage"
-                        borderWidth="2px"
-                        borderColor="gray.500"
-                      />
+                      <Input value={prod.dosage} onChange={...} placeholder="Enter Dosage" />
                     </FormControl>
-                    {prod.price != null && (
-                      <Box gridColumn="1 / -1">
-                        <Text fontWeight="semibold" color="blue.blue500">
-                          Price for {prod.drug} (Qty: {prod.qty}): ₦{prod.price}
-                        </Text>
-                      </Box>
-                    )}
+                    */}
                   </SimpleGrid>
                 </Box>
               ))}
-              <Button onClick={addProduct} mt={2} w="150px" rightIcon={<SlPlus />}>
+
+              <Button
+                onClick={addProduct}
+                mt={2}
+                w="150px"
+                rightIcon={<SlPlus />}
+              >
                 Add Medicine
               </Button>
+              {/* Grand total */}
+              <Box mt={4} textAlign="right">
+                <Text fontSize="lg" fontWeight="bold" color="blue.blue400">
+                  Grand Total: ₦{grandTotal}
+                </Text>
+              </Box>
             </Box>
           </ModalBody>
+
           <ModalFooter>
             <Button
-              mt="32px"
               onClick={handleSubmit}
-              disabled={!isFormComplete || isSubmitting}
+              disabled={isSubmitting}
               isLoading={isSubmitting}
             >
               Submit Order
