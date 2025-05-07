@@ -30,6 +30,7 @@ import Seo from "../Utils/Seo";
 import { configuration } from "../Utils/Helpers";
 import PharmacyModal from "../Components/PharmacyModal";
 import PharmacyOrderModal from "../Components/PharmacyOrderModal";
+import PharmacyWithoutConfirmationModal from "../Components/PharmacyWithoutConfirmationModal";
 import {
   GroupReadAllFilteredPharmacyOptApi,
   GroupReadAllPharmacyOptApi,
@@ -72,7 +73,7 @@ export default function PharmacyNew() {
   // Pagination states
   const [CurrentPage, setCurrentPage] = useState(1);
   const PostPerPage = configuration.sizePerPage;
- 
+
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   // Toast state
@@ -91,12 +92,15 @@ export default function PharmacyNew() {
     setIsLoading(true);
     try {
       // Use the GroupReadAllPharmacyOptApi here
-      const data = await GroupReadAllPharmacyOptApi(status, CurrentPage, PostPerPage);
+      const data = await GroupReadAllPharmacyOptApi(
+        status,
+        CurrentPage,
+        PostPerPage
+      );
       console.log("Group API response:", data);
       setOriginalData(data.queryresult.pharmacydetails);
       setFilterData(data.queryresult.pharmacydetails);
-      setTotalData(data.queryresult.totalpharmacydetails)
-      
+      setTotalData(data.queryresult.totalpharmacydetails);
     } catch (error) {
       console.error("Error fetching data:", error);
       setShowToast({
@@ -109,56 +113,53 @@ export default function PharmacyNew() {
     }
   };
 
-  
-
   // Default search change handler (searches by patient name, prescriber, orderid, and MRN)
   const handleInputChange = (e) => {
     const value = e.target.value.toLowerCase();
     setSearchInput(value);
-    setCurrentPage(1)
+    setCurrentPage(1);
   };
 
-   const [Key, setKey] = useState("");
-    const [Value, setValue] = useState("");
-  
-    const getFilteredpharmacy = async (key, value) => {
-      setKey(key)
-      setValue(value)
-  
-      try {
-        setIsLoading(true);
-        const result = await GroupReadAllFilteredPharmacyOptApi(Status,CurrentPage,PostPerPage,key, value);
-        console.log("all fitlered pharmacy", result);
-        if (result.status === true) {
-          setFilteredData(result.queryresult.pharmacydetails);
-          setTotalData(result.queryresult.totalpharmacydetails)
-        }
-      } catch (e) {
-        console.error(e.message);
-      } finally {
-        setIsLoading(false);
+  const [Key, setKey] = useState("");
+  const [Value, setValue] = useState("");
+
+  const getFilteredpharmacy = async (key, value) => {
+    setKey(key);
+    setValue(value);
+
+    try {
+      setIsLoading(true);
+      const result = await GroupReadAllFilteredPharmacyOptApi(
+        Status,
+        CurrentPage,
+        PostPerPage,
+        key,
+        value
+      );
+      console.log("all fitlered pharmacy", result);
+      if (result.status === true) {
+        setFilteredData(result.queryresult.pharmacydetails);
+        setTotalData(result.queryresult.totalpharmacydetails);
       }
-    };
+    } catch (e) {
+      console.error(e.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // Filter by specific field: "patient", "prescriber", "mrn", "date", "orderid"
   const filterBy = (field) => {
     if (field === "mrn") {
-      getFilteredpharmacy("MRN", SearchInput)
+      getFilteredpharmacy("MRN", SearchInput);
     } else if (field === "prescriber") {
-      getFilteredpharmacy("prescriber", SearchInput)
-     
+      getFilteredpharmacy("prescriber", SearchInput);
     } else if (field === "firstName") {
-      
-      getFilteredpharmacy("firstName", SearchInput)   
-      
+      getFilteredpharmacy("firstName", SearchInput);
     } else if (field === "lastName") {
-      
-      getFilteredpharmacy("lastName", SearchInput)
-      
-    }else if (field === "orderid") {
-      
-      getFilteredpharmacy("orderid", SearchInput)
-      
+      getFilteredpharmacy("lastName", SearchInput);
+    } else if (field === "orderid") {
+      getFilteredpharmacy("orderid", SearchInput);
     } else if (field === "date") {
       if (StartDate && EndDate) {
         let endDateObj = new Date(EndDate);
@@ -179,9 +180,8 @@ export default function PharmacyNew() {
     setByDate(false);
     setStartDate("");
     setEndDate("");
-    filterPending()
-    setCurrentPage(1)
-   
+    filterPending();
+    setCurrentPage(1);
   };
 
   // Status filtering functions (left unchanged)
@@ -190,32 +190,28 @@ export default function PharmacyNew() {
     setPaid(false);
     setPending(false);
     setDispensed(false);
-  
-    fetchData("pending")
-    setStatus("pending")
-    setCurrentPage(1)
 
-   
+    fetchData("pending");
+    setStatus("pending");
+    setCurrentPage(1);
   };
 
   const filterAwaitingConfirmation = () => {
     setAll(false);
     setPaid(true);
     setDispensed(false);
-    fetchData("confirmation")
-    setStatus("confirmation")
-    setCurrentPage(1)
-    
+    fetchData("confirmation");
+    setStatus("confirmation");
+    setCurrentPage(1);
   };
-
 
   const filterDispensed = () => {
     setAll(false);
     setPaid(false);
     setDispensed(true);
-    fetchData("dispense")
-    setStatus("dispense")
-    setCurrentPage(1)
+    fetchData("dispense");
+    setStatus("dispense");
+    setCurrentPage(1);
   };
 
   // Modal and order handlers
@@ -282,24 +278,18 @@ export default function PharmacyNew() {
     setTrigger(!Trigger);
   };
 
-
   useEffect(() => {
-    if(FilteredData?.length > 0 || FilteredData !== null ){
-      getFilteredpharmacy(Key,Value) 
-    }else{
-
-      if(All === true){
-        fetchData("pending")
-      }else if(Paid === true){
-        fetchData("confirmation")
-      }else if(Dispensed === true){
-        fetchData("dispense")
+    if (FilteredData?.length > 0 || FilteredData !== null) {
+      getFilteredpharmacy(Key, Value);
+    } else {
+      if (All === true) {
+        fetchData("pending");
+      } else if (Paid === true) {
+        fetchData("confirmation");
+      } else if (Dispensed === true) {
+        fetchData("dispense");
       }
-
-     
     }
-
-  
   }, [Trigger, CurrentPage]);
 
   return (
@@ -343,7 +333,11 @@ export default function PharmacyNew() {
             cursor="pointer"
             mt="10px"
           >
-            <Box borderRight="1px solid #EDEFF2" pr="5px" onClick={filterPending}>
+            <Box
+              borderRight="1px solid #EDEFF2"
+              pr="5px"
+              onClick={filterPending}
+            >
               <Text
                 py="8.5px"
                 px="12px"
@@ -356,7 +350,11 @@ export default function PharmacyNew() {
                 All Pending
               </Text>
             </Box>
-            <Box borderRight="1px solid #EDEFF2" pr="5px" onClick={filterAwaitingConfirmation}>
+            <Box
+              borderRight="1px solid #EDEFF2"
+              pr="5px"
+              onClick={filterAwaitingConfirmation}
+            >
               <Text
                 py="8.5px"
                 px="12px"
@@ -549,7 +547,6 @@ export default function PharmacyNew() {
           </Flex>
 
           {/* Place Order Button */}
-
         </Flex>
 
         <Flex
@@ -733,14 +730,13 @@ export default function PharmacyNew() {
             </Tbody>
           </Table>
         </TableContainer>
-        
-          <Pagination
-            postPerPage={PostPerPage}
-            currentPage={CurrentPage}
-            totalPosts={TotalData}
-            paginate={paginate}
-          />
-        
+
+        <Pagination
+          postPerPage={PostPerPage}
+          currentPage={CurrentPage}
+          totalPosts={TotalData}
+          paginate={paginate}
+        />
       </Box>
 
       {/* Render the appropriate modal */}
@@ -753,11 +749,9 @@ export default function PharmacyNew() {
           order={selectedOrderData}
         />
       ) : (
-        <PharmacyModal
+        <PharmacyWithoutConfirmationModal
           isOpen={isOpen}
           onClose={onClose}
-          type={modalType}
-          selectedPharmacy={selectedPharmacy}
           onSuccess={handleSuccess}
         />
       )}
@@ -767,12 +761,8 @@ export default function PharmacyNew() {
           isOpen={orderModalOpen}
           onClose={() => setOrderModalOpen(false)}
           orderId={selectedOrderId}
-          onConfirm={(prescriptionId) => {
-
-          }}
-          onDispense={(prescriptionId) => {
-
-          }}
+          onConfirm={(prescriptionId) => {}}
+          onDispense={(prescriptionId) => {}}
           onSuccess={handleSuccess}
         />
       )}
