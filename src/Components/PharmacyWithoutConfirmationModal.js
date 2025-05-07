@@ -150,21 +150,24 @@ export default function PharmacyWithoutConfirmationModal({
   };
 
   // Add / remove rows
-  const addProduct = () =>
-    setProducts((prev) => [
-      ...prev,
-      {
-        pharmacy: "",
-        drugSearch: "",
-        drug: "",
-        drugOptions: [],
-        qty: "",
-        price: null,
-        // frequency: "",
-        // duration: "",
-        // dosage: "",
-      },
-    ]);
+  const addProduct = () => {
+    setProducts((prev) => {
+      const first = prev[0] || {};
+      return [
+        ...prev,
+        {
+          // copy the first row’s pharmacy and drugOptions
+          pharmacy: first.pharmacy || "",
+          drugSearch: "",
+          drug: "",
+          drugOptions: first.drugOptions ? [...first.drugOptions] : [],
+          qty: "",
+          price: null,
+        },
+      ];
+    });
+  };
+
   const removeProduct = (i) =>
     products.length > 1 &&
     setProducts((prev) => prev.filter((_, idx) => idx !== i));
@@ -205,31 +208,40 @@ export default function PharmacyWithoutConfirmationModal({
     }
   };
 
-  // Reset & close
+  // inside PharmacyWithoutConfirmationModal
+
   const handleClose = () => {
     setIsLoadingModal(true);
+
+    // grab the first row (if any) so we can keep its pharmacy & drug
+    const first = products[0] || {};
+    const { pharmacy = "", drugOptions = []} = first;
+
     setTimeout(() => {
       onClose();
+
+      // reset patient search, etc.
       setFormData({ patient: "", patientId: "" });
       setSearchMRN("");
       setPatients([]);
-      setProducts((prev) =>
-        prev.map((prod) => ({
-          pharmacy: prod.pharmacy,
-          drugOptions: prod.drugOptions,
+
+      // back to exactly one row—but preserve pharmacy & drug selection
+      setProducts([
+        {
+          pharmacy,
+          drugSearch: "", 
           drug: "",
+          drugOptions: [...drugOptions],
           qty: "",
-          drugSearch: "",
           price: null,
-          // frequency: "",
-          // duration: "",
-          // dosage: "",
-        }))
-      );
+        },
+      ]);
+
       setIsSubmitting(false);
       setIsLoadingModal(false);
     }, 200);
   };
+
   // compute grand total of all line‐item prices
   const grandTotal = products.reduce((sum, prod) => sum + (prod.price || 0), 0);
 
