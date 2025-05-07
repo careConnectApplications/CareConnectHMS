@@ -9,6 +9,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import logo from "../Assets/carelogo.png"
 import { GetReportApi } from "../Utils/ApiCalls";
 import moment from "moment";
+import { FacilityName } from "../Utils/ApiConfig";
 import TableRow from "../Components/TableRow";
 import Preloader from "../Components/Preloader";
 
@@ -90,7 +91,7 @@ export default function PrintLabReport() {
             <Flex justifyContent="center">
                 <Image src={logo} width={"10%"} onClick={() => nav("/")} />
             </Flex>
-            <Text textAlign="center" fontSize="25px" textTransform="uppercase" fontWeight="900" color="blue.blue500">General Hospital Katsina</Text>
+            <Text textAlign="center" fontSize="25px" textTransform="uppercase" fontWeight="900" color="blue.blue500">{FacilityName}</Text>
             <Text textAlign="center" fontSize="20px" textTransform="uppercase" fontWeight="700" color="#242424">Laboratory Department</Text>
 
             <Box border="1px solid gray" p="15px" mt="10px" rounded="8px">

@@ -7,7 +7,9 @@ import { IoMdArrowRoundBack } from "react-icons/io";
 import { MdLocalPrintshop } from "react-icons/md";
 import { useNavigate, useParams } from "react-router-dom";
 import logo from "../Assets/carelogo.png"
+import duplicate from "../Assets/duplicate.jpg"
 import { GetPaymentReceiptApi } from "../Utils/ApiCalls";
+import { FacilityName } from "../Utils/ApiConfig";
 import moment from "moment";
 import TableRow from "../Components/TableRow";
 import Preloader from "../Components/Preloader";
@@ -68,7 +70,7 @@ export default function PrintPaymentReceipt() {
     }, []);
 
     return (
-        <Box px="1%" mt="32px">
+        <Box px="1%" py="22px">
             {IsLoading && (
                 <Preloader />
             )}
@@ -81,12 +83,12 @@ export default function PrintPaymentReceipt() {
             )}
            
             <Text textAlign="center" fontSize="9px" textTransform="uppercase" fontWeight="900" color="#242424">
-                General Hospital Katsina
+          {FacilityName}
             </Text>
             {Data?.numberoftimesprinted > 1 && (
                 <Text textAlign="center" fontSize="12px" textTransform="uppercase" fontWeight="900" color="#242424">
-                    Duplicate
-                </Text>
+                    Duplicate  Duplicate  Duplicate
+                 </Text>
             )}
             <Box border="1px solid gray" p="8px" mt="10px" rounded="8px">
                 <SimpleGrid columns={{ base: 1, md: 2 }} spacing={1}>

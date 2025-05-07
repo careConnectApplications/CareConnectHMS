@@ -17,6 +17,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import logo from "../Assets/carelogo.png";
 import { GetPaymentReceiptApi } from "../Utils/ApiCalls";
 import moment from "moment";
+import { FacilityName } from "../Utils/ApiConfig";
 import TableRow from "../Components/TableRow";
 import Preloader from "../Components/Preloader";
 
@@ -71,7 +72,7 @@ export default function PrintReportSummary() {
         fontWeight="900"
         color="#242424"
       >
-        General Hospital Katsina
+       {FacilityName}
       </Text>
       <Text
         textAlign="center"

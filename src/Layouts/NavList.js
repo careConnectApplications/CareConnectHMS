@@ -193,19 +193,13 @@ export const NavList = (location) => {
       display: isPharmacyStaff(),
       children: [
         {
-          name: "Optimized pharmacy",
+          name: "Pharmacy",
           icon: <MdLocalPharmacy />,
           link: "/dashboard/pharmacy-new",
           active: isActive(location, "/dashboard/pharmacy-new"),
           display: isPharmacyStaff(),
         },
-        {
-          name: "pharmacy",
-          icon: <MdLocalPharmacy />,
-          link: "/dashboard/pharmacy",
-          active: isActive(location, "/dashboard/pharmacy"),
-          display: isPharmacyStaff(),
-        },
+       
       ],
     },
    
@@ -225,20 +219,14 @@ export const NavList = (location) => {
       display: isBillingStaff(),
       children: [
         {
-          name: "Optimized Payment",
+          name: "Payment",
           icon: <MdOutlinePayments />,
           link: "/dashboard/billing-payment",
           active: isActive(location, "/dashboard/billing-payment"),
           display: isBillingStaff(),
         },
 
-        {
-          name: "Payment Group",
-          icon: <MdOutlineAnalytics />,
-          link: "/dashboard/billing-payment-group",
-          active: isActive(location, "/dashboard/billing-payment-group"),
-          display: isBillingStaff(),
-        },
+       
         {
           name: "cashier Report",
           link: "/dashboard/billing/cashier-report",
