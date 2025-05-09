@@ -10,4 +10,4 @@ export const FacilityName = "General Hospital Katsina";
 
 
 export const token = localStorage.getItem("token")
-//
+
