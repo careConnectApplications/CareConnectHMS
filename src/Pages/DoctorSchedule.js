@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate,useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import MainLayout from "../Layouts/Index";
 import { Text, Flex, HStack, Box, useDisclosure } from "@chakra-ui/react";
 import { Table, Thead, Tbody, Tr, Th, TableContainer, Menu, MenuButton, SimpleGrid, Select, MenuList, MenuItem } from "@chakra-ui/react";
@@ -15,7 +15,7 @@ import CreateAppointmentModal from "../Components/CreateAppointmentModal";
 import moment from "moment";
 import Seo from "../Utils/Seo";
 
-import { GetAllPatientsHistoryApi, GetAllTodayQueueHistoryApi,GetOnlyClinicApi } from "../Utils/ApiCalls";
+import { GetAllPatientsHistoryApi, GetAllTodayQueueHistoryApi, GetOnlyClinicApi, GetAllPatientsHistoryFilteredApi } from "../Utils/ApiCalls";
 import Pagination from "../Components/Pagination";
 import { configuration } from '../Utils/Helpers'
 import Preloader from "../Components/Preloader";
@@ -28,13 +28,13 @@ export default function DoctoerSchedule() {
   const [TodayQueue, setTodayQueue] = useState(false);
   const [Completed, setCompleted] = useState(false);
   const [Inprogress, setInprogress] = useState(false);
-  const [Clinic, setClinic] = useState("");
+  const [Clinic, setClinic] = useState(null);
   const [ClinicData, setClinicData] = useState([]);
   const [Loading, setLoading] = useState(false);
   const [Trigger, setTrigger] = useState(false);
   const [OldPayload, setOldPayload] = useState({});
 
-  const [Data, setData] = useState(JSON.parse(localStorage.getItem("patientList"))  ? JSON.parse(localStorage.getItem("patientList")): []);
+  const [Data, setData] = useState(JSON.parse(localStorage.getItem("patientList")) ? JSON.parse(localStorage.getItem("patientList")) : []);
   const [QueueData, setQueueData] = useState([]);
 
   const [FilterData, setFilterData] = useState(Data);
@@ -43,6 +43,8 @@ export default function DoctoerSchedule() {
   // Pagination settings to follow
   const [CurrentPage, setCurrentPage] = useState(1);
   const [PostPerPage, setPostPerPage] = useState(configuration.sizePerPage);
+  const [TotalData, setTotalData] = useState("");
+  const [Status, setStatus] = useState("scheduled");
 
   //get current post
   const indexOfLastSra = CurrentPage * PostPerPage;
@@ -61,25 +63,50 @@ export default function DoctoerSchedule() {
 
   const [FilteredData, setFilteredData] = useState(null);
 
+  const [Key, setKey] = useState("");
+  const [Value, setValue] = useState("");
+
+  const getFilteredScheduled = async (key, value) => {
+    setKey(key)
+    setValue(value)
+
+    try {
+      setIsLoading(true);
+      const result = await GetAllPatientsHistoryFilteredApi(Clinic, PostPerPage, CurrentPage, Status, key, value);
+      console.log("all fitlered payment", result);
+      if (result.status === true) {
+        setFilteredData(result.queryresult.appointmentdetails);
+        setTotalData(result.queryresult.totalappointmentdetails)
+      }
+    } catch (e) {
+      console.error(e.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
 
   const filterBy = (title) => {
 
     if (title === "appointmentId") {
-      let filter = Data.filter(item => item.appointmentid?.toLowerCase().includes(SearchInput.toLowerCase()))
-      setFilteredData(filter)
+      getFilteredScheduled("appointmentid", SearchInput)
+    } else if (title === "firstName") {
+      getFilteredScheduled("firstName", SearchInput)
 
-    } else if (title === "name") {
-      let filter = Data.filter(item => item.patient?.firstName?.toLowerCase().includes(SearchInput.toLowerCase()) || item.patient?.lastName?.toLowerCase().includes(SearchInput.toLowerCase()))
-      setFilteredData(filter)
+    } else if (title === "lastName") {
+      getFilteredScheduled("lastName", SearchInput)
+
+    } else if (title === "mrn") {
+      getFilteredScheduled("MRN", SearchInput)
 
     } else if (title === "appointmentType") {
-      let filter = Data.filter(item => item.appointmenttype?.toLowerCase().includes(SearchInput.toLowerCase()))
-      setFilteredData(filter)
+      getFilteredScheduled("appointmenttype", SearchInput)
 
     }
 
-
   }
+
+
 
   // Search Filter settings to follow end here
 
@@ -89,14 +116,38 @@ export default function DoctoerSchedule() {
     status: "",
   });
 
+  const getAllPatientHistory = async (status) => {
+    setIsLoading(true)
+    try {
+      const result = await GetAllPatientsHistoryApi(Clinic, PostPerPage, CurrentPage, status);
+      console.log("getAllPatientHistory", result)
+      if (result.status === true) {
+        setIsLoading(false)
+        setLoading(false)
+        setData(result.queryresult.appointmentdetails);
+        setFilterData(result.queryresult.appointmentdetails);
+        setTotalData(result.queryresult.totalappointmentdetails)
+
+
+        localStorage.setItem("patientList", JSON.stringify(result.queryresult.appointmentdetails))
+      }
+    } catch (e) {
+      console.error(e.message);
+    }
+  };
+
 
   const nav = useNavigate();
 
 
   const filterAll = () => {
     setAll(true);
+    setInprogress(false);
+    setCompleted(false);
     setTodayQueue(false);
-    setFilterData(Data);
+    getAllPatientHistory("scheduled")
+    setStatus("scheduled")
+    setCurrentPage(1)
   };
 
   const filterTodayQueue = () => {
@@ -106,54 +157,35 @@ export default function DoctoerSchedule() {
   };
 
   const filterCompleted = () => {
-      setAll(false);
-      setTodayQueue(false);
-      setCompleted(true);
-      setInprogress(false);
-  
-      const filterData = Data.filter((item) => item.status === "complete");
-  
-      setFilterData(filterData);
-    };
-  const filterInprogress = () => {
-      setAll(false);
-      setTodayQueue(false);
-      setCompleted(false);
-      setInprogress(true);
-
-  
-      const filterData = Data.filter((item) => item.status === "inprogress");
-  
-      setFilterData(filterData);
-    };
-
-  const getAllPatientHistory = async () => {
-    setIsLoading(true)
-    try {
-      const result = await GetAllPatientsHistoryApi(Clinic);
-      console.log("getAllPatientHistory", result)
-      if (result.status === true) {
-        setIsLoading(false)
-        setLoading(false)
-        setData(result.queryresult.appointmentdetails);
-        setFilterData(result.queryresult.appointmentdetails);
-
-        localStorage.setItem("patientList",JSON.stringify(result.queryresult.appointmentdetails))
-      }
-    } catch (e) {
-      console.error(e.message);
-    }
+    setAll(false);
+    setTodayQueue(false);
+    setCompleted(true);
+    setInprogress(false);
+    getAllPatientHistory("complete")
+    setStatus("complete")
+    setCurrentPage(1)
   };
+  const filterInprogress = () => {
+    setAll(false);
+    setTodayQueue(false);
+    setCompleted(false);
+    setInprogress(true);
+    getAllPatientHistory("inprogress")
+    setStatus("inprogress")
+    setCurrentPage(1)
+  };
+
+
   const getAllClinic = async () => {
     try {
-        const result = await GetOnlyClinicApi();
-        console.log("getonlyClinic",result);
-        setClinicData(result.queryresult.clinicdetails)
-       
+      const result = await GetOnlyClinicApi();
+      console.log("getonlyClinic", result);
+      setClinicData(result.queryresult.clinicdetails)
+
     } catch (e) {
-        // activateNotifications(e.message, "error");
+      // activateNotifications(e.message, "error");
     }
-};
+  };
 
   const getAllTodayQueue = async () => {
     try {
@@ -183,7 +215,7 @@ export default function DoctoerSchedule() {
 
     }, 5000)
   }
-const location = useLocation().pathname
+  const location = useLocation().pathname
 
   const ExaminePatient = (PatientId, AppointmentID, Name, status) => {
     localStorage.setItem('pathLocation', location)
@@ -200,15 +232,37 @@ const location = useLocation().pathname
   }
 
 
-  const fetchPatient = ()=>{
+  const fetchPatient = () => {
     setLoading(true)
-    getAllPatientHistory();
+    getAllPatientHistory("scheduled");
     getAllTodayQueue()
   }
   useEffect(() => {
-   
+
     getAllClinic()
-  }, [isOpen, Trigger]);
+
+    if (Clinic != null) {
+
+      if (FilteredData?.length > 0 || FilteredData !== null) {
+        getFilteredScheduled(Key, Value)
+      } else {
+
+        if (All === true) {
+          getAllPatientHistory("scheduled");
+        } else if (Completed === true) {
+          getAllPatientHistory("complete");
+        } else if (Inprogress === true) {
+
+          getAllPatientHistory("inprogress");
+        }
+
+      }
+
+
+    }
+
+
+  }, [isOpen, Trigger, CurrentPage]);
 
 
 
@@ -230,7 +284,7 @@ const location = useLocation().pathname
           Doctor Schedule
         </Text>
         <Text color="#667085" fontWeight="400" fontSize="18px">
-          ({Data?.length})
+          ({TotalData})
         </Text>
       </HStack>
       <Text color="#686C75" mt="9px" fontWeight="400" fontSize="15px">
@@ -239,7 +293,7 @@ const location = useLocation().pathname
       </Text>
       <Text color="blue.blue500" mt="9px" fontWeight="400" fontSize="15px">
         Kindly Select Clinic you want to manage
-       </Text>
+      </Text>
       <SimpleGrid mt="5px" columns={{ base: 1, md: 2, lg: 2 }} spacing={10}>
         <Select
           id="type"
@@ -258,7 +312,7 @@ const location = useLocation().pathname
 
         </Select>
 
-        <Button isLoading={Loading} onClick={fetchPatient} disabled={Clinic !=="" ? false: true}>  Fetch Patient</Button>
+        <Button isLoading={Loading} onClick={fetchPatient} disabled={Clinic !== "" ? false : true}>  Fetch Patient</Button>
       </SimpleGrid>
 
 
@@ -293,10 +347,8 @@ const location = useLocation().pathname
                 fontWeight={"500"}
                 fontSize={"13px"}
               >
-                All
-                <Box color="#667085" as="span" fontWeight="400" fontSize="13px">
-                  ({Data?.length})
-                </Box>
+                Scheduled
+
               </Text>
             </Box>
             <Box borderRight="1px solid #EDEFF2" pr="5px" onClick={filterTodayQueue}>
@@ -326,7 +378,7 @@ const location = useLocation().pathname
                 fontSize={"13px"}
               >
                 Completed
-              
+
               </Text>
             </Box>
             <Box borderRight="1px solid #EDEFF2" pr="5px" onClick={filterInprogress}>
@@ -340,7 +392,7 @@ const location = useLocation().pathname
                 fontSize={"13px"}
               >
                 In progress
-              
+
               </Text>
             </Box>
 
@@ -353,7 +405,10 @@ const location = useLocation().pathname
             justifyContent={"flex-end"}
           >
             <HStack>
-              <Input label="Search" onChange={(e) => setSearchInput(e.target.value)} value={SearchInput} bColor="#E4E4E4" leftIcon={<BiSearch />} />
+              <Input label="Search" onChange={(e) => {
+                setSearchInput(e.target.value);
+                setCurrentPage(1)
+              }} value={SearchInput} bColor="#E4E4E4" leftIcon={<BiSearch />} />
 
               <Menu isLazy>
                 <MenuButton as={Box}>
@@ -375,10 +430,16 @@ const location = useLocation().pathname
                 </MenuButton>
                 <MenuList >
 
-                  <MenuItem onClick={() => filterBy("name")} textTransform="capitalize" fontWeight={"500"} color='#2F2F2F' _hover={{ color: "#fff", fontWeight: "400", bg: "blue.blue500" }}>
+                  <MenuItem onClick={() => filterBy("firstName")} textTransform="capitalize" fontWeight={"500"} color='#2F2F2F' _hover={{ color: "#fff", fontWeight: "400", bg: "blue.blue500" }}>
                     <HStack fontSize="14px">
 
-                      <Text>by Patient Name</Text>
+                      <Text>by First Name</Text>
+                    </HStack>
+                  </MenuItem>
+                  <MenuItem onClick={() => filterBy("lastName")} textTransform="capitalize" fontWeight={"500"} color='#2F2F2F' _hover={{ color: "#fff", fontWeight: "400", bg: "blue.blue500" }}>
+                    <HStack fontSize="14px">
+
+                      <Text>by Last Name</Text>
                     </HStack>
                   </MenuItem>
                   <MenuItem onClick={() => filterBy("mrn")} textTransform="capitalize" fontWeight={"500"} color='#2F2F2F' _hover={{ color: "#fff", fontWeight: "400", bg: "blue.blue500" }}>
@@ -396,6 +457,8 @@ const location = useLocation().pathname
                   <MenuItem onClick={() => {
                     setFilteredData(null)
                     setSearchInput("")
+                    filterAll()
+                    setCurrentPage(1)
                   }} textTransform="capitalize" fontWeight={"500"} color='#2F2F2F' _hover={{ color: "#fff", fontWeight: "400", bg: "blue.blue500" }}>
                     <HStack fontSize="14px">
 
@@ -508,7 +571,7 @@ const location = useLocation().pathname
                 {
 
                   SearchInput === "" || FilteredData === null ? (
-                    PaginatedData.map((item, i) => (
+                    FilterData.map((item, i) => (
                       <TableRow
                         key={i}
                         type="schedule-appointment"
@@ -520,7 +583,7 @@ const location = useLocation().pathname
                         mrn={`${item.patient?.MRN} `}
                         clinic={item.clinic}
                         status={item.status}
-                        vitalStatus={item?.vitals?.status}
+                        vitalStatus={item?.vitalstatus}
                         onClick={() => ExaminePatient(item.patient?._id, item._id, `${item.patient?.firstName} ${item.patient?.lastName}`, item.status)}
                         onVital={() => takeVitals(item)}
 
@@ -540,7 +603,7 @@ const location = useLocation().pathname
                           mrn={`${item.patient?.MRN} `}
                           clinic={item.clinic}
                           status={item.status}
-                          vitalStatus={item?.vitals?.status}
+                          vitalStatus={item?.vitalstatus}
                           onClick={() => ExaminePatient(item.patient?._id, item._id, `${item.patient?.firstName} ${item.patient?.lastName}`, item.status)}
                           onVital={() => takeVitals(item)}
 
@@ -556,7 +619,7 @@ const location = useLocation().pathname
             </Table>
           </TableContainer>
 
-          <Pagination postPerPage={PostPerPage} currentPage={CurrentPage} totalPosts={Data.length} paginate={paginate} />
+          <Pagination postPerPage={PostPerPage} currentPage={CurrentPage} totalPosts={TotalData} paginate={paginate} />
         </Box>
 
         <VitalsModal isOpen={isOpen} oldPayload={OldPayload} onClose={onClose} type={ModalState} activateNotifications={activateNotifications} />
