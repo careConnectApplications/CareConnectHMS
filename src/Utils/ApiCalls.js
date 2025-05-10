@@ -402,11 +402,40 @@ export const GetFullReportSummaryApi = (type, start, end) => {
       }
     });
 };
-export const GetAllPatientsHistoryApi = (clinic) => {
+export const GetAllPatientsHistoryApi = (clinic,postPerPage, pageNo, Status ) => {
   // Configure the GET request
   let config = {
     method: "get",
-    url: `${baseUrl}/appointment/getallmedicalhistory/${clinic}`,
+    url: `${baseUrl}/appointment/getallmedicalhistoryoptimized/${clinic}?page=${pageNo}&size=${postPerPage}&status=${Status}`,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  };
+
+  return axios
+    .request(config)
+    .then((response) => {
+      return response.data; // Return the data part of the response
+    })
+    .catch((error) => {
+      console.log("Error fetching users:", error.response);
+      if (error.response && error.response.data.msg) {
+        throw new Error(error.response.data.msg);
+      } else if (error.response && error.response.data) {
+        throw new Error(error.response);
+      } else if (error.request) {
+        throw new Error(error.msg);
+      } else {
+        throw new Error(error.msg);
+      }
+    });
+};
+export const GetAllPatientsHistoryFilteredApi = (clinic,postPerPage, pageNo, Status,key,value ) => {
+  // Configure the GET request
+  let config = {
+    method: "get",
+    url: `${baseUrl}/appointment/getallmedicalhistoryoptimized/${clinic}?page=${pageNo}&size=${postPerPage}&status=${Status}&${key}=${value}`,
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,

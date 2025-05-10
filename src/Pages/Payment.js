@@ -232,7 +232,7 @@ export default function Payment() {
      
     }
    
-    // filterAll()
+   
   }, [isOpen, Trigger, CurrentPage]);
 
   return (
