@@ -6,6 +6,7 @@ import NotificationCard from '../Components/NotificationCard'
 import { IoIosArrowDown, IoMdNotificationsOutline } from 'react-icons/io'
 import { BsQuestionCircle } from "react-icons/bs";
 import { MdLogout } from "react-icons/md";
+import { FacilityName } from "../Utils/ApiConfig";
 import { CgMenuLeft } from "react-icons/cg";
 import { IoSettingsOutline } from "react-icons/io5";
 
@@ -78,10 +79,10 @@ export default function NavBar({ showSearch = true,showNav = true }) {
             <Box w="20%" display={["block", "block", "block", "block", "none"]} color="blue.blue500" fontSize="30px" onClick={onOpen}>
                 <CgMenuLeft />
             </Box>
-            <Box w="20%" display={["none", "none", "none", "none", "block"]} color="blue.blue500" fontWeight="700" fontSize="17px">
-                <Text>{onlineUser.role}</Text>
+            <Box w="40%" display={["none", "none", "none", "none", "block"]} color="blue.blue500" textTransform="uppercase" fontWeight="700" fontSize="15px">
+                <Text>{onlineUser.role} ~ {FacilityName}</Text>
             </Box>
-            <Flex justifyContent="flex-end" w={["65%", "45%", "45%", "80%", "80%"]} cursor={"pointer"}>
+            <Flex justifyContent="flex-end" w={["65%", "45%", "45%", "80%", "60%"]} cursor={"pointer"}>
 
 
                 <HStack>
