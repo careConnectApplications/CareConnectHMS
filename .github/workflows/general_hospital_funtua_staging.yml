@@ -1,0 +1,62 @@
+name: Build and Deploy React App to Remote Server
+
+on:
+  push:
+    branches: [general_hospital_funtua_staging] #trigger for push to staging
+  pull_request:
+    branches: [general_hospital_funtua_staging] # trigger for pull request to staging
+
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout code from the repository
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Step 2: Set up Node.js and install dependencies
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "22.x" # Specify the Node.js version
+
+      - name: Install dependencies
+        run: npm install
+
+      # Step 3: Build the React app
+      - name: Build React app
+        run: npm run build
+      # Step 4: Verify if build directory exists
+      - name: Check if build directory exists
+        run: |
+          echo "Listing files in the repository:"
+          ls -alh
+          if [ ! -d "./build" ]; then
+            echo "Build directory not found, aborting deployment."
+            exit 1
+          else
+            echo "Build directory found."
+          fi
+
+      # Step 5: Deploy to remote server via SSH
+      - name: Deploy to remote server
+        env:
+          SSH_USERNAME: ${{ secrets.SSH_USERNAME_LIVE }}
+          SSH_PASSWORD: ${{ secrets.SSH_PASSWORD }}
+          SERVER_IP: ${{ secrets.SERVER_IP_LIVE }}
+        run: |
+          # Install SSH pass to use password for SSH
+          sudo apt-get update
+          sudo apt-get install -y sshpass
+
+          # Deploy build to the server using SCP
+          sshpass -p "$SSH_PASSWORD" scp -o StrictHostKeyChecking=no -r ./build "$SSH_USERNAME"@"$SERVER_IP":/var/www/html/staging/ghftastaging
+
+          # Optionally restart your app after copying the build
+          sshpass -p "$SSH_PASSWORD" ssh -o StrictHostKeyChecking=no "$SSH_USERNAME"@"$SERVER_IP" << 'EOF'
+            # Stop any existing server (optional)
+            #pm2 stop my-app || true
+            # Restart the server (or your app, depending on your setup)
+            #pm2 start /path/to/your/server/app.js
+          EOF
