@@ -25,7 +25,7 @@ import Seo from "../Utils/Seo";
 import CreateTestOrderModal from "../Components/CreateTestOrderModal";
 import RequestLabOtherModal from "../Components/RequestLabOtherModal";
 import ConfirmLabOrderModal from "../Components/ConfirmLabOrderModal";
-import { GetAllScheduledLabApi,GetAllScheduledLabFilteredApi } from "../Utils/ApiCalls";
+import { GetAllScheduledLabApi, GetAllScheduledLabFilteredApi } from "../Utils/ApiCalls";
 import Pagination from "../Components/Pagination";
 import { configuration } from "../Utils/Helpers";
 import Preloader from "../Components/Preloader";
@@ -80,14 +80,14 @@ export default function LabProcessing() {
   const [Value, setValue] = useState("");
 
 
-  const getFilteredBilling = async (key, value) => {
+  const getFilteredScheduledlab = async (key, value) => {
     setKey(key)
     setValue(value)
 
     try {
       setIsLoading(true);
       const result = await GetAllScheduledLabFilteredApi(PostPerPage, CurrentPage, Status, key, value);
-      console.log("all fitlered payment", result);
+      console.log("all fitlered Lab", result);
       if (result.status === true) {
 
         setFilteredData(result.queryresult.labdetails);
@@ -102,20 +102,20 @@ export default function LabProcessing() {
 
   const filterBy = (title) => {
 
-   if (title === "mrn") {
-      getFilteredBilling("MRN", SearchInput)
-    }  else if (title === "firstName") {
-      
-      getFilteredBilling("firstName", SearchInput)   
-      
+    if (title === "mrn") {
+      getFilteredScheduledlab("MRN", SearchInput)
+    } else if (title === "firstName") {
+
+      getFilteredScheduledlab("firstName", SearchInput)
+
     } else if (title === "lastName") {
-      
-      getFilteredBilling("lastName", SearchInput)
-      
-    }else if (title === "testName") {
-      
-      getFilteredBilling("testname", SearchInput)
-      
+
+      getFilteredScheduledlab("lastName", SearchInput)
+
+    } else if (title === "testName") {
+
+      getFilteredScheduledlab("testname", SearchInput)
+
     } else if (title === "date") {
       let endDateObj = new Date(EndDate);
       endDateObj.setDate(endDateObj.getDate() + 1);
@@ -221,7 +221,7 @@ export default function LabProcessing() {
   // Re-fetch lab orders whenever a modal closes or after a new order is created.
   useEffect(() => {
     if (FilteredData?.length > 0 || FilteredData !== null) {
-      // getFilteredBilling(Key,Value) 
+      getFilteredScheduledlab(Key,Value) 
     } else {
 
       if (Scheduled === true) {
@@ -333,7 +333,8 @@ export default function LabProcessing() {
               {ByDate === false ? (
                 <Input
                   label="Search"
-                  onChange={(e) => {setSearchInput(e.target.value);
+                  onChange={(e) => {
+                    setSearchInput(e.target.value);
                     setCurrentPage(1)
                   }}
                   value={SearchInput}
@@ -473,6 +474,8 @@ export default function LabProcessing() {
                       setByDate(false);
                       setStartDate("");
                       setEndDate("");
+                      filterScheduled()
+                      setCurrentPage(1)
                     }}
                     textTransform="capitalize"
                     fontWeight="500"
@@ -492,7 +495,9 @@ export default function LabProcessing() {
             </HStack>
           </Flex>
 
-          <Flex
+          
+        </Flex>
+        <Flex
             justifyContent="space-between"
             flexWrap="wrap"
             mt={["10px", "10px", "10px", "10px"]}
@@ -506,7 +511,6 @@ export default function LabProcessing() {
               Request Order
             </Button>
           </Flex>
-        </Flex>
       </Box>
 
       {/* Data Table */}
