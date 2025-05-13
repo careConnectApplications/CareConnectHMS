@@ -4762,11 +4762,43 @@ export const UploadProcedureResultApi = (file, procedureId) => {
     });
 };
 
-export const ReadAllRadiologyApi = () => {
+export const ReadAllRadiologyApi = (postsPerPage, currentPage, status) => {
   let config = {
     method: "get",
     maxBodyLength: Infinity,
-    url: `${baseUrl}/radiology/readallradiology`,
+    url: `${baseUrl}/radiology/readallradiologyoptimized?status=${status}&page=${currentPage}&size=${postsPerPage}`,
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
+
+  return axios
+    .request(config)
+    .then((response) => {
+      console.log(
+        "Get All Radiology Transactions Success:",
+        JSON.stringify(response.data)
+      );
+      return response.data;
+    })
+    .catch((error) => {
+      console.log("Error in Get All Radiology Transactions:", error.response);
+      if (error.response && error.response.data.msg) {
+        throw new Error(error.response.data.msg);
+      } else if (error.response && error.response.data) {
+        throw new Error(error.response);
+      } else if (error.request) {
+        throw new Error(error.msg);
+      } else {
+        throw new Error(error.msg);
+      }
+    });
+};
+export const ReadAllRadiologyFilteredApi = (postsPerPage, currentPage, status,key,value) => {
+  let config = {
+    method: "get",
+    maxBodyLength: Infinity,
+    url: `${baseUrl}/radiology/readallradiologyoptimized?status=${status}&page=${currentPage}&size=${postsPerPage}&${key}=${value}`,
     headers: {
       Authorization: `Bearer ${token}`,
     },

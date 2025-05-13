@@ -30,7 +30,7 @@ import ShowToast from "../Components/ToastNotification";
 import {
   ReadAllRadiologyApi,
   UploadRadiologyResultApi,
-  ViewMultipleRadiologyResultsApi,
+  ViewMultipleRadiologyResultsApi,ReadAllRadiologyFilteredApi
 } from "../Utils/ApiCalls";
 import TableRowY from "../Components/TableRowY";
 import SingleRadiologyModal from "../Components/SingleRadiologyModal";
@@ -45,16 +45,25 @@ export default function RadiologyPage() {
   const [SearchInput, setSearchInput] = useState("");
   const [FilteredData, setFilteredData] = useState(null);
 
+
+  const [TotalData, setTotalData] = useState("");
+  const [Status, setStatus] = useState("scheduled");
+
+  const postsPerPage = configuration.sizePerPage;
+  const [currentPage, setCurrentPage] = useState(1);
+
+
+
+
   // Date filter states
   const [ByDate, setByDate] = useState(false);
   const [StartDate, setStartDate] = useState("");
   const [EndDate, setEndDate] = useState("");
 
   // Status filter states - now including "awaiting confirmation"
-  const [all, setAll] = useState(true);
-  const [inProgress, setInProgress] = useState(false);
-  const [processed, setProcessed] = useState(false);
-  const [awaitingConfirmation, setAwaitingConfirmation] = useState(false);
+  const [InProgress, setInProgress] = useState(true);
+  const [AwaitingConfirmation, setAwaitingConfirmation] = useState(false);
+  const [Processed, setProcessed] = useState(false);
 
   // Trigger for refreshing data (e.g., after file upload or order creation)
   const [Trigger, setTrigger] = useState(false);
@@ -119,41 +128,42 @@ export default function RadiologyPage() {
   };
 
   // ------------- Fetch Radiology Data -------------
-  const handleFetchRadiology = async () => {
-    setIsLoading(true);
-    try {
-      const result = await ReadAllRadiologyApi();
-      // Assuming the API returns data in this structure:
-      const radiologyDetails = result.queryresult.radiologydetails;
-      setData(radiologyDetails);
-      setFilterData(radiologyDetails);
-      setFilteredData(null);
-    } catch (error) {
-      console.error("Error fetching radiology data:", error);
-      setToast({
-        show: true,
-        message: "Error fetching radiology data",
-        status: "error",
-      });
-    } finally {
-      setIsLoading(false);
-      setHasFetched(true);
-    }
-  };
 
-  useEffect(() => {
-    handleFetchRadiology();
-  }, [Trigger]);
 
   // ------------- Filtering Functions -------------
   // Now, the search input will only update the state.
   const handleInputChange = (e) => {
     const value = e.target.value;
     setSearchInput(value);
+     setCurrentPage(1)
     // No auto-filtering on keystroke
   };
 
   // When a user selects a filter option from the menu.
+  const [Key, setKey] = useState("");
+    const [Value, setValue] = useState("");
+  
+  
+    const getFilteredScheduledRadiology = async (key, value) => {
+      setKey(key)
+      setValue(value)
+  
+      try {
+        setIsLoading(true);
+        const result = await ReadAllRadiologyFilteredApi(postsPerPage, currentPage, Status, key, value);
+        console.log("all fitlered radiology", result);
+        if (result.status === true) {
+  
+          setFilteredData(result.queryresult.radiologydetails);
+          setTotalData(result.queryresult.totalradiologydetails)
+        }
+      } catch (e) {
+        console.error(e.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
   const filterBy = (title) => {
     setCurrentFilter(title);
     if (title === "date") {
@@ -169,112 +179,44 @@ export default function RadiologyPage() {
       }
     } else {
       if (SearchInput.trim() !== "") {
-        const lowerValue = SearchInput.toLowerCase();
-        let filtered;
-        if (title === "testid") {
-          filtered = Data.filter(
-            (item) =>
-              item.testid && item.testid.toLowerCase().includes(lowerValue)
-          );
-        } else if (title === "testname") {
-          filtered = Data.filter(
-            (item) =>
-              item.testname && item.testname.toLowerCase().includes(lowerValue)
-          );
-        } else if (title === "department") {
-          filtered = Data.filter(
-            (item) =>
-              item.department &&
-              item.department.toLowerCase().includes(lowerValue)
-          );
-        } else if (title === "patient") {
-          filtered = Data.filter(
-            (item) =>
-              item.patient &&
-              ((item.patient.firstName &&
-                item.patient.firstName.toLowerCase().includes(lowerValue)) ||
-                (item.patient.lastName &&
-                  item.patient.lastName.toLowerCase().includes(lowerValue)))
-          );
-        } else if (title === "mrn") {
-          filtered = Data.filter((item) => {
-            const mrn = String(
-              item.mrn || item.patient?.MRN || ""
-            ).toLowerCase();
-            return mrn.includes(lowerValue);
-          });
+        
+        if (title === "mrn") {
+          getFilteredScheduledRadiology("MRN", SearchInput)
+        } else if (title === "firstName") {
+    
+          getFilteredScheduledRadiology("firstName", SearchInput)
+    
+        } else if (title === "lastName") {
+    
+          getFilteredScheduledRadiology("lastName", SearchInput)
+    
+        } else if (title === "testName") {
+    
+          getFilteredScheduledRadiology("testname", SearchInput)
+    
+        }else if (title === "testid") {
+    
+          getFilteredScheduledRadiology("testid", SearchInput)
+    
         }
-        setFilteredData(filtered);
+       
       } else {
         setFilteredData(null);
       }
     }
   };
 
-  const clearFilter = () => {
-    setSearchInput("");
-    setFilteredData(null);
-    setByDate(false);
-    setStartDate("");
-    setEndDate("");
-    setCurrentFilter("all");
-  };
+ 
 
   // Determine which dataset to display: either the search/date-filtered data or the status-filtered data
   const dataToDisplay =
     SearchInput === "" || FilteredData === null ? FilterData : FilteredData;
 
-  // ------------- Status Filters -------------
-  const filterAll = () => {
-    setAll(true);
-    setInProgress(false);
-    setProcessed(false);
-    setAwaitingConfirmation(false);
-    setFilterData(Data);
-  };
 
-  const filterInProgress = () => {
-    setAll(false);
-    setInProgress(true);
-    setProcessed(false);
-    setAwaitingConfirmation(false);
-    const filtered = Data.filter((item) => {
-      const status = item.status?.toLowerCase();
-      return status === "inprogress";
-    });
-    setFilterData(filtered);
-  };
-
-  const filterAwaitingConfirmation = () => {
-    setAll(false);
-    setInProgress(false);
-    setProcessed(false);
-    setAwaitingConfirmation(true);
-    const filtered = Data.filter((item) => {
-      const status = item.status?.toLowerCase();
-      return status === "awaiting confirmation";
-    });
-    setFilterData(filtered);
-  };
-
-  const filterProcessed = () => {
-    setAll(false);
-    setInProgress(false);
-    setProcessed(true);
-    setAwaitingConfirmation(false);
-    const filtered = Data.filter((item) => {
-      const status = item.status?.toLowerCase();
-      return status === "processed";
-    });
-    setFilterData(filtered);
-  };
 
   // ------------- Pagination -------------
-  const postsPerPage = configuration.sizePerPage;
-  const [currentPage, setCurrentPage] = useState(1);
-  const indexOfLastItem = currentPage * postsPerPage;
-  const indexOfFirstItem = indexOfLastItem - postsPerPage;
-  const PaginatedData = FilterData.slice(indexOfFirstItem, indexOfLastItem);
+  
+  
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   // ------------- File Upload (existing functionality) -------------
@@ -443,6 +385,85 @@ export default function RadiologyPage() {
     onViewOpen();
   };
 
+  const handleFetchRadiology = async (status) => {
+    setIsLoading(true);
+    try {
+      const result = await ReadAllRadiologyApi(postsPerPage, currentPage, status);
+      // Assuming the API returns data in this structure:
+      const radiologyDetails = result.queryresult.radiologydetails;
+      console.log("ReadRadiology", result)
+      setData(radiologyDetails);
+      setFilterData(radiologyDetails);
+      setTotalData(result.queryresult.totalradiologydetails)
+      setIsLoading(false);
+    } catch (error) {
+      console.error("Error fetching radiology data:", error);
+      setToast({
+        show: true,
+        message: "Error fetching radiology data",
+        status: "error",
+      });
+    } 
+  };
+
+
+  const filterInProgress = () => {
+    setInProgress(true);
+    setAwaitingConfirmation(false);
+    setProcessed(false);
+    handleFetchRadiology("inprogress")
+    setStatus("inprogress")
+    setCurrentPage(1)
+  };
+
+  const filterProcessed = () => {
+    setInProgress(false);
+    setProcessed(true);
+    setAwaitingConfirmation(false);
+    handleFetchRadiology("processed")
+    setStatus("processed")
+    setCurrentPage(1)
+  };
+  const filterAwaitingConfirmation = () => {
+    setInProgress(false);
+    setProcessed(false);
+    setAwaitingConfirmation(true);
+    handleFetchRadiology("awaiting confirmation")
+    setStatus("awaiting confirmation")
+    setCurrentPage(1)
+  };
+
+
+  const clearFilter = () => {
+    setSearchInput("");
+    setFilteredData(null);
+    setByDate(false);
+    setStartDate("");
+    setEndDate("");
+    filterInProgress()
+    setCurrentPage(1)
+  };
+
+
+  useEffect(() => {
+    handleFetchRadiology();
+
+    if (FilteredData?.length > 0 || FilteredData !== null) {
+      getFilteredScheduledRadiology(Key,Value) 
+    } else {
+
+      if (InProgress === true) {
+        handleFetchRadiology("inprogress")
+      } else if (Processed === true) {
+        handleFetchRadiology("processed")
+      } else if (AwaitingConfirmation === true) {
+        handleFetchRadiology("awaiting confirmation")
+      }
+
+
+    }
+  }, [isOpen, Trigger, currentPage]);
+
   return (
     <MainLayout>
       <Seo
@@ -459,7 +480,7 @@ export default function RadiologyPage() {
             Radiology
           </Text>
           <Text color="#667085" fontWeight="400" fontSize="18px">
-            ({Data.length})
+            ({TotalData})
           </Text>
         </HStack>
         <Text color="#686C75" mt="9px" fontWeight="400" fontSize="15px">
@@ -485,68 +506,51 @@ export default function RadiologyPage() {
               py="3.5px"
               px="5px"
               cursor="pointer"
-              mt="10px"
+              mt={["10px", "10px", "0px", "0px"]}
             >
-              <Box borderRight="1px solid #EDEFF2" pr="5px" onClick={filterAll}>
+              <Box borderRight="1px solid #EDEFF2" pr="5px" onClick={filterInProgress}>
                 <Text
                   py="8.5px"
                   px="12px"
-                  bg={all ? "#fff" : "transparent"}
+                  bg={InProgress ? "#fff" : "transparent"}
                   rounded="7px"
-                  color="#1F2937"
-                  fontWeight="500"
-                  fontSize={["11px", "13px"]}
+                  color={"#1F2937"}
+                  fontWeight={"500"}
+                  fontSize={"13px"}
                 >
-                  All
+                  InProgress
+
                 </Text>
               </Box>
-              <Box
-                borderRight="1px solid #EDEFF2"
-                pr="5px"
-                onClick={filterInProgress}
-              >
+              <Box borderRight="1px solid #EDEFF2" pr="5px" onClick={filterAwaitingConfirmation}>
                 <Text
                   py="8.5px"
                   px="12px"
-                  bg={inProgress ? "#fff" : "transparent"}
+                  bg={AwaitingConfirmation ? "#fff" : "transparent"}
                   rounded="7px"
-                  color="#1F2937"
-                  fontWeight="500"
-                  fontSize={["11px", "13px"]}
-                >
-                  Inprogress
-                </Text>
-              </Box>
-              <Box
-                borderRight="1px solid #EDEFF2"
-                pr="5px"
-                onClick={filterAwaitingConfirmation}
-              >
-                <Text
-                  py="8.5px"
-                  px="12px"
-                  bg={awaitingConfirmation ? "#fff" : "transparent"}
-                  rounded="7px"
-                  color="#1F2937"
-                  fontWeight="500"
-                  fontSize={["11px", "13px"]}
+                  color={"#1F2937"}
+                  fontWeight={"500"}
+                  fontSize={"13px"}
                 >
                   Awaiting Confirmation
+
                 </Text>
               </Box>
-              <Box onClick={filterProcessed}>
+              <Box borderRight="1px solid #EDEFF2" pr="5px" onClick={filterProcessed}>
                 <Text
                   py="8.5px"
                   px="12px"
-                  bg={processed ? "#fff" : "transparent"}
+                  bg={Processed ? "#fff" : "transparent"}
                   rounded="7px"
-                  color="#1F2937"
-                  fontWeight="500"
-                  fontSize={["11px", "13px"]}
+                  color={"#1F2937"}
+                  fontWeight={"500"}
+                  fontSize={"13px"}
                 >
                   Processed
+
                 </Text>
               </Box>
+
             </Flex>
 
             {/* Search & Filter Options */}
@@ -633,7 +637,7 @@ export default function RadiologyPage() {
                       </HStack>
                     </MenuItem>
                     <MenuItem
-                      onClick={() => filterBy("testname")}
+                      onClick={() => filterBy("testName")}
                       textTransform="capitalize"
                       fontWeight="500"
                       color="#2F2F2F"
@@ -647,8 +651,9 @@ export default function RadiologyPage() {
                         <Text>by Test Name</Text>
                       </HStack>
                     </MenuItem>
+                  
                     <MenuItem
-                      onClick={() => filterBy("department")}
+                      onClick={() => filterBy("firstName")}
                       textTransform="capitalize"
                       fontWeight="500"
                       color="#2F2F2F"
@@ -659,11 +664,11 @@ export default function RadiologyPage() {
                       }}
                     >
                       <HStack fontSize="14px">
-                        <Text>by Department</Text>
+                        <Text>by First Name</Text>
                       </HStack>
                     </MenuItem>
                     <MenuItem
-                      onClick={() => filterBy("patient")}
+                      onClick={() => filterBy("lastName")}
                       textTransform="capitalize"
                       fontWeight="500"
                       color="#2F2F2F"
@@ -674,7 +679,7 @@ export default function RadiologyPage() {
                       }}
                     >
                       <HStack fontSize="14px">
-                        <Text>by Patient</Text>
+                        <Text>by Last Name</Text>
                       </HStack>
                     </MenuItem>
                     <MenuItem
@@ -744,164 +749,154 @@ export default function RadiologyPage() {
           </Flex>
         </Box>
 
-        {/* Display message only after fetch completes */}
-        {hasFetched && Data.length === 0 ? (
-          <Text textAlign="center" mt="32px" color="black">
-            No radiology records found.
-          </Text>
-        ) : (
-          Data.length > 0 && (
-            <Box
-              bg="#fff"
-              border="1px solid #EFEFEF"
-              mt="12px"
-              py={["10px", "15px"]}
-              px={["10px", "15px"]}
-              rounded="10px"
-              overflowX="auto"
-            >
-              <TableContainer>
-                <Table variant="striped">
-                  <Thead bg="#fff">
-                    <Tr>
-                      <Th
-                        fontSize={["10px", "13px"]}
-                        textTransform="capitalize"
-                        color="#534D59"
-                        fontWeight="600"
-                      >
-                        Date
-                      </Th>
-                      <Th
-                        fontSize={["10px", "13px"]}
-                        textTransform="capitalize"
-                        color="#534D59"
-                        fontWeight="600"
-                      >
-                        Patient
-                      </Th>
-                      <Th
-                        fontSize={["10px", "13px"]}
-                        textTransform="capitalize"
-                        color="#534D59"
-                        fontWeight="600"
-                      >
-                        Test Name
-                      </Th>
-                      <Th
-                        fontSize={["10px", "13px"]}
-                        textTransform="capitalize"
-                        color="#534D59"
-                        fontWeight="600"
-                      >
-                        Test ID
-                      </Th>
-                      <Th
-                        fontSize={["10px", "13px"]}
-                        textTransform="capitalize"
-                        color="#534D59"
-                        fontWeight="600"
-                      >
-                        Department
-                      </Th>
-                      <Th
-                        fontSize={["10px", "13px"]}
-                        textTransform="capitalize"
-                        color="#534D59"
-                        fontWeight="600"
-                      >
-                        Note
-                      </Th>
-                      <Th
-                        fontSize={["10px", "13px"]}
-                        textTransform="capitalize"
-                        color="#534D59"
-                        fontWeight="600"
-                      >
-                        Status
-                      </Th>
-                      <Th
-                        fontSize={["10px", "13px"]}
-                        textTransform="capitalize"
-                        color="#534D59"
-                        fontWeight="600"
-                      >
-                        Actions
-                      </Th>
-                    </Tr>
-                  </Thead>
-                  <Tbody>
-                    {FilteredData !== null ? (
-                      FilteredData.length > 0 ? (
-                        FilteredData.map((item) => (
-                          <TableRowY
-                            key={item._id}
-                            type="radiologypage"
-                            date={formatDateTime(item.createdAt)}
-                            patient={`${item.patient?.firstName} ${item.patient?.lastName}`}
-                            mrn={item.patient?.MRN}
-                            testName={item.testname}
-                            testId={item.testid}
-                            department={item.department}
-                            note={item.note}
-                            status={item.status}
-                            onView={() => handleView(item.testresult)}
-                            onUpload={() => handleUploadClick(item._id)}
-                            onEdit={() => handleEdit(item)}
-                            onEnterResult={() =>
-                              handleEnterResultClick(item._id)
-                            }
-                            onViewManualResult={() =>
-                              handleViewManualClick(item.typetestresult, item)
-                            }
-                            // Pass the entire radiology order to nconfirm
-                            onConfirm={() => nconfirm(item)}
-                          />
-                        ))
-                      ) : (
-                        <Text textAlign="center" mt="32px" color="black">
-                          *--No record found--*
-                        </Text>
-                      )
-                    ) : (
-                      PaginatedData.map((item) => (
-                        <TableRowY
-                          key={item._id}
-                          type="radiologypage"
-                          date={formatDateTime(item.createdAt)}
-                          patient={`${item.patient?.firstName} ${item.patient?.lastName}`}
-                          mrn={item.patient?.MRN}
-                          testName={item.testname}
-                          testId={item.testid}
-                          department={item.department}
-                          note={item.note}
-                          status={item.status}
-                          onView={() => handleView(item.testresult)}
-                          onUpload={() => handleUploadClick(item._id)}
-                          onEdit={() => handleEdit(item)}
-                          onEnterResult={() => handleEnterResultClick(item._id)}
-                          onViewManualResult={() =>
-                            handleViewManualClick(item.typetestresult, item)
-                          }
-                          // Pass the entire radiology order to nconfirm
-                          onConfirm={() => nconfirm(item)}
-                        />
-                      ))
-                    )}
-                  </Tbody>
-                </Table>
-              </TableContainer>
-              {FilteredData === null && (
-                <Pagination
-                  postPerPage={postsPerPage}
-                  currentPage={currentPage}
-                  totalPosts={FilterData.length}
-                  paginate={paginate}
-                />
-              )}
-            </Box>
-          )
-        )}
+        <Box
+          bg="#fff"
+          border="1px solid #EFEFEF"
+          mt="12px"
+          py={["10px", "15px"]}
+          px={["10px", "15px"]}
+          rounded="10px"
+          overflowX="auto"
+        >
+          <TableContainer>
+            <Table variant="striped">
+              <Thead bg="#fff">
+                <Tr>
+                  <Th
+                    fontSize={["10px", "13px"]}
+                    textTransform="capitalize"
+                    color="#534D59"
+                    fontWeight="600"
+                  >
+                    Date
+                  </Th>
+                  <Th
+                    fontSize={["10px", "13px"]}
+                    textTransform="capitalize"
+                    color="#534D59"
+                    fontWeight="600"
+                  >
+                    Patient
+                  </Th>
+                  <Th
+                    fontSize={["10px", "13px"]}
+                    textTransform="capitalize"
+                    color="#534D59"
+                    fontWeight="600"
+                  >
+                    Test Name
+                  </Th>
+                  <Th
+                    fontSize={["10px", "13px"]}
+                    textTransform="capitalize"
+                    color="#534D59"
+                    fontWeight="600"
+                  >
+                    Test ID
+                  </Th>
+                  <Th
+                    fontSize={["10px", "13px"]}
+                    textTransform="capitalize"
+                    color="#534D59"
+                    fontWeight="600"
+                  >
+                    Department
+                  </Th>
+                  <Th
+                    fontSize={["10px", "13px"]}
+                    textTransform="capitalize"
+                    color="#534D59"
+                    fontWeight="600"
+                  >
+                    Note
+                  </Th>
+                  <Th
+                    fontSize={["10px", "13px"]}
+                    textTransform="capitalize"
+                    color="#534D59"
+                    fontWeight="600"
+                  >
+                    Status
+                  </Th>
+                  <Th
+                    fontSize={["10px", "13px"]}
+                    textTransform="capitalize"
+                    color="#534D59"
+                    fontWeight="600"
+                  >
+                    Actions
+                  </Th>
+                </Tr>
+              </Thead>
+              <Tbody>
+                {FilteredData !== null ? (
+                  FilteredData?.length > 0 ? (
+                    FilteredData.map((item) => (
+                      <TableRowY
+                        key={item._id}
+                        type="radiologypage"
+                        date={formatDateTime(item.createdAt)}
+                        patient={`${item.patient?.firstName} ${item.patient?.lastName}`}
+                        mrn={item.patient?.MRN}
+                        testName={item.testname}
+                        testId={item.testid}
+                        department={item.department}
+                        note={item.note}
+                        status={item.status}
+                        onView={() => handleView(item.testresult)}
+                        onUpload={() => handleUploadClick(item._id)}
+                        onEdit={() => handleEdit(item)}
+                        onEnterResult={() =>
+                          handleEnterResultClick(item._id)
+                        }
+                        onViewManualResult={() =>
+                          handleViewManualClick(item.typetestresult, item)
+                        }
+                        // Pass the entire radiology order to nconfirm
+                        onConfirm={() => nconfirm(item)}
+                      />
+                    ))
+                  ) : (
+                    <Text textAlign="center" mt="32px" color="black">
+                      *--No record found--*
+                    </Text>
+                  )
+                ) : (
+                  FilterData.map((item) => (
+                    <TableRowY
+                      key={item._id}
+                      type="radiologypage"
+                      date={formatDateTime(item.createdAt)}
+                      patient={`${item.patient?.firstName} ${item.patient?.lastName}`}
+                      mrn={item.patient?.MRN}
+                      testName={item.testname}
+                      testId={item.testid}
+                      department={item.department}
+                      note={item.note}
+                      status={item.status}
+                      onView={() => handleView(item.testresult)}
+                      onUpload={() => handleUploadClick(item._id)}
+                      onEdit={() => handleEdit(item)}
+                      onEnterResult={() => handleEnterResultClick(item._id)}
+                      onViewManualResult={() =>
+                        handleViewManualClick(item.typetestresult, item)
+                      }
+                      // Pass the entire radiology order to nconfirm
+                      onConfirm={() => nconfirm(item)}
+                    />
+                  ))
+                )}
+              </Tbody>
+            </Table>
+          </TableContainer>
+       
+          <Pagination
+              postPerPage={postsPerPage}
+              currentPage={currentPage}
+              totalPosts={TotalData}
+              paginate={paginate}
+            /> 
+        </Box>
 
         {/* Hidden file input for uploads */}
         <input
