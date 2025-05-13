@@ -25,7 +25,7 @@ import Seo from "../Utils/Seo";
 import CreateTestOrderModal from "../Components/CreateTestOrderModal";
 import RequestLabOtherModal from "../Components/RequestLabOtherModal";
 import ConfirmLabOrderModal from "../Components/ConfirmLabOrderModal";
-import { GetAllScheduledLabApi } from "../Utils/ApiCalls";
+import { GetAllScheduledLabApi, GetAllScheduledLabFilteredApi } from "../Utils/ApiCalls";
 import Pagination from "../Components/Pagination";
 import { configuration } from "../Utils/Helpers";
 import Preloader from "../Components/Preloader";
@@ -53,6 +53,10 @@ export default function LabProcessing() {
     onClose: onConfirmClose,
   } = useDisclosure();
 
+  const [Scheduled, setScheduled] = useState(true);
+  const [AwaitingConfirmation, setAwaitingConfirmation] = useState(false);
+  const [Processed, setProcessed] = useState(false);
+
   const [ByDate, setByDate] = useState(false);
   const [StartDate, setStartDate] = useState("");
   const [EndDate, setEndDate] = useState("");
@@ -60,9 +64,10 @@ export default function LabProcessing() {
   // Pagination settings
   const [CurrentPage, setCurrentPage] = useState(1);
   const [PostPerPage, setPostPerPage] = useState(configuration.sizePerPage);
-  const indexOfLastSra = CurrentPage * PostPerPage;
-  const indexOfFirstSra = indexOfLastSra - PostPerPage;
-  const PaginatedData = FilterData.slice(indexOfFirstSra, indexOfLastSra);
+  const [TotalData, setTotalData] = useState("");
+  const [Status, setStatus] = useState("scheduled");
+
+
   const paginate = (pageNumber) => {
     setCurrentPage(pageNumber);
   };
@@ -71,28 +76,46 @@ export default function LabProcessing() {
   const [SearchInput, setSearchInput] = useState("");
   const [FilteredData, setFilteredData] = useState(null);
 
+  const [Key, setKey] = useState("");
+  const [Value, setValue] = useState("");
+
+
+  const getFilteredScheduledlab = async (key, value) => {
+    setKey(key)
+    setValue(value)
+
+    try {
+      setIsLoading(true);
+      const result = await GetAllScheduledLabFilteredApi(PostPerPage, CurrentPage, Status, key, value);
+      console.log("all fitlered Lab", result);
+      if (result.status === true) {
+
+        setFilteredData(result.queryresult.labdetails);
+        setTotalData(result.queryresult.totallabdetails)
+      }
+    } catch (e) {
+      console.error(e.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const filterBy = (title) => {
+
     if (title === "mrn") {
-      let filter = Data.filter((item) =>
-        item.patient.MRN?.toLowerCase().includes(SearchInput.toLowerCase())
-      );
-      setFilteredData(filter);
-    } else if (title === "name") {
-      let filter = Data.filter(
-        (item) =>
-          item.patient.firstName
-            ?.toLowerCase()
-            .includes(SearchInput.toLowerCase()) ||
-          item.patient.lastName
-            ?.toLowerCase()
-            .includes(SearchInput.toLowerCase())
-      );
-      setFilteredData(filter);
+      getFilteredScheduledlab("MRN", SearchInput)
+    } else if (title === "firstName") {
+
+      getFilteredScheduledlab("firstName", SearchInput)
+
+    } else if (title === "lastName") {
+
+      getFilteredScheduledlab("lastName", SearchInput)
+
     } else if (title === "testName") {
-      let filter = Data.filter((item) =>
-        item.testname?.toLowerCase().includes(SearchInput.toLowerCase())
-      );
-      setFilteredData(filter);
+
+      getFilteredScheduledlab("testname", SearchInput)
+
     } else if (title === "date") {
       let endDateObj = new Date(EndDate);
       endDateObj.setDate(endDateObj.getDate() + 1);
@@ -105,6 +128,7 @@ export default function LabProcessing() {
       setSearchInput("s");
       console.log("Date filter checking", filter);
     }
+
   };
 
   const [showToast, setShowToast] = useState({
@@ -122,40 +146,18 @@ export default function LabProcessing() {
   // New status filter state
   const [currentStatusFilter, setCurrentStatusFilter] = useState("all");
 
-  const filterByStatus = (status) => {
-    setCurrentStatusFilter(status);
-    if (status === "all") {
-      setFilterData(Data);
-    } else {
-      const filtered = Data.filter(
-        (item) => item.status?.toLowerCase() === status.toLowerCase()
-      );
-      setFilterData(filtered);
-    }
-    setCurrentPage(1);
-  };
 
-  // Default filter: show all items
-  const filterAll = () => {
-    setCurrentStatusFilter("all");
-    setFilterData(Data);
-  };
 
-  const filterTodayQueue = () => {
-    // If you have a separate QueueData filtering logic, use that.
-    setCurrentStatusFilter("queue");
-    setFilterData(QueueData);
-  };
-
-  const getAllScheduledLab = async () => {
+  const getAllScheduledLab = async (status) => {
     setIsLoading(true);
     try {
-      const result = await GetAllScheduledLabApi();
+      const result = await GetAllScheduledLabApi(PostPerPage, CurrentPage, status);
       console.log("getAllScheduledLab", result);
       if (result.status === true) {
         setIsLoading(false);
         setData(result.queryresult.labdetails);
         setFilterData(result.queryresult.labdetails);
+        setTotalData(result.queryresult.totallabdetails)
       }
     } catch (e) {
       console.error(e.message);
@@ -173,6 +175,36 @@ export default function LabProcessing() {
     }, 3000);
   };
 
+
+  // Default filter: show all items
+  const filterScheduled = () => {
+    setScheduled(true);
+    setAwaitingConfirmation(false);
+    setProcessed(false);
+    getAllScheduledLab("scheduled")
+    setStatus("scheduled")
+    setCurrentPage(1)
+  };
+
+  const filterProcessed = () => {
+    setScheduled(false);
+    setProcessed(true);
+    setAwaitingConfirmation(false);
+    getAllScheduledLab("processed")
+    setStatus("processed")
+    setCurrentPage(1)
+  };
+  const filterAwaitingConfirmation = () => {
+    setScheduled(false);
+    setProcessed(false);
+    setAwaitingConfirmation(true);
+    getAllScheduledLab("awaiting confirmation")
+    setStatus("awaiting confirmation")
+    setCurrentPage(1)
+  };
+
+
+
   // ProcessLab is used for non-confirmation actions
   const ProcessLab = (item) => {
     setOldPayload(item);
@@ -188,8 +220,21 @@ export default function LabProcessing() {
 
   // Re-fetch lab orders whenever a modal closes or after a new order is created.
   useEffect(() => {
-    getAllScheduledLab();
-  }, [isOpen, Trigger]);
+    if (FilteredData?.length > 0 || FilteredData !== null) {
+      getFilteredScheduledlab(Key,Value) 
+    } else {
+
+      if (Scheduled === true) {
+        getAllScheduledLab("scheduled")
+      } else if (Processed === true) {
+        getAllScheduledLab("processed")
+      } else if (AwaitingConfirmation === true) {
+        getAllScheduledLab("awaiting confirmation")
+      }
+
+
+    }
+  }, [isOpen, Trigger, CurrentPage]);
 
   return (
     <MainLayout>
@@ -207,7 +252,7 @@ export default function LabProcessing() {
           Lab Processing
         </Text>
         <Text color="#667085" fontWeight="400" fontSize="18px">
-          ({Data?.length})
+          ({TotalData})
         </Text>
       </HStack>
       <Text color="#686C75" mt="9px" fontWeight="400" fontSize="15px">
@@ -224,8 +269,6 @@ export default function LabProcessing() {
         <Flex justifyContent="space-between" flexWrap="wrap">
           {/* Status Filter Section */}
           <Flex
-            display="inline-flex"
-            w="auto"
             alignItems="center"
             flexWrap="wrap"
             bg="#E4F3FF"
@@ -235,76 +278,49 @@ export default function LabProcessing() {
             cursor="pointer"
             mt={["10px", "10px", "0px", "0px"]}
           >
-            <Box
-              borderRight="1px solid #EDEFF2"
-              pr="5px"
-              onClick={() => filterByStatus("all")}
-            >
+            <Box borderRight="1px solid #EDEFF2" pr="5px" onClick={filterScheduled}>
               <Text
                 py="8.5px"
                 px="12px"
-                bg={currentStatusFilter === "all" ? "#fff" : "transparent"}
+                bg={Scheduled ? "#fff" : "transparent"}
                 rounded="7px"
-                color="#1F2937"
-                fontWeight="500"
-                fontSize="13px"
+                color={"#1F2937"}
+                fontWeight={"500"}
+                fontSize={"13px"}
               >
-                All 
+                Scheduled
+
               </Text>
             </Box>
-            <Box
-              borderRight="1px solid #EDEFF2"
-              pr="5px"
-              ml="5px"
-              onClick={() => filterByStatus("awaiting confirmation")}
-            >
+            <Box borderRight="1px solid #EDEFF2" pr="5px" onClick={filterAwaitingConfirmation}>
               <Text
                 py="8.5px"
                 px="12px"
-                bg={
-                  currentStatusFilter === "awaiting confirmation"
-                    ? "#fff"
-                    : "transparent"
-                }
+                bg={AwaitingConfirmation ? "#fff" : "transparent"}
                 rounded="7px"
-                color="#1F2937"
-                fontWeight="500"
-                fontSize="13px"
+                color={"#1F2937"}
+                fontWeight={"500"}
+                fontSize={"13px"}
               >
-                Awaiting Confirmation 
+                Awaiting Confirmation
+
               </Text>
             </Box>
-            <Box
-              borderRight="1px solid #EDEFF2"
-              pr="5px"
-              ml="5px"
-              onClick={() => filterByStatus("complete")}
-            >
+            <Box borderRight="1px solid #EDEFF2" pr="5px" onClick={filterProcessed}>
               <Text
                 py="8.5px"
                 px="12px"
-                bg={currentStatusFilter === "complete" ? "#fff" : "transparent"}
+                bg={Processed ? "#fff" : "transparent"}
                 rounded="7px"
-                color="#1F2937"
-                fontWeight="500"
-                fontSize="13px"
+                color={"#1F2937"}
+                fontWeight={"500"}
+                fontSize={"13px"}
               >
-                Complete 
+                Processed
+
               </Text>
             </Box>
-            <Box ml="5px" onClick={() => filterByStatus("scheduled")}>
-              <Text
-                py="8.5px"
-                px="12px"
-                bg={currentStatusFilter === "scheduled" ? "#fff" : "transparent"}
-                rounded="7px"
-                color="#1F2937"
-                fontWeight="500"
-                fontSize="13px"
-              >
-                Scheduled 
-              </Text>
-            </Box>
+
           </Flex>
 
           {/* Additional Filter Section (Search & Date Filter) */}
@@ -317,7 +333,10 @@ export default function LabProcessing() {
               {ByDate === false ? (
                 <Input
                   label="Search"
-                  onChange={(e) => setSearchInput(e.target.value)}
+                  onChange={(e) => {
+                    setSearchInput(e.target.value);
+                    setCurrentPage(1)
+                  }}
                   value={SearchInput}
                   bColor="#E4E4E4"
                   leftIcon={<BiSearch />}
@@ -374,7 +393,7 @@ export default function LabProcessing() {
                 </MenuButton>
                 <MenuList>
                   <MenuItem
-                    onClick={() => filterBy("name")}
+                    onClick={() => filterBy("firstName")}
                     textTransform="capitalize"
                     fontWeight="500"
                     color="#2F2F2F"
@@ -385,7 +404,22 @@ export default function LabProcessing() {
                     }}
                   >
                     <HStack fontSize="14px">
-                      <Text>by Patient Name</Text>
+                      <Text>by First Name</Text>
+                    </HStack>
+                  </MenuItem>
+                  <MenuItem
+                    onClick={() => filterBy("lastName")}
+                    textTransform="capitalize"
+                    fontWeight="500"
+                    color="#2F2F2F"
+                    _hover={{
+                      color: "#fff",
+                      fontWeight: "400",
+                      bg: "blue.blue500",
+                    }}
+                  >
+                    <HStack fontSize="14px">
+                      <Text>by Last Name</Text>
                     </HStack>
                   </MenuItem>
                   <MenuItem
@@ -440,6 +474,8 @@ export default function LabProcessing() {
                       setByDate(false);
                       setStartDate("");
                       setEndDate("");
+                      filterScheduled()
+                      setCurrentPage(1)
                     }}
                     textTransform="capitalize"
                     fontWeight="500"
@@ -459,7 +495,9 @@ export default function LabProcessing() {
             </HStack>
           </Flex>
 
-          <Flex
+          
+        </Flex>
+        <Flex
             justifyContent="space-between"
             flexWrap="wrap"
             mt={["10px", "10px", "10px", "10px"]}
@@ -473,7 +511,6 @@ export default function LabProcessing() {
               Request Order
             </Button>
           </Flex>
-        </Flex>
       </Box>
 
       {/* Data Table */}
@@ -490,8 +527,8 @@ export default function LabProcessing() {
           <Table variant="striped">
             <Thead bg="#fff">
               <Tr>
-              <Th fontSize="13px" textTransform="capitalize" color="#534D59" fontWeight="600">
-                 Test ID
+                <Th fontSize="13px" textTransform="capitalize" color="#534D59" fontWeight="600">
+                  Test ID
                 </Th>
                 <Th fontSize="13px" textTransform="capitalize" color="#534D59" fontWeight="600">
                   Patient name
@@ -515,7 +552,7 @@ export default function LabProcessing() {
             </Thead>
             <Tbody>
               {SearchInput === "" || FilteredData === null ? (
-                PaginatedData?.map((item, i) => (
+                FilterData?.map((item, i) => (
                   <TableRow
                     key={i}
                     type="lab-processing"
@@ -579,7 +616,7 @@ export default function LabProcessing() {
         <Pagination
           postPerPage={PostPerPage}
           currentPage={CurrentPage}
-          totalPosts={Data.length}
+          totalPosts={TotalData}
           paginate={paginate}
         />
       </Box>
