@@ -6328,5 +6328,101 @@ export const ReadAllNutritionByPatientApi = (patientId) => {
       }
     });
 };
+export const AddPreoperativePrevisitFormAPI = (payload, id) => {
+  const data = JSON.stringify(payload);
+
+  const config = {
+    method: "POST",
+    maxBodyLength: Infinity,
+    url: `${baseUrl}/theatreadmission/fillpreoperativeprevisitform/${id}`,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    data,
+  };
+
+  return axios
+    .request(config)
+    .then((response) => {
+      console.log(JSON.stringify(response.data));
+      return response;
+    })
+    .catch((error) => {
+      console.log("error", error.response);
+      if (error.response?.data?.msg) {
+        throw new Error(error.response.data.msg);
+      } else if (error.response?.data) {
+        throw new Error(error.response);
+      } else if (error.request) {
+        throw new Error(error.msg);
+      } else {
+        throw new Error(error.msg);
+      }
+    });
+};
+
+export const EditPreoperativePrevisitFormAPI = (payload, id) => {
+  const data = JSON.stringify(payload);
+
+  const config = {
+    method: "PUT",
+    maxBodyLength: Infinity,
+    url: `${baseUrl}/theatreadmission/updatepreoperativeprevisitform/${id}`,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    data,
+  };
+
+  return axios
+    .request(config)
+    .then((response) => {
+      console.log(JSON.stringify(response.data));
+      return response;
+    })
+    .catch((error) => {
+      console.log("error", error.response);
+      if (error.response?.data?.msg) {
+        throw new Error(error.response.data.msg);
+      } else if (error.response?.data) {
+        throw new Error(error.response);
+      } else if (error.request) {
+        throw new Error(error.msg);
+      } else {
+        throw new Error(error.msg);
+      }
+    });
+};
+export const GetPreviousPreoperativePrevisitFormApi = (id) => {
+  const config = {
+    method: "get",
+    url: `${baseUrl}/theatreadmission/readpreoperativeprevisitformbytheatreadmission/${id}`,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  };
+
+  return axios
+    .request(config)
+    .then((response) => {
+      return response.data; // return the form data
+    })
+    .catch((error) => {
+      console.log("Error fetching pre-visit form:", error.response);
+      if (error.response?.data?.msg) {
+        throw new Error(error.response.data.msg);
+      } else if (error.response?.data) {
+        throw new Error(error.response);
+      } else if (error.request) {
+        throw new Error(error.msg);
+      } else {
+        throw new Error(error.msg);
+      }
+    });
+};
+
 
 
