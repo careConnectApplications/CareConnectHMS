@@ -55,6 +55,8 @@ import AddOperationalConsent from "../Pages/AddOperationalConsent";
 import EditPreAnathetics from "../Pages/EditPreAnathetics";
 import EditOperationConsent from "../Pages/EditOperationConsent";
 import CashierReport from "../Pages/CashierReport";
+import EditTheatrePrevisitDocumentation from "../Pages/EditTheatrePrevisitDocumentation";
+import AddTheatrePrevisitDocumentation from "../Pages/AddTheatrePrevisitDocumentation";
 
 export default function IndexRoutes() {
   return (
@@ -68,7 +70,6 @@ export default function IndexRoutes() {
           />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route element={<RecordsRoutes />}>
-           
             <Route path="/dashboard/settings" element={<Settings />} />
           </Route>
           <Route element={<OutPatientRoutes />}>
@@ -131,8 +132,8 @@ export default function IndexRoutes() {
               path="/dashboard/schedule-appointment"
               element={<ScheduleAppointment />}
             />
-             <Route path="/dashboard/patient" element={<Patients />} />
-             <Route path="/dashboard/patient/:id" element={<SinglePatient />} />
+            <Route path="/dashboard/patient" element={<Patients />} />
+            <Route path="/dashboard/patient/:id" element={<SinglePatient />} />
           </Route>
 
           <Route element={<ScheduleProcedureRoutes />}>
@@ -152,15 +153,16 @@ export default function IndexRoutes() {
 
           <Route element={<BillingRoutes />}>
             <Route path="/dashboard/billing-payment" element={<Payment />} />
-            <Route path="/dashboard/billing-payment-group" element={<PaymentGroup />} />
+            <Route
+              path="/dashboard/billing-payment-group"
+              element={<PaymentGroup />}
+            />
             <Route
               path="/dashboard/billing-payment/receipt/:id"
               element={<PrintPaymentReceipt />}
             />
-          
           </Route>
           <Route element={<HODBillingRoutes />}>
-          
             <Route
               path="/dashboard/billing/cashier-report"
               element={<CashierReport />}
@@ -172,10 +174,9 @@ export default function IndexRoutes() {
               path="/dashboard/user-management"
               element={<UserManagement />}
             />
-           
           </Route>
           <Route element={<ClinicalReportRoutes />}>
-          <Route
+            <Route
               path="/dashboard/report-analytics/report"
               element={<Report />}
             />
@@ -187,7 +188,6 @@ export default function IndexRoutes() {
               path="/dashboard/report-analytics/print-summary"
               element={<PrintReportSummary />}
             />
-            
           </Route>
           <Route element={<ReferTheatreRoutes />}>
             <Route
@@ -207,12 +207,21 @@ export default function IndexRoutes() {
               element={<AddOperationalConsent />}
             />
             <Route
+              path="/dashboard/add-theatre-previsit-documentation/:id"
+              element={<AddTheatrePrevisitDocumentation />}
+            />
+
+            <Route
               path="/dashboard/edit-preAnathetics/:id"
               element={<EditPreAnathetics />}
             />
             <Route
               path="/dashboard/edit-operational-consent/:id"
-              element={<EditOperationConsent  />}
+              element={<EditOperationConsent />}
+            />
+            <Route
+              path="/dashboard/edit-theatre-previsit-documentation/:id"
+              element={<EditTheatrePrevisitDocumentation />}
             />
           </Route>
         </Route>
