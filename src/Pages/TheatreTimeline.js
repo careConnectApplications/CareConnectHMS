@@ -5,6 +5,7 @@ import MainLayout from "../Layouts/Index";
 import Seo from "../Utils/Seo";
 import TheatrePreAnathetics from './TheatrePreAnathetics'
 import TheatreOperationalConsent from './TheatreOperationalConsent'
+import TheatrePrevisitDocumentation from './TheatrePrevisitDocumentation'
 import { useNavigate, useParams } from 'react-router-dom';
 
 export default function TheatreTimeline() {
@@ -48,6 +49,11 @@ export default function TheatreTimeline() {
                     </TabPanel>
                     <TabPanel p="0">
                         <TheatreOperationalConsent index={1} id={id}/>
+                       
+
+                    </TabPanel>
+                    <TabPanel p="0">
+                        <TheatrePrevisitDocumentation index={2} id={id}/>
                        
 
                     </TabPanel>
