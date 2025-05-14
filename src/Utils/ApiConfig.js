@@ -15,9 +15,12 @@ export const nigeriaStateApiUrl = "https://nga-states-lga.onrender.com";
 // export const FacilityName = "GENERAL HOSPITAL, MALUMFASHI";
 // export const baseUrl =  "https://ghmlf.ehealthcareconnect.com/api/v1";
 
-export const FacilityName = "GENERAL HOSPITAL, DUTSINMA";
-export const baseUrl =  "https://ghdtm.ehealthcareconnect.com/api/v1";
+// export const FacilityName = "GENERAL HOSPITAL, DUTSINMA";
+// export const baseUrl =  "https://ghdtm.ehealthcareconnect.com/api/v1";
 
-// export const FacilityName = "GENERAL HOSPITAL, KANKIA";  
-// export const baseUrl =  "https://ghknk.ehealthcareconnect.com/api/v1";
+export const FacilityName = "GENERAL HOSPITAL, KANKIA";  
+export const baseUrl =  "https://ghknk.ehealthcareconnect.com/api/v1";
+
+// export const FacilityName = "GENERAL HOSPITAL, MANI";  
+// export const baseUrl =  "https://ghman.ehealthcareconnect.com/api/v1";
 export const token = localStorage.getItem("token");
