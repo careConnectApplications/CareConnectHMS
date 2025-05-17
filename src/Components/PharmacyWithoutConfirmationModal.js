@@ -43,6 +43,8 @@ export default function PharmacyWithoutConfirmationModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [pharmacies, setPharmacies] = useState([]);
   const [settings, setSettings] = useState({});
+  const [pendingPriceUpdates, setPendingPriceUpdates] = useState([]);
+
   const [products, setProducts] = useState([
     {
       pharmacy: "",
@@ -131,18 +133,24 @@ export default function PharmacyWithoutConfirmationModal({
       setProducts(newProducts);
 
       const { pharmacy, drug, qty } = newProducts[index];
-      if (pharmacy && drug && qty && formData.patientId) {
-        ReadDrugPriceApi(
-          { pharmacy, drug, qty: Number(qty) },
-          formData.patientId
-        )
-          .then((res) => {
-            const updated = [...newProducts];
-            updated[index].price = res.queryresult;
-            setProducts(updated);
-          })
-          .catch(console.error);
+      if (pharmacy && drug && qty) {
+        if (formData.patientId) {
+          ReadDrugPriceApi(
+            { pharmacy, drug, qty: Number(qty) },
+            formData.patientId
+          )
+            .then((res) => {
+              const updated = [...newProducts];
+              updated[index].price = res.queryresult;
+              setProducts(updated);
+            })
+            .catch(console.error);
+        } else {
+          // Defer price update until patient is selected
+          setPendingPriceUpdates((prev) => [...new Set([...prev, index])]);
+        }
       }
+
       return;
     }
 
@@ -215,7 +223,7 @@ export default function PharmacyWithoutConfirmationModal({
 
     // grab the first row (if any) so we can keep its pharmacy & drug
     const first = products[0] || {};
-    const { pharmacy = "", drugOptions = []} = first;
+    const { pharmacy = "", drugOptions = [] } = first;
 
     setTimeout(() => {
       onClose();
@@ -229,7 +237,7 @@ export default function PharmacyWithoutConfirmationModal({
       setProducts([
         {
           pharmacy,
-          drugSearch: "", 
+          drugSearch: "",
           drug: "",
           drugOptions: [...drugOptions],
           qty: "",
@@ -244,6 +252,31 @@ export default function PharmacyWithoutConfirmationModal({
 
   // compute grand total of all line‐item prices
   const grandTotal = products.reduce((sum, prod) => sum + (prod.price || 0), 0);
+
+  useEffect(() => {
+    if (formData.patientId && pendingPriceUpdates.length > 0) {
+      const updates = [...pendingPriceUpdates];
+      setPendingPriceUpdates([]); // reset immediately to avoid duplicates
+
+      updates.forEach((index) => {
+        const { pharmacy, drug, qty } = products[index];
+        if (pharmacy && drug && qty) {
+          ReadDrugPriceApi(
+            { pharmacy, drug, qty: Number(qty) },
+            formData.patientId
+          )
+            .then((res) => {
+              setProducts((prevProducts) => {
+                const updated = [...prevProducts];
+                updated[index].price = res.queryresult;
+                return updated;
+              });
+            })
+            .catch(console.error);
+        }
+      });
+    }
+  }, [formData.patientId, pendingPriceUpdates, products]);
 
   return (
     <Modal
