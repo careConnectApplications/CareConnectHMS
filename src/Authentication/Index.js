@@ -177,7 +177,7 @@ export const isRecordStaff = () => {
 
 };
 export const isClinicalReport = () => {
-    let roles = ["1","3","27"]
+    let roles = ["1","3","27","2","3","5","11"]
 
     // "6", "4","7","20","8","9","14","3","5","12"
 
