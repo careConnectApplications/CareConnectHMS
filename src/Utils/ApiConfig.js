@@ -1,5 +1,5 @@
 // Test Base URL
-// export const baseUrl = "http://20.164.19.147:5000/api/v1";
+export const baseUrl = "http://20.164.19.147:5000/api/v1";
 
 export const nigeriaStateApiUrl = "https://nga-states-lga.onrender.com";
 
@@ -22,6 +22,6 @@ export const nigeriaStateApiUrl = "https://nga-states-lga.onrender.com";
 // export const baseUrl =  "https://ghknk.ehealthcareconnect.com/api/v1";
 
 export const FacilityName = "GENERAL HOSPITAL, MANI";  
-export const baseUrl =  "https://ghman.ehealthcareconnect.com/api/v1";
+//export const baseUrl =  "https://ghman.ehealthcareconnect.com/api/v1";
 
 export const token = localStorage.getItem("token");
