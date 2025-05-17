@@ -21,7 +21,13 @@ export const nigeriaStateApiUrl = "https://nga-states-lga.onrender.com";
 // export const FacilityName = "GENERAL HOSPITAL, KANKIA";  
 // export const baseUrl =  "https://ghknk.ehealthcareconnect.com/api/v1";
 
-export const FacilityName = "GENERAL HOSPITAL, MANI";  
-export const baseUrl =  "https://ghman.ehealthcareconnect.com/api/v1";
+// export const FacilityName = "GENERAL HOSPITAL, MANI";  
+//export const baseUrl =  "https://ghman.ehealthcareconnect.com/api/v1";
+
+// export const FacilityName = "YERWA PRIMARY HEALTHCARE CENTRE, MAIDUGURI";  
+// export const baseUrl =  "https://yerwaphc.ehealthcareconnect.com/api/v1";
+
+export const FacilityName = "MALA KACHALLA PRIMARY HEALTHCARE CENTRE, MAIDUGURI";  
+export const baseUrl =  "https://mkachallaphc.ehealthcareconnect.com/api/v1";
 
 export const token = localStorage.getItem("token");
