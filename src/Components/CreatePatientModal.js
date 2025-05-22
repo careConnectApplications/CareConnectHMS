@@ -149,8 +149,7 @@ export default function CreatePatientModal({
     clinic: "",
     reason: "",
     appointmentdate: "",
-    appointmentcategory: "",
-    appointmenttype: "",
+
     // New fields
     policecase: false,
     physicalassault: false,
@@ -244,8 +243,7 @@ export default function CreatePatientModal({
         clinic: "",
         reason: "",
         appointmentdate: "",
-        appointmentcategory: "",
-        appointmenttype: "",
+
         physicalassault: false,
         sexualassault: false,
         policeaname: "",
@@ -734,48 +732,9 @@ export default function CreatePatientModal({
                     leftIcon={<RiStickyNoteFill />}
                   />
 
-                  <FormControl>
-                    <Select
-                      name="appointmentcategory"
-                      value={patientData.appointmentcategory}
-                      onChange={handleInputChange}
-                      placeholder="Select Appointment Category"
-                      fontSize={
-                        patientData.appointmentcategory !== "" ? "16px" : "13px"
-                      }
-                    >
-                      {Settings.servicecategory
-                        ?.filter((item) => item.category === "Appointment")
-                        .map((item, index) => (
-                          <option key={index} value={item.category}>
-                            {item.category}
-                          </option>
-                        ))}
-                    </Select>
-                  </FormControl>
 
-                  <FormControl>
-                    <Select
-                      name="appointmenttype"
-                      value={patientData.appointmenttype}
-                      onChange={handleInputChange}
-                      placeholder="Select Appointment Type"
-                      fontSize={
-                        patientData.appointmenttype !== "" ? "16px" : "13px"
-                      }
-                    >
-                      {Settings.servicecategory
-                        ?.find(
-                          (item) =>
-                            item.category === patientData.appointmentcategory
-                        )
-                        ?.type?.map((type, index) => (
-                          <option key={index} value={type}>
-                            {type}
-                          </option>
-                        ))}
-                    </Select>
-                  </FormControl>
+
+
                   <FormControl>
                     <Select
                       name="clinic"
