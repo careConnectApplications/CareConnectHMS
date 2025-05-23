@@ -41,7 +41,7 @@ export default function AdmissionModal({ isOpen, onClose, setOldPayload, activat
         setPayload({ ...Payload, [e.target.id]: e.target.value })
     }
 
-    const getAllWard = async () => {
+    const getAllWard = async () => { 
         try {
             const result = await GetAllWardApi();
             setData(result.queryresult.wardmanagementdetails);
@@ -56,10 +56,10 @@ export default function AdmissionModal({ isOpen, onClose, setOldPayload, activat
             const patientId = localStorage.getItem("patientId");
 
             // Add appointmentid to the body payload.
-            const payloadWithAppointment = { ...Payload, appointmentid: oldPayload.appointmentid };
+            const payloadWithAppointment = { ...Payload };
 
             // Patient id is passed as request parameter.
-            let result = await AdmitPatientApi(payloadWithAppointment, patientId);
+            let result = await AdmitPatientApi(Payload, patientId);
 
             if (result.status === 200) {
                 setLoading(false)
