@@ -398,7 +398,7 @@ export default function SingleAdmission() {
                 <AdmissionModal isOpen={OpenAdmissionModal} oldPayload={{ _id: id, appointmentid: id }} onClose={() => setOpenAdmissionModal(false)}  activateNotifications={activateNotifications} />
 
 
-                <ToTransferModal
+                <ToTransferModal 
                 isOpen={isOpen}
                 oldPayload={OldPayload}
                 onClose={onClose}
