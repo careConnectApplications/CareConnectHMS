@@ -57,6 +57,10 @@ import EditOperationConsent from "../Pages/EditOperationConsent";
 import CashierReport from "../Pages/CashierReport";
 import EditTheatrePrevisitDocumentation from "../Pages/EditTheatrePrevisitDocumentation";
 import AddTheatrePrevisitDocumentation from "../Pages/AddTheatrePrevisitDocumentation";
+import EditAnaesthesiaForm from "../Pages/EditAnaesthesiaForm";
+import AddAnaesthesiaForm from "../Pages/AddAnaesthesiaForm";
+import TheatreFoodGiven from "../Pages/TheatreFoodGiven";
+import TheatreDrugGiven from "../Pages/TheatreDrugGiven";
 
 export default function IndexRoutes() {
   return (
@@ -210,6 +214,10 @@ export default function IndexRoutes() {
               path="/dashboard/add-theatre-previsit-documentation/:id"
               element={<AddTheatrePrevisitDocumentation />}
             />
+            <Route
+              path="/dashboard/add-theatre-anaesthesia-form/:id"
+              element={<AddAnaesthesiaForm />}
+            />
 
             <Route
               path="/dashboard/edit-preAnathetics/:id"
@@ -222,6 +230,18 @@ export default function IndexRoutes() {
             <Route
               path="/dashboard/edit-theatre-previsit-documentation/:id"
               element={<EditTheatrePrevisitDocumentation />}
+            />
+            <Route
+              path="/dashboard/edit-theatre-anaesthesia-form/:id"
+              element={<EditAnaesthesiaForm />}
+            />
+            <Route
+              path="/dashboard/food-given/:id"
+              element={<TheatreFoodGiven />}
+            />
+                        <Route
+              path="/dashboard/drug-given/:id"
+              element={<TheatreDrugGiven />}
             />
           </Route>
         </Route>

@@ -31,7 +31,9 @@ export default function AddOperationalConsent() {
         imageBase64: "",
         nameofexplainer: "",
         nameofrepresentive: "",
-        conscentdate:""
+        conscentdate:"",
+        addressofrepresentaive:"",
+        fullnameofwitness:""
 
 
     })
@@ -145,6 +147,8 @@ export default function AddOperationalConsent() {
                                 <Input type="text" leftIcon={<FaNoteSticky />} label="Name Of Explainer" value={Payload.nameofexplainer} val={Payload.nameofexplainer !== "" ? true : false} onChange={handlePayload} id="nameofexplainer" />
                                 <Input type="text" leftIcon={<FaNoteSticky />} label="Name Of Representative" value={Payload.nameofrepresentive} val={Payload.nameofrepresentive !== "" ? true : false} onChange={handlePayload} id="nameofrepresentive" />
                                 <Input type="date" leftIcon={<FaNoteSticky />} label="Consent Date" value={Payload.conscentdate} val={Payload.conscentdate !== "" ? true : false} onChange={handlePayload} id="conscentdate" />
+                                <Input type="text" leftIcon={<FaNoteSticky />} label="Address Of Representative" value={Payload.addressofrepresentaive} val={Payload.addressofrepresentaive !== "" ? true : false} onChange={handlePayload} id="addressofrepresentaive" />
+                                <Input type="text" leftIcon={<FaNoteSticky />} label="Full Name Of Witness" value={Payload.fullnameofwitness} val={Payload.fullnameofwitness !== "" ? true : false} onChange={handlePayload} id="fullnameofwitness" />
                                
 
                             </SimpleGrid>
