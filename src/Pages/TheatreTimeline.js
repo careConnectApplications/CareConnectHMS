@@ -3,6 +3,8 @@ import { Tabs, TabList, TabPanels, Tab, TabPanel } from '@chakra-ui/react'
 import React from 'react'
 import MainLayout from "../Layouts/Index";
 import Seo from "../Utils/Seo";
+
+    import TheatreAnaesthesiaForm from './TheatreAnaesthesiaForm'
 import TheatrePreAnathetics from './TheatrePreAnathetics'
 import TheatreOperationalConsent from './TheatreOperationalConsent'
 import TheatrePrevisitDocumentation from './TheatrePrevisitDocumentation'
@@ -37,6 +39,7 @@ export default function TheatreTimeline() {
                     <Tab _focus={{outline: "none"}} _selected={{ color: "blue.blue500", fontWeight: "700" }}>Pre-Anathetics </Tab>
                     <Tab _focus={{outline: "none"}} _selected={{ color: "blue.blue500", fontWeight: "700" }}>Operational Consent </Tab>
                     <Tab _focus={{outline: "none"}} _selected={{ color: "blue.blue500", fontWeight: "700" }}>Pre-Operative Nurses </Tab>
+                    <Tab _focus={{outline: "none"}} _selected={{ color: "blue.blue500", fontWeight: "700" }}>Theatre Anaesthesia Form </Tab>
                     
 
                 </TabList>
@@ -52,10 +55,15 @@ export default function TheatreTimeline() {
                        
 
                     </TabPanel>
-                    <TabPanel p="0">
-                        <TheatrePrevisitDocumentation index={2} id={id}/>
+                     <TabPanel p="0">
+                       <TheatrePrevisitDocumentation index={2} id={id}/>
                        
-
+                        
+                    </TabPanel>
+                    <TabPanel p="0">
+                       <TheatreAnaesthesiaForm index={3} id={id}/>
+                       
+                        
                     </TabPanel>
                     <TabPanel p="0">
                         {/* <LabAppointment id={id} /> */}
