@@ -8,6 +8,7 @@ import Seo from "../Utils/Seo";
 import TheatrePreAnathetics from './TheatrePreAnathetics'
 import TheatreOperationalConsent from './TheatreOperationalConsent'
 import TheatrePrevisitDocumentation from './TheatrePrevisitDocumentation'
+import TheatreOperationNote from './TheatreOperationNote';
 import { useNavigate, useParams } from 'react-router-dom';
 
 export default function TheatreTimeline() {
@@ -39,7 +40,8 @@ export default function TheatreTimeline() {
                     <Tab _focus={{outline: "none"}} _selected={{ color: "blue.blue500", fontWeight: "700" }}>Pre-Anathetics </Tab>
                     <Tab _focus={{outline: "none"}} _selected={{ color: "blue.blue500", fontWeight: "700" }}>Operational Consent </Tab>
                     <Tab _focus={{outline: "none"}} _selected={{ color: "blue.blue500", fontWeight: "700" }}>Pre-Operative Nurses </Tab>
-                    <Tab _focus={{outline: "none"}} _selected={{ color: "blue.blue500", fontWeight: "700" }}>Theatre Anaesthesia Form </Tab>
+                    <Tab _focus={{outline: "none"}} _selected={{ color: "blue.blue500", fontWeight: "700" }}>Anaesthesia Form </Tab>
+                                        <Tab _focus={{outline: "none"}} _selected={{ color: "blue.blue500", fontWeight: "700" }}>Operation Note</Tab>
                     
 
                 </TabList>
@@ -62,6 +64,11 @@ export default function TheatreTimeline() {
                     </TabPanel>
                     <TabPanel p="0">
                        <TheatreAnaesthesiaForm index={3} id={id}/>
+                       
+                        
+                    </TabPanel>
+                                        <TabPanel p="0">
+                       <TheatreOperationNote index={4} id={id}/>
                        
                         
                     </TabPanel>
