@@ -61,6 +61,8 @@ import EditAnaesthesiaForm from "../Pages/EditAnaesthesiaForm";
 import AddAnaesthesiaForm from "../Pages/AddAnaesthesiaForm";
 import TheatreFoodGiven from "../Pages/TheatreFoodGiven";
 import TheatreDrugGiven from "../Pages/TheatreDrugGiven";
+import AddNewOperationNote from "../Pages/AddNewOperationNote";
+import EditOperationNote from "../Pages/EditOperationNote";
 
 export default function IndexRoutes() {
   return (
@@ -239,9 +241,17 @@ export default function IndexRoutes() {
               path="/dashboard/food-given/:id"
               element={<TheatreFoodGiven />}
             />
-                        <Route
+            <Route
               path="/dashboard/drug-given/:id"
               element={<TheatreDrugGiven />}
+            />
+            <Route
+              path="/dashboard/add-new-operation-note/:id"
+              element={<AddNewOperationNote />}
+            />
+            <Route
+              path="/dashboard/edit-operation-note/:id"
+              element={<EditOperationNote />}
             />
           </Route>
         </Route>
