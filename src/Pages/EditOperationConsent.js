@@ -31,7 +31,9 @@ export default function EditOperationConsent() {
         imageBase64: "",
         nameofexplainer: "",
         nameofrepresentive: "",
-        conscentdate:""
+        conscentdate: "",
+        addressofrepresentaive: "",
+        fullnameofwitness: ""
 
 
     })
@@ -39,7 +41,7 @@ export default function EditOperationConsent() {
 
     const handlePayload = (e) => {
         setPayload({ ...Payload, [e.target.id]: e.target.value })
-        
+
     }
 
 
@@ -76,7 +78,7 @@ export default function EditOperationConsent() {
                 {
                     ...Payload,
                     imageBase64: Signature
-                    
+
                 }, id);
 
 
@@ -96,22 +98,24 @@ export default function EditOperationConsent() {
 
 
 
-   const  oldRecord = JSON.parse(localStorage.getItem("oldRecord"))
-   
-       useEffect(() => {
-   
-           setPayload(
-               {
-                   nameofexplainer: oldRecord.nameofexplainer,
-                   nameofrepresentive: oldRecord.nameofrepresentive,
-                   conscentdate:oldRecord.conscentdate
-                  
-               }
-           )
-   
-          
-   
-       }, []);
+    const oldRecord = JSON.parse(localStorage.getItem("oldRecord"))
+
+    useEffect(() => {
+
+        setPayload(
+            {
+                nameofexplainer: oldRecord.nameofexplainer,
+                nameofrepresentive: oldRecord.nameofrepresentive,
+                conscentdate: oldRecord.conscentdate,
+                addressofrepresentaive: oldRecord.addressofrepresentaive,
+                fullnameofwitness: oldRecord.fullnameofwitness
+
+            }
+        )
+
+
+
+    }, []);
 
     const nav = useNavigate()
 
@@ -154,14 +158,15 @@ export default function EditOperationConsent() {
                                 <Input type="text" leftIcon={<FaNoteSticky />} label="Name Of Explainer" value={Payload.nameofexplainer} val={Payload.nameofexplainer !== "" ? true : false} onChange={handlePayload} id="nameofexplainer" />
                                 <Input type="text" leftIcon={<FaNoteSticky />} label="Name Of Representative" value={Payload.nameofrepresentive} val={Payload.nameofrepresentive !== "" ? true : false} onChange={handlePayload} id="nameofrepresentive" />
                                 <Input type="date" leftIcon={<FaNoteSticky />} label="Consent Date" value={Payload.conscentdate} val={Payload.conscentdate !== "" ? true : false} onChange={handlePayload} id="conscentdate" />
-                               
+                                <Input type="text" leftIcon={<FaNoteSticky />} label="Address Of Representative" value={Payload.addressofrepresentaive} val={Payload.addressofrepresentaive !== "" ? true : false} onChange={handlePayload} id="addressofrepresentaive" />
+                                <Input type="text" leftIcon={<FaNoteSticky />} label="Full Name Of Witness" value={Payload.fullnameofwitness} val={Payload.fullnameofwitness !== "" ? true : false} onChange={handlePayload} id="fullnameofwitness" />
 
                             </SimpleGrid>
 
                         </AccordionPanel>
                     </AccordionItem>
 
-                  
+
                     <AccordionItem mb="15px">
 
                         <AccordionButton _hover={{ border: "1px solid #EA5937", color: "#000" }} _focus={{ outline: "none" }} border="1px solid #fff" _expanded={{ rounded: "8px 8px 0px 0px", border: 0 }} bg="#fff" color="#000" rounded="8px">
@@ -172,7 +177,7 @@ export default function EditOperationConsent() {
                         </AccordionButton>
 
                         <AccordionPanel pb={4} bg="#fff" rounded="0px 0px 8px 8px">
-                          <SignaturePad setSignature={setSignature}/>
+                            <SignaturePad setSignature={setSignature} />
 
 
                         </AccordionPanel>

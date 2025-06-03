@@ -45,7 +45,7 @@ export const isOutPatientParent = () => {
 
 };
 export const isOutPatient = () => {
-    let roles = ["1","20", "6", "4", "7", "8","9","10","15","16","17","18","19","21","22","23","24","25","26","27"]
+    let roles = ["1","20", "6", "4", "7", "8","9","10","15", "14","16","17","18","19","21","22","23","24","25","26","27"]
 
     let result = roles.includes(role)
 
@@ -57,7 +57,7 @@ export const isOutPatient = () => {
 
 };
 export const isInPatient = () => {
-    let roles = ["1","20", "6", "4", "7", "8","9","10","15","16","17","18","19","21","22","23","24","25","26","27"]
+    let roles = ["1","20", "6", "4", "7", "8","9","10","14","15","16","17","18","19","21","22","23","24","25","26","27"]
 
     let result = roles.includes(role)
 
@@ -129,7 +129,7 @@ export const isPharmacyStaff = () => {
 
 };
 export const isInventoryStaff = () => {
-    let roles = ["1","20", "2", "11"]
+    let roles = ["1","20", "2", "11","22"]
 
     let result = roles.includes(role)
 
@@ -177,7 +177,7 @@ export const isRecordStaff = () => {
 
 };
 export const isClinicalReport = () => {
-    let roles = ["1","3","27","2","3","5","11"]
+    let roles = ["1","3","27","2","3","5","11","14","22"]
 
     // "6", "4","7","20","8","9","14","3","5","12"
 

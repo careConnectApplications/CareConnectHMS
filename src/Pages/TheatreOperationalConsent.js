@@ -359,32 +359,50 @@ export default function TheatreOperationalConsent({ hide = false, index }) {
                                 Data && (
                                     <Box>
 
-                                        <Text fontSize="15px" mt="12px" fontWeight={"700"} textTransform="capitalize" color="blue.blue500">Consent Form Information </Text>
-                                        <SimpleGrid mt="12px" mb="5" columns={{ base: 1, md: 2, lg: 2 }} spacing={5}>
+                                        <Text fontSize="15px" mt="12px" fontWeight={"800"} textTransform="capitalize" color="blue.blue500">Consent To Operation </Text>
+                                        {/* <SimpleGrid mt="12px" mb="5" columns={{ base: 1, md: 2, lg: 2 }} spacing={5}>
 
                                             <PreviewCard title="consent date" value={moment(Data.conscentdate).format("L")} />
                                             <PreviewCard title="name of explainer" value={Data.nameofexplainer} />
                                             <PreviewCard title="name of representative" value={Data.nameofrepresentive} />
+                                            <PreviewCard title="Address of representaive" value={Data.addressofrepresentaive} />
+                                            <PreviewCard title="full name of witness" value={Data.fullnameofwitness} />
                                             
 
-                                        </SimpleGrid>
+                                        </SimpleGrid> */}
+
+
+                                        <Text fontSize="14.5px" my="5px" lineHeight="28px" testAlign="justified" fontWeight={"500"} textTransform="" color="#242424">
+                                            I <Box as="span" fontWeight={"700"}>{Data.nameofrepresentive}</Box>  of <Box as="span" fontWeight={"700"}>{Data.addressofrepresentaive}</Box>.
+                                            Hereby consent to undergo the operation of TITLE OF OPERATION
+                                           the nature of which has been explained to me
+                                            By  <Box as="span" fontWeight={"700"}>{Data.nameofexplainer}</Box>. 
+                                            I also consent to such further alternative operation measures as may be found necessary during the course of such of operation of local or other angesthetic agents for the foregoing purpose.
+                                            I also understand an assurance has not been given that the operation
+                                            will be performed by a particular surgeon or angesthetist.
+                                        </Text>
+                                       
+                                         <Text fontSize="14.5px"  lineHeight="28px" testAlign="justified" fontWeight={"500"} textTransform="" color="#242424"> Consent date ~ <Box as="span" fontWeight={"700"}>{moment(Data.conscentdate).format("L")}</Box></Text>
+                                        
+                                        
+                                         <Text fontSize="14.5px"  lineHeight="28px" testAlign="justified" fontWeight={"500"} textTransform="" color="#242424"> Name of witness ~  <Box as="span" fontWeight={"700"}>{Data.fullnameofwitness}</Box></Text>
                                     </Box>
                                 )
                             }
-                           
+
                             {
                                 Data.filename && (
                                     <>
-                                    <Text fontSize="15px" mt="12px" fontWeight={"700"} textTransform="capitalize" color="blue.blue500">Consent Signature </Text>
-                                    <Image src={`${baseUrl}/uploads/${Data.filename}`}/>
+                                        <Text fontSize="15px" mt="12px" fontWeight={"700"} textTransform="capitalize" color="blue.blue500">Patient/Relative Consent Signature </Text>
+                                        <Image src={`${baseUrl}/uploads/${Data.filename}`} w="30%"/>
 
                                     </>
 
 
                                 )
                             }
-                           
-                           
+
+
 
 
 
