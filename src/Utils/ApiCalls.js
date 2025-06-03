@@ -6704,6 +6704,101 @@ export const UpdateDrugGivensAPI = (payload, drugGivenId) => {
       }
     });
 };
+// --- Operation Note APIs ---
+
+export const FillOperationNoteAPI = (payload, theatreAdmissionId) => {
+  const data = JSON.stringify(payload);
+  const config = {
+    method: "POST",
+    maxBodyLength: Infinity,
+    url: `${baseUrl}/theatreadmission/filloperationnote/${theatreAdmissionId}`,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    data,
+  };
+
+  return axios
+    .request(config)
+    .then((response) => {
+      console.log("FillOperationNoteAPI response:", response.data);
+      return response;
+    })
+    .catch((error) => {
+      console.error("FillOperationNoteAPI error:", error.response);
+      if (error.response?.data?.msg) {
+        throw new Error(error.response.data.msg);
+      } else if (error.response?.data) {
+        throw new Error(error.response);
+      } else if (error.request) {
+        throw new Error(error.msg);
+      } else {
+        throw new Error(error.msg);
+      }
+    });
+};
+
+export const UpdateFillOperationNoteAPI = (payload, preOperationNoteId) => {
+  const data = JSON.stringify(payload);
+  const config = {
+    method: "PUT",
+    maxBodyLength: Infinity,
+    url: `${baseUrl}/theatreadmission/updatefilloperationnote/${preOperationNoteId}`,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    data,
+  };
+
+  return axios
+    .request(config)
+    .then((response) => {
+      console.log("UpdateFillOperationNoteAPI response:", response.data);
+      return response;
+    })
+    .catch((error) => {
+      console.error("UpdateFillOperationNoteAPI error:", error.response);
+      if (error.response?.data?.msg) {
+        throw new Error(error.response.data.msg);
+      } else if (error.response?.data) {
+        throw new Error(error.response);
+      } else if (error.request) {
+        throw new Error(error.msg);
+      } else {
+        throw new Error(error.msg);
+      }
+    });
+};
+
+export const GetOperationNoteByTheatreAdmissionApi = (theatreAdmissionId) => {
+  const config = {
+    method: "GET",
+    url: `${baseUrl}/theatreadmission/readoperationnotebytheatreadmission/${theatreAdmissionId}`,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  };
+
+  return axios
+    .request(config)
+    .then((response) => response.data)
+    .catch((error) => {
+      console.error("GetOperationNoteByTheatreAdmissionApi error:", error.response);
+      if (error.response?.data?.msg) {
+        throw new Error(error.response.data.msg);
+      } else if (error.response?.data) {
+        throw new Error(error.response);
+      } else if (error.request) {
+        throw new Error(error.msg);
+      } else {
+        throw new Error(error.msg);
+      }
+    });
+};
+
 
 
 
