@@ -278,7 +278,7 @@ export default function Report() {
 
                             {
                                 QuerySettings?.map((item, i) => (
-                                    <option value={`${item.querytype}`} key={i}>{item.querytype.replace("report"," report ").replace("hmo","hmo ").replace("for"," for ")} </option>
+                                    <option value={`${item.querytype}`} key={i}>{item.querytype.replace("report"," report ").replace("hmo","hmo ").replace("for"," for ").replace("secondaryservice","Secondary service")} </option>
 
                                 ))
                             }
