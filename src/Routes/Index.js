@@ -63,6 +63,11 @@ import TheatreFoodGiven from "../Pages/TheatreFoodGiven";
 import TheatreDrugGiven from "../Pages/TheatreDrugGiven";
 import AddNewOperationNote from "../Pages/AddNewOperationNote";
 import EditOperationNote from "../Pages/EditOperationNote";
+import AddPostAnaestheticRecoveryChartForm from "../Pages/AddPostAnaestheticRecoveryChartForm";
+import EditPostAnaestheticRecoveryChartForm from "../Pages/EditPostAnaestheticRecoveryChartForm";
+import TheatreVitalSignScores from "../Pages/TheatreVitalSignScores";
+import AddHistologyRequestForm from "../Pages/AddHistologyRequestForm";
+import EditHistologyRequestForm from "../Pages/EditHistologyRequestForm";
 
 export default function IndexRoutes() {
   return (
@@ -252,6 +257,27 @@ export default function IndexRoutes() {
             <Route
               path="/dashboard/edit-operation-note/:id"
               element={<EditOperationNote />}
+            />
+            <Route
+              path="/dashboard/add-post-anaesthetic-recovery-chart/:id"
+              element={<AddPostAnaestheticRecoveryChartForm />}
+            />
+            <Route
+              path="/dashboard/edit-post-anaesthetic-recovery-chart/:id"
+              element={<EditPostAnaestheticRecoveryChartForm />}
+            />
+
+            <Route
+              path="/dashboard/vital-sign-scores/:id"
+              element={<TheatreVitalSignScores />}
+            />
+            <Route
+              path="/dashboard/edit-histology-request-form/:id"
+              element={<EditHistologyRequestForm />}
+            />
+            <Route
+              path="/dashboard/add-histology-request-form/:id"
+              element={<AddHistologyRequestForm />}
             />
           </Route>
         </Route>

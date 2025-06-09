@@ -402,7 +402,12 @@ export const GetFullReportSummaryApi = (type, start, end) => {
       }
     });
 };
-export const GetAllPatientsHistoryApi = (clinic,postPerPage, pageNo, Status ) => {
+export const GetAllPatientsHistoryApi = (
+  clinic,
+  postPerPage,
+  pageNo,
+  Status
+) => {
   // Configure the GET request
   let config = {
     method: "get",
@@ -431,7 +436,14 @@ export const GetAllPatientsHistoryApi = (clinic,postPerPage, pageNo, Status ) =>
       }
     });
 };
-export const GetAllPatientsHistoryFilteredApi = (clinic,postPerPage, pageNo, Status,key,value ) => {
+export const GetAllPatientsHistoryFilteredApi = (
+  clinic,
+  postPerPage,
+  pageNo,
+  Status,
+  key,
+  value
+) => {
   // Configure the GET request
   let config = {
     method: "get",
@@ -460,7 +472,7 @@ export const GetAllPatientsHistoryFilteredApi = (clinic,postPerPage, pageNo, Sta
       }
     });
 };
-export const GetAllScheduledLabApi = (postPerPage,pageNo, status) => {
+export const GetAllScheduledLabApi = (postPerPage, pageNo, status) => {
   // Configure the GET request
   let config = {
     method: "get",
@@ -490,7 +502,13 @@ export const GetAllScheduledLabApi = (postPerPage,pageNo, status) => {
     });
 };
 
-export const GetAllScheduledLabFilteredApi = (postPerPage,pageNo, status,key, value) => {
+export const GetAllScheduledLabFilteredApi = (
+  postPerPage,
+  pageNo,
+  status,
+  key,
+  value
+) => {
   // Configure the GET request
   let config = {
     method: "get",
@@ -1807,7 +1825,7 @@ export const AddPreAnatheticsAPI = (payload, id) => {
 };
 export const AddOperationalConsentAPI = (payload, id) => {
   let data = JSON.stringify(payload);
- 
+
   let config = {
     method: "POST",
     maxBodyLength: Infinity,
@@ -1840,7 +1858,7 @@ export const AddOperationalConsentAPI = (payload, id) => {
 };
 export const EditOperationalConsentAPI = (payload, id) => {
   let data = JSON.stringify(payload);
- 
+
   let config = {
     method: "PUT",
     maxBodyLength: Infinity,
@@ -1874,7 +1892,7 @@ export const EditOperationalConsentAPI = (payload, id) => {
 
 export const EditPreAnatheticsAPI = (payload, id) => {
   let data = JSON.stringify(payload);
- 
+
   let config = {
     method: "PUT",
     maxBodyLength: Infinity,
@@ -4794,7 +4812,13 @@ export const ReadAllRadiologyApi = (postsPerPage, currentPage, status) => {
       }
     });
 };
-export const ReadAllRadiologyFilteredApi = (postsPerPage, currentPage, status,key,value) => {
+export const ReadAllRadiologyFilteredApi = (
+  postsPerPage,
+  currentPage,
+  status,
+  key,
+  value
+) => {
   let config = {
     method: "get",
     maxBodyLength: Infinity,
@@ -6198,11 +6222,11 @@ export const ReadDrugPriceApi = async (payload, patientId) => {
 
   return axios
     .request(config)
-    .then(response => {
+    .then((response) => {
       console.log("Drug price response:", JSON.stringify(response.data));
       return response.data;
     })
-    .catch(error => {
+    .catch((error) => {
       console.error("Error reading drug price:", error.response);
 
       if (error.response?.data?.msg) {
@@ -6306,17 +6330,11 @@ export const ReadAllNutritionByPatientApi = (patientId) => {
   return axios
     .request(config)
     .then((response) => {
-      console.log(
-        "ReadAllNutritionByPatientApi response:",
-        response.data
-      );
+      console.log("ReadAllNutritionByPatientApi response:", response.data);
       return response.data;
     })
     .catch((error) => {
-      console.error(
-        "ReadAllNutritionByPatientApi error:",
-        error.response
-      );
+      console.error("ReadAllNutritionByPatientApi error:", error.response);
       if (error.response?.data?.msg) {
         throw new Error(error.response.data.msg);
       } else if (error.response?.data) {
@@ -6597,7 +6615,10 @@ export const GetAllFoodGivenByTheatreAdmissionApi = (anaesthesiaId) => {
     .request(config)
     .then((response) => response.data)
     .catch((error) => {
-      console.error("GetAllFoodGivenByTheatreAdmissionApi error:", error.response);
+      console.error(
+        "GetAllFoodGivenByTheatreAdmissionApi error:",
+        error.response
+      );
       if (error.response?.data?.msg) {
         throw new Error(error.response.data.msg);
       } else if (error.response?.data) {
@@ -6704,7 +6725,6 @@ export const UpdateDrugGivensAPI = (payload, drugGivenId) => {
       }
     });
 };
-// --- Operation Note APIs ---
 
 export const FillOperationNoteAPI = (payload, theatreAdmissionId) => {
   const data = JSON.stringify(payload);
@@ -6786,7 +6806,43 @@ export const GetOperationNoteByTheatreAdmissionApi = (theatreAdmissionId) => {
     .request(config)
     .then((response) => response.data)
     .catch((error) => {
-      console.error("GetOperationNoteByTheatreAdmissionApi error:", error.response);
+      console.error(
+        "GetOperationNoteByTheatreAdmissionApi error:",
+        error.response
+      );
+      if (error.response?.data?.msg) {
+        throw new Error(error.response.data.msg);
+      } else if (error.response?.data) {
+        throw new Error(error.response);
+      } else if (error.request) {
+        throw new Error(error.msg);
+      } else {
+        throw new Error(error.msg);
+      }
+    });
+};
+export const AddPostAnaestheticRecoveryChartFormAPI = (payload, id) => {
+  const data = JSON.stringify(payload);
+
+  const config = {
+    method: "POST",
+    maxBodyLength: Infinity,
+    url: `${baseUrl}/theatreadmission/fillpostanaetheticrecoverychartform/${id}`,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    data,
+  };
+
+  return axios
+    .request(config)
+    .then((response) => {
+      console.log(JSON.stringify(response.data));
+      return response;
+    })
+    .catch((error) => {
+      console.log("error", error.response);
       if (error.response?.data?.msg) {
         throw new Error(error.response.data.msg);
       } else if (error.response?.data) {
@@ -6799,7 +6855,256 @@ export const GetOperationNoteByTheatreAdmissionApi = (theatreAdmissionId) => {
     });
 };
 
+export const EditPostAnaestheticRecoveryChartFormAPI = (payload, id) => {
+  const data = JSON.stringify(payload);
 
+  const config = {
+    method: "PUT",
+    maxBodyLength: Infinity,
+    url: `${baseUrl}/theatreadmission/updatepostanaetheticrecoverychartform/${id}`,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    data,
+  };
 
+  return axios
+    .request(config)
+    .then((response) => {
+      console.log(JSON.stringify(response.data));
+      return response;
+    })
+    .catch((error) => {
+      console.log("error", error.response);
+      if (error.response?.data?.msg) {
+        throw new Error(error.response.data.msg);
+      } else if (error.response?.data) {
+        throw new Error(error.response);
+      } else if (error.request) {
+        throw new Error(error.msg);
+      } else {
+        throw new Error(error.msg);
+      }
+    });
+};
 
+export const GetPostAnaestheticRecoveryChartFormAPI = (id) => {
+  const config = {
+    method: "GET",
+    url: `${baseUrl}/theatreadmission/readonepostanaetheticrecoverychartformbytheatreadmission/${id}`,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  };
+
+  return axios
+    .request(config)
+    .then((response) => {
+      return response.data; // return the form data
+    })
+    .catch((error) => {
+      console.log(
+        "Error fetching post-anaesthetic recovery chart form:",
+        error.response
+      );
+      if (error.response?.data?.msg) {
+        throw new Error(error.response.data.msg);
+      } else if (error.response?.data) {
+        throw new Error(error.response);
+      } else if (error.request) {
+        throw new Error(error.msg);
+      } else {
+        throw new Error(error.msg);
+      }
+    });
+};
+export const CreateVitalSignScoresAPI = (payload, recoveryChartId) => {
+  const data = JSON.stringify(payload);
+  const config = {
+    method: "POST",
+    maxBodyLength: Infinity,
+    url: `${baseUrl}/theatreadmission/createvitalsignscores/${recoveryChartId}`,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    data,
+  };
+
+  return axios
+    .request(config)
+    .then((response) => {
+      console.log("CreateVitalSignScoresAPI response:", response.data);
+      return response;
+    })
+    .catch((error) => {
+      console.error("CreateVitalSignScoresAPI error:", error.response);
+      if (error.response?.data?.msg) {
+        throw new Error(error.response.data.msg);
+      } else if (error.response?.data) {
+        throw new Error(error.response);
+      } else if (error.request) {
+        throw new Error(error.msg);
+      } else {
+        throw new Error(error.msg);
+      }
+    });
+};
+
+export const GetAllVitalSignScoresByTheatreAdmissionApi = (recoveryChartId) => {
+  const config = {
+    method: "GET",
+    url: `${baseUrl}/theatreadmission/readallvitalsignscoreByTheatreAdmission/${recoveryChartId}`,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  };
+
+  return axios
+    .request(config)
+    .then((response) => response.data)
+    .catch((error) => {
+      console.error(
+        "GetAllVitalSignScoresByTheatreAdmissionApi error:",
+        error.response
+      );
+      if (error.response?.data?.msg) {
+        throw new Error(error.response.data.msg);
+      } else if (error.response?.data) {
+        throw new Error(error.response);
+      } else if (error.request) {
+        throw new Error(error.msg);
+      } else {
+        throw new Error(error.msg);
+      }
+    });
+};
+
+export const UpdateVitalSignScoresAPI = (payload, vitalScoreId) => {
+  const data = JSON.stringify(payload);
+  const config = {
+    method: "PUT",
+    maxBodyLength: Infinity,
+    url: `${baseUrl}/theatreadmission/updatevitalsignscores/${vitalScoreId}`,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    data,
+  };
+
+  return axios
+    .request(config)
+    .then((response) => {
+      console.log("UpdateVitalSignScoresAPI response:", response.data);
+      return response;
+    })
+    .catch((error) => {
+      console.error("UpdateVitalSignScoresAPI error:", error.response);
+      if (error.response?.data?.msg) {
+        throw new Error(error.response.data.msg);
+      } else if (error.response?.data) {
+        throw new Error(error.response);
+      } else if (error.request) {
+        throw new Error(error.msg);
+      } else {
+        throw new Error(error.msg);
+      }
+    });
+};
+export const AddHistologyRequestFormAPI = (payload, admissionId) => {
+  const data = JSON.stringify(payload);
+  const config = {
+    method: "POST",
+    maxBodyLength: Infinity,
+    url: `${baseUrl}/theatreadmission/fillhistologyrequestform/${admissionId}`,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    data,
+  };
+
+  return axios
+    .request(config)
+    .then((response) => {
+      console.log("AddHistologyRequestFormAPI response:", response.data);
+      return response;
+    })
+    .catch((error) => {
+      console.error("AddHistologyRequestFormAPI error:", error.response);
+      if (error.response?.data?.msg) {
+        throw new Error(error.response.data.msg);
+      } else if (error.response?.data) {
+        throw new Error(error.response);
+      } else if (error.request) {
+        throw new Error(error.message);
+      } else {
+        throw new Error(error.message);
+      }
+    });
+};
+
+export const EditHistologyRequestFormAPI = (payload, formId) => {
+  const data = JSON.stringify(payload);
+  const config = {
+    method: "PUT",
+    maxBodyLength: Infinity,
+    url: `${baseUrl}/theatreadmission/updatehistologyrequestform/${formId}`,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    data,
+  };
+
+  return axios
+    .request(config)
+    .then((response) => {
+      console.log("EditHistologyRequestFormAPI response:", response.data);
+      return response;
+    })
+    .catch((error) => {
+      console.error("EditHistologyRequestFormAPI error:", error.response);
+      if (error.response?.data?.msg) {
+        throw new Error(error.response.data.msg);
+      } else if (error.response?.data) {
+        throw new Error(error.response);
+      } else if (error.request) {
+        throw new Error(error.message);
+      } else {
+        throw new Error(error.message);
+      }
+    });
+};
+
+export const GetHistologyRequestFormAPI = (admissionId) => {
+  const config = {
+    method: "GET",
+    url: `${baseUrl}/theatreadmission/readhistologyrequestformytheatreadmission/${admissionId}`,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  };
+
+  return axios
+    .request(config)
+    .then((response) => response.data)
+    .catch((error) => {
+      console.error("GetHistologyRequestFormAPI error:", error.response);
+      if (error.response?.data?.msg) {
+        throw new Error(error.response.data.msg);
+      } else if (error.response?.data) {
+        throw new Error(error.response);
+      } else if (error.request) {
+        throw new Error(error.message);
+      } else {
+        throw new Error(error.message);
+      }
+    });
+};
 

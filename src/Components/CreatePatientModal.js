@@ -14,8 +14,8 @@ import {
   Divider,
   Box, // For displaying the message
 } from "@chakra-ui/react";
-import {  Checkbox, InputGroup, InputLeftElement} from '@chakra-ui/react';
-import {  FaIdBadge, FaPhone } from 'react-icons/fa';
+import { Checkbox, InputGroup, InputLeftElement } from "@chakra-ui/react";
+import { FaIdBadge, FaPhone } from "react-icons/fa";
 import {
   FaUser,
   FaEnvelope,
@@ -41,7 +41,6 @@ import {
   getLGAsForState,
   GetOnlyClinicApi,
 } from "../Utils/ApiCalls";
-
 
 import ShowToast from "./ToastNotification";
 
@@ -117,7 +116,6 @@ export default function CreatePatientModal({
     getAllClinic();
   }, []);
 
-
   const [patientData, setPatientData] = useState({
     title: "",
     firstName: "",
@@ -137,7 +135,7 @@ export default function CreatePatientModal({
     nextOfKinName: "",
     nextOfKinRelationship: "",
     nextOfKinPhoneNumber: "",
-    authorizationcode:"",
+    authorizationcode: "",
     nextOfKinAddress: "",
     maritalStatus: "",
     disability: "",
@@ -157,6 +155,7 @@ export default function CreatePatientModal({
     policaename: "",
     servicenumber: "",
     policephonenumber: "",
+    facilitypateintreferedfrom: "",
   });
 
   const [UpdatedPayload, setUpdatedPayload] = useState({
@@ -194,6 +193,7 @@ export default function CreatePatientModal({
     policaename: "",
     servicenumber: "",
     policephonenumber: "",
+    facilitypateintreferedfrom: "",
   });
 
   const [Settings, setSettings] = useState({});
@@ -206,7 +206,6 @@ export default function CreatePatientModal({
       const result = await SettingsApi();
 
       setSettings(result);
-
     } catch (e) {}
   };
 
@@ -249,12 +248,13 @@ export default function CreatePatientModal({
         policeaname: "",
         servicenumber: "",
         policephonenumber: "",
+        facilitypateintreferedfrom: "",
       });
       setMessage(""); // Reset message on close
       setMessageStatus(""); // Reset message status on close
     }
 
-    console.log("filteredpatient", filteredpatient)
+    console.log("filteredpatient", filteredpatient);
     setUpdatedPayload({
       title: filteredpatient[0]?.title,
       firstName: filteredpatient[0]?.firstName,
@@ -289,6 +289,8 @@ export default function CreatePatientModal({
       policeaname: filteredpatient[0]?.policeaname,
       servicenumber: filteredpatient[0]?.servicenumber,
       policephonenumber: filteredpatient[0]?.policephonenumer,
+      facilitypateintreferedfrom:
+        filteredpatient[0]?.facilitypateintreferedfrom || "",
     });
   }, [isOpen]);
 
@@ -477,6 +479,7 @@ export default function CreatePatientModal({
                   policaename: "",
                   servicenumber: "",
                   policephonenumber: "",
+                  facilitypateintreferedfrom: "",
                 });
               }}
             />
@@ -732,9 +735,6 @@ export default function CreatePatientModal({
                     leftIcon={<RiStickyNoteFill />}
                   />
 
-
-
-
                   <FormControl>
                     <Select
                       name="clinic"
@@ -748,6 +748,15 @@ export default function CreatePatientModal({
                       ))}
                     </Select>
                   </FormControl>
+                  <Input
+                    id="facilitypateintreferedfrom"
+                    name="facilitypateintreferedfrom"
+                    label="Facility Referred From"
+                    value={patientData.facilitypateintreferedfrom}
+                    onChange={handleInputChange}
+                    placeholder="Enter referring facility"
+                    leftIcon={<FaMedkit />}
+                  />
                 </SimpleGrid>
 
                 <Divider my={4} />
@@ -912,7 +921,6 @@ export default function CreatePatientModal({
                     value={patientData.HMOId}
                     onChange={handleInputChange}
                     name="HMOId"
-                    
                     leftIcon={<FaMedkit />}
                   />
                   <Input
@@ -921,7 +929,6 @@ export default function CreatePatientModal({
                     value={patientData.authorizationcode}
                     onChange={handleInputChange}
                     name="authorizationcode"
-                   
                     leftIcon={<FaMedkit />}
                   />
                 </SimpleGrid>
@@ -988,7 +995,7 @@ export default function CreatePatientModal({
                         onChange={handleInputChange}
                         name="policaename"
                         placeholder="Enter Police Name"
-                        leftIcon={  < FaUser/>}
+                        leftIcon={<FaUser />}
                       />
                       <Input
                         id="servicenumber"
@@ -997,7 +1004,7 @@ export default function CreatePatientModal({
                         onChange={handleInputChange}
                         name="servicenumber"
                         placeholder="Enter Service Number"
-                        leftIcon={  < FaIdBadge/>}
+                        leftIcon={<FaIdBadge />}
                       />
                       <Input
                         id="policephonenumber"
@@ -1006,7 +1013,7 @@ export default function CreatePatientModal({
                         onChange={handleInputChange}
                         name="policephonenumber"
                         placeholder="Enter Police Phone Number"
-                        leftIcon={  < FaPhone/>}
+                        leftIcon={<FaPhone />}
                       />
                     </SimpleGrid>
                   </>
@@ -1293,6 +1300,15 @@ export default function CreatePatientModal({
                       ))}
                     </Select>
                   </FormControl>
+                  <Input
+                    id="facilitypateintreferedfrom"
+                    name="facilitypateintreferedfrom"
+                    label="Facility Referred From"
+                    value={UpdatedPayload.facilitypateintreferedfrom}
+                    onChange={handleUpdatedPayload}
+                    placeholder="Enter referring facility"
+                    leftIcon={<FaMedkit />}
+                  />
                 </SimpleGrid>
 
                 <Divider my={4} />
@@ -1463,13 +1479,12 @@ export default function CreatePatientModal({
                     placeholder="Old"
                     leftIcon={<FaMedkit />}
                   />
-                   <Input
+                  <Input
                     id="authorizationcode"
                     label="Authorization Code"
                     value={UpdatedPayload.authorizationcode}
                     onChange={handleUpdatedPayload}
                     name="authorizationcode"
-                   
                     leftIcon={<FaMedkit />}
                   />
                 </SimpleGrid>
@@ -1529,45 +1544,37 @@ export default function CreatePatientModal({
 
                     <SimpleGrid columns={{ base: 1, md: 3 }} spacing={4} mt={4}>
                       <FormControl>
-                        
-
-
-                          <Input
-                            id="policaename"
-                            label="Police Name"
-                            value={UpdatedPayload.policaename}
-                            onChange={handleUpdatedPayload}
-                            name="policaename"
-                            placeholder="Enter Police Name"
-                            leftIcon={  < FaUser/>}
-                          />
-                        
+                        <Input
+                          id="policaename"
+                          label="Police Name"
+                          value={UpdatedPayload.policaename}
+                          onChange={handleUpdatedPayload}
+                          name="policaename"
+                          placeholder="Enter Police Name"
+                          leftIcon={<FaUser />}
+                        />
                       </FormControl>
                       <FormControl>
-                       
-                         
-                          <Input
-                            id="servicenumber"
-                            label="Service Number"
-                            value={UpdatedPayload.servicenumber}
-                            onChange={handleUpdatedPayload}
-                            name="servicenumber"
-                            placeholder="Enter Service Number"
-                            leftIcon={  <FaIdBadge />}
-                          />
-                      
+                        <Input
+                          id="servicenumber"
+                          label="Service Number"
+                          value={UpdatedPayload.servicenumber}
+                          onChange={handleUpdatedPayload}
+                          name="servicenumber"
+                          placeholder="Enter Service Number"
+                          leftIcon={<FaIdBadge />}
+                        />
                       </FormControl>
                       <FormControl>
-                          <Input
-                            id="policephonenumber"
-                            label="Police Phone Number"
-                            value={UpdatedPayload.policephonenumber}
-                            onChange={handleUpdatedPayload}
-                            name="policephonenumber"
-                            placeholder="Enter Police Phone Number"
-                            leftIcon={ <FaPhone  />}
-                          />
-                       
+                        <Input
+                          id="policephonenumber"
+                          label="Police Phone Number"
+                          value={UpdatedPayload.policephonenumber}
+                          onChange={handleUpdatedPayload}
+                          name="policephonenumber"
+                          placeholder="Enter Police Phone Number"
+                          leftIcon={<FaPhone />}
+                        />
                       </FormControl>
                     </SimpleGrid>
                   </>
