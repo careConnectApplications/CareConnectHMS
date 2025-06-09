@@ -33,6 +33,7 @@ export default function InventoryModal({
   onSuccess,
 }) {
   const initialFormState = {
+    productid: "",
     category: "",
     expirationdate: "",
     qty: "",
@@ -56,7 +57,6 @@ export default function InventoryModal({
       try {
         const settings = await SettingsApi();
         setPharmacyCategories(settings.pharmacycategory || []);
-        // Do not use settings.clinics for the pharmacy dropdown anymore.
       } catch (error) {
         console.error("Error fetching settings:", error);
       }
@@ -80,19 +80,19 @@ export default function InventoryModal({
       const timer = setTimeout(() => {
         if (type === "edit" && selectedInventory) {
           setInventoryData({
+            productid: selectedInventory.productid || "",
             category: selectedInventory.category || "",
-            expirationdate: selectedInventory.expirationDate || "", // updated key
-            qty: selectedInventory.quantity || "", // updated key
+            expirationdate: selectedInventory.expirationDate || "",
+            qty: selectedInventory.quantity || "",
             amount: selectedInventory.amount || "",
-            servicetype: selectedInventory.serviceType || "", // updated key
-            lowstocklevel: selectedInventory.lowStockLevel || "", // updated key
-            lastrestockdate: selectedInventory.lastRestockDate || "", 
+            servicetype: selectedInventory.serviceType || "",
+            lowstocklevel: selectedInventory.lowStockLevel || "",
+            lastrestockdate: selectedInventory.lastRestockDate || "",
             pharmacy: selectedInventory.pharmacy || "",
           });
         } else {
           setInventoryData(initialFormState);
         }
-
         setLoading(false);
       }, 200);
 
@@ -126,7 +126,6 @@ export default function InventoryModal({
       setMessageStatus("success");
 
       onSuccess(successMessage);
-
       setInventoryData(initialFormState);
       onClose();
     } catch (error) {
@@ -185,6 +184,16 @@ export default function InventoryModal({
           </ModalHeader>
 
           <ModalBody pb={6} mt={2}>
+            {/* Product ID */}
+            <Input
+              id="productid"
+              label="Product ID"
+              name="productid"
+              value={inventoryData.productid}
+              onChange={handleInputChange}
+              placeholder="Enter Product ID"
+            />
+
             {/* Pharmacy Selection */}
             <FormControl mb={4}>
               <FormLabel>Pharmacy</FormLabel>
