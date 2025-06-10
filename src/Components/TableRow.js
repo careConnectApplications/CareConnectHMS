@@ -515,6 +515,56 @@ export default function TableRow({
           </Td>
         </>
       )}
+      {type === "payment-group-paid" && (
+        <>
+         
+          <Td>
+            <Text fontWeight="400" fontSize={"13px"}>
+              {reference}
+            </Text>
+          </Td>
+          <Td>
+            <Text fontWeight="400" fontSize={"13px"}>
+              {total?.toLocaleString()}
+            </Text>
+          </Td>
+          <Td>
+            <Text fontWeight="400" fontSize={"13px"}>
+              {date}
+            </Text>
+          </Td>
+          <Td>
+            <Menu isLazy>
+              <MenuButton as={Box}>
+                <Flex justifyContent="center" color="#000000" fontSize="16px">
+                  <BsThreeDots />
+                </Flex>
+              </MenuButton>
+              <MenuList>
+               
+                  <MenuItem
+                    onClick={onClick}
+                    textTransform="capitalize"
+                    fontWeight={"500"}
+                    color="#2F2F2F"
+                    _hover={{
+                      color: "#fff",
+                      fontWeight: "400",
+                      bg: "blue.blue500",
+                    }}
+                  >
+                    <HStack fontSize="14px">
+                      <Text>Confirm Payment</Text>
+                    </HStack>
+                  </MenuItem> 
+
+
+               
+              </MenuList>
+            </Menu>
+          </Td>
+        </>
+      )}
 
       {type === "billing-history" && (
         <>
