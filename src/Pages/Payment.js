@@ -510,7 +510,9 @@ export default function Payment() {
           <TableContainer>
             <Table variant="striped">
               <Thead bg="#fff">
-                <Tr>
+                {
+                  All ? (
+                    <Tr>
                   <Th
                     fontSize="13px"
                     textTransform="capitalize"
@@ -578,6 +580,44 @@ export default function Payment() {
                     actions
                   </Th>
                 </Tr>
+                  ):(
+                    <Tr>
+
+                  <Th
+                    fontSize="13px"
+                    textTransform="capitalize"
+                    color="#534D59"
+                    fontWeight="600"
+                  >
+                    Reference No
+                  </Th>
+                  <Th
+                    fontSize="13px"
+                    textTransform="capitalize"
+                    color="#534D59"
+                    fontWeight="600"
+                  >
+                    Total Amount
+                  </Th>
+                  <Th
+                    fontSize="13px"
+                    textTransform="capitalize"
+                    color="#534D59"
+                    fontWeight="600"
+                  >
+                    date created
+                  </Th>
+                  <Th
+                    fontSize="13px"
+                    textTransform="capitalize"
+                    color="#534D59"
+                    fontWeight="600"
+                  >
+                    actions
+                  </Th>
+                </Tr>
+                  )
+                }
               </Thead>
               <Tbody>
 
@@ -588,7 +628,7 @@ export default function Payment() {
                     FilterData?.map((item, i) => (
                       <TableRow
                         key={i}
-                        type="payment-group"
+                        type= {All ?  "payment-group": "payment-group-paid"}
                         name={`${item.firstName} ${item.lastName}`}
                         email={item.email}
                         age={item.age}
@@ -610,7 +650,7 @@ export default function Payment() {
                       FilteredData?.map((item, i) => (
                         <TableRow
                           key={i}
-                          type="payment-group"
+                          type={All ?  "payment-group": "payment-group-paid"}
                           name={`${item.firstName} ${item.lastName}`}
                           email={item.email}
                           age={item.age}
