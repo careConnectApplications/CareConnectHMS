@@ -225,6 +225,11 @@ export default function SummaryReport() {
           localStorage.setItem("reportSummary", JSON.stringify(result.queryresult));
           localStorage.setItem("reportCategory", QueryType);
           nav("/dashboard/report-analytics/print-summary");
+        }else if (QueryType === "nutritionaggregate") {
+          
+          localStorage.setItem("reportSummary", JSON.stringify(result.queryresult));
+          localStorage.setItem("reportCategory", QueryType);
+          nav("/dashboard/report-analytics/print-summary");
         }
       }
     } catch (e) {
