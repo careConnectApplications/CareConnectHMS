@@ -7,7 +7,7 @@ export const nigeriaStateApiUrl = "https://nga-states-lga.onrender.com";
 export const baseUrl = `${window.location.protocol}//${window.location.hostname}/api/v1`;
 //  export let FacilityName = "TEST HOSPITAL"
 
-const baseChecker = `${window.location.hostname}`
+const baseChecker = `${window.location.hostname}`     
 
 export let FacilityName = ""
 

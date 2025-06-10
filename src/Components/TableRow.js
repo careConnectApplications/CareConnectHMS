@@ -21,7 +21,7 @@ export default function TableRow({
   labName,code,
   physicianName,
   collectedDate,
-  reportedDate,
+  reportedDate,visitType,supplement,gender,count,
   PaymentStatus,  sexualAssault,serviceNumber,policeCase,policeName,physicalAssault,
   dose,
   comment,
@@ -468,6 +468,56 @@ export default function TableRow({
               {age}
             </Text>
           </Td>
+          <Td>
+            <Text fontWeight="400" fontSize={"13px"}>
+              {reference}
+            </Text>
+          </Td>
+          <Td>
+            <Text fontWeight="400" fontSize={"13px"}>
+              {total?.toLocaleString()}
+            </Text>
+          </Td>
+          <Td>
+            <Text fontWeight="400" fontSize={"13px"}>
+              {date}
+            </Text>
+          </Td>
+          <Td>
+            <Menu isLazy>
+              <MenuButton as={Box}>
+                <Flex justifyContent="center" color="#000000" fontSize="16px">
+                  <BsThreeDots />
+                </Flex>
+              </MenuButton>
+              <MenuList>
+               
+                  <MenuItem
+                    onClick={onClick}
+                    textTransform="capitalize"
+                    fontWeight={"500"}
+                    color="#2F2F2F"
+                    _hover={{
+                      color: "#fff",
+                      fontWeight: "400",
+                      bg: "blue.blue500",
+                    }}
+                  >
+                    <HStack fontSize="14px">
+                      <Text>Confirm Payment</Text>
+                    </HStack>
+                  </MenuItem> 
+
+
+               
+              </MenuList>
+            </Menu>
+          </Td>
+        </>
+      )}
+      {type === "payment-group-paid" && (
+        <>
+         
           <Td>
             <Text fontWeight="400" fontSize={"13px"}>
               {reference}
@@ -2826,6 +2876,37 @@ export default function TableRow({
               {diagnosis}
             </Text>
           </Td>
+        </>
+      )}
+      {type === "nutrition-summary" && (
+        <>
+        
+          <Td>
+            <Text fontWeight="400" fontSize="12px">
+              {count}
+            </Text>
+          </Td>
+           <Td>
+            <Text fontWeight="400" fontSize="12px">
+              {age}
+            </Text>
+          </Td>
+          <Td>
+            <Text fontWeight="400" fontSize="12px">
+              {gender}
+            </Text>
+          </Td>
+          <Td>
+            <Text fontWeight="400" fontSize="12px">
+              {supplement}
+            </Text>
+          </Td>
+          <Td>
+            <Text fontWeight="400" fontSize="12px">   
+              {visitType}
+            </Text>
+          </Td>
+         
         </>
       )}
     </Tr>

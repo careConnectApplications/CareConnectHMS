@@ -764,6 +764,358 @@ export default function PrintReportSummary() {
           )
          
         )}
+        {/* nutrition Aggregate  */}
+
+        {Category === "nutritionaggregate" && (
+          Data.children0to59thatreceivednutirtion?.length > 0 && (
+            <>
+              <Text mt="2" fontWeight="600">Children 0 to 59 that received nutrition</Text>
+              <TableContainer mt="15px">
+            <Table variant="striped">
+              <Thead>
+                <Tr>
+                  <Th
+                    fontSize="13px"
+                    textTransform="capitalize"
+                    color="#000"
+                    fontWeight="600"
+                  >
+                    Count
+                  </Th>
+                    <Th
+                    fontSize="13px"
+                    textTransform="capitalize"
+                    color="#000"
+                    fontWeight="600"
+                  >
+                    age in months
+                  </Th>
+                  <Th
+                    fontSize="13px"
+                    textTransform="capitalize"
+                    color="#000"
+                    fontWeight="600"
+                  >
+                    Gender
+                  </Th>
+                  <Th
+                    fontSize="13px"
+                    textTransform="capitalize"
+                    color="#000"
+                    fontWeight="600"
+                  >
+                    Supplement
+                  </Th>
+                  <Th
+                    fontSize="13px"
+                    textTransform="capitalize"
+                    color="#000"
+                    fontWeight="600"
+                  >
+                    Type of Visit
+                  </Th>
+                
+                </Tr>
+              </Thead>
+              <Tbody>
+                {Data.children0to59thatreceivednutirtion?.map((item, i) => (
+                  <TableRow
+                    type="nutrition-summary"
+                    count={item.count}
+                    age={item.parameters?.ageinmonths}
+                    gender={item.parameters?.gender}
+                    supplement={item.parameters?.vitaminasupplement}
+                    visitType={item.parameters?.typeofvisit}
+                    
+                  />
+                ))}
+              </Tbody>
+            </Table>
+          </TableContainer>
+            </>
+          )
+         
+        )}
+        {Category === "nutritionaggregate" && (
+          Data.children0to59growingwell?.length > 0 && (
+            <>
+              <Text mt="2" fontWeight="600">Children 0 to 59 that are growing well</Text>
+              <TableContainer mt="15px">
+            <Table variant="striped">
+              <Thead>
+                <Tr>
+                  <Th
+                    fontSize="13px"
+                    textTransform="capitalize"
+                    color="#000"
+                    fontWeight="600"
+                  >
+                    Count
+                  </Th>
+                    <Th
+                    fontSize="13px"
+                    textTransform="capitalize"
+                    color="#000"
+                    fontWeight="600"
+                  >
+                    age in months
+                  </Th>
+                  <Th
+                    fontSize="13px"
+                    textTransform="capitalize"
+                    color="#000"
+                    fontWeight="600"
+                  >
+                    Gender
+                  </Th>
+                  <Th
+                    fontSize="13px"
+                    textTransform="capitalize"
+                    color="#000"
+                    fontWeight="600"
+                  >
+                    Supplement
+                  </Th>
+                  <Th
+                    fontSize="13px"
+                    textTransform="capitalize"
+                    color="#000"
+                    fontWeight="600"
+                  >
+                    Type of Visit
+                  </Th>
+                
+                </Tr>
+              </Thead>
+              <Tbody>
+                {Data.children0to59growingwell?.map((item, i) => (
+                  <TableRow
+                    type="nutrition-summary"
+                    count={item.count}
+                    age={item.parameters?.ageinmonths}
+                    gender={item.parameters?.gender}
+                    supplement={item.parameters?.vitaminasupplement}
+                    visitType={item.parameters?.typeofvisit}
+                    
+                  />
+                ))}
+              </Tbody>
+            </Table>
+          </TableContainer>
+            </>
+          )
+         
+        )}
+        {Category === "nutritionaggregate" && (
+          Data.children0to5exclusivebreadstfeeding?.length > 0 && (
+            <>
+              <Text mt="2" fontWeight="600">Children 0 to 5 that received exclusive breast feeding</Text>
+              <TableContainer mt="15px">
+            <Table variant="striped">
+              <Thead>
+                <Tr>
+                  <Th
+                    fontSize="13px"
+                    textTransform="capitalize"
+                    color="#000"
+                    fontWeight="600"
+                  >
+                    Count
+                  </Th>
+                    <Th
+                    fontSize="13px"
+                    textTransform="capitalize"
+                    color="#000"
+                    fontWeight="600"
+                  >
+                    age in months
+                  </Th>
+                  <Th
+                    fontSize="13px"
+                    textTransform="capitalize"
+                    color="#000"
+                    fontWeight="600"
+                  >
+                    Gender
+                  </Th>
+                  <Th
+                    fontSize="13px"
+                    textTransform="capitalize"
+                    color="#000"
+                    fontWeight="600"
+                  >
+                    Supplement
+                  </Th>
+                  <Th
+                    fontSize="13px"
+                    textTransform="capitalize"
+                    color="#000"
+                    fontWeight="600"
+                  >
+                    Type of Visit
+                  </Th>
+                
+                </Tr>
+              </Thead>
+              <Tbody>
+                {Data.children0to5exclusivebreadstfeeding?.map((item, i) => (
+                  <TableRow
+                    type="nutrition-summary"
+                    count={item.count}
+                    age={item.parameters?.ageinmonths}
+                    gender={item.parameters?.gender}
+                    supplement={item.parameters?.vitaminasupplement}
+                    visitType={item.parameters?.typeofvisit}
+                    
+                  />
+                ))}
+              </Tbody>
+            </Table>
+          </TableContainer>
+            </>
+          )
+         
+        )}
+        {Category === "nutritionaggregate" && (
+          Data.children0to59givenvitaminasupplement?.length > 0 && (
+            <>
+              <Text mt="2" fontWeight="600">Children 0 to 59 given vitamin A supplement</Text>
+              <TableContainer mt="15px">
+            <Table variant="striped">
+              <Thead>
+                <Tr>
+                  <Th
+                    fontSize="13px"
+                    textTransform="capitalize"
+                    color="#000"
+                    fontWeight="600"
+                  >
+                    Count
+                  </Th>
+                    <Th
+                    fontSize="13px"
+                    textTransform="capitalize"
+                    color="#000"
+                    fontWeight="600"
+                  >
+                    age in months
+                  </Th>
+                  <Th
+                    fontSize="13px"
+                    textTransform="capitalize"
+                    color="#000"
+                    fontWeight="600"
+                  >
+                    Gender
+                  </Th>
+                  <Th
+                    fontSize="13px"
+                    textTransform="capitalize"
+                    color="#000"
+                    fontWeight="600"
+                  >
+                    Supplement
+                  </Th>
+                  <Th
+                    fontSize="13px"
+                    textTransform="capitalize"
+                    color="#000"
+                    fontWeight="600"
+                  >
+                    Type of Visit
+                  </Th>
+                
+                </Tr>
+              </Thead>
+              <Tbody>
+                {Data.children0to59givenvitaminasupplement?.map((item, i) => (
+                  <TableRow
+                    type="nutrition-summary"
+                    count={item.count}
+                    age={item.parameters?.ageinmonths}
+                    gender={item.parameters?.gender}
+                    supplement={item.parameters?.vitaminasupplement}
+                    visitType={item.parameters?.typeofvisit}
+                    
+                  />
+                ))}
+              </Tbody>
+            </Table>
+          </TableContainer>
+            </>
+          )
+         
+        )}
+        {Category === "nutritionaggregate" && (
+          Data.children12to59receiveddeworming?.length > 0 && (
+            <>
+              <Text mt="2" fontWeight="600">Children 12 to 59 who received deworming medication  </Text>
+              <TableContainer mt="15px">
+            <Table variant="striped">
+              <Thead>
+                <Tr>
+                  <Th
+                    fontSize="13px"
+                    textTransform="capitalize"
+                    color="#000"
+                    fontWeight="600"
+                  >
+                    Count
+                  </Th>
+                    <Th
+                    fontSize="13px"
+                    textTransform="capitalize"
+                    color="#000"
+                    fontWeight="600"
+                  >
+                    age in months
+                  </Th>
+                  <Th
+                    fontSize="13px"
+                    textTransform="capitalize"
+                    color="#000"
+                    fontWeight="600"
+                  >
+                    Gender
+                  </Th>
+                  <Th
+                    fontSize="13px"
+                    textTransform="capitalize"
+                    color="#000"
+                    fontWeight="600"
+                  >
+                    Supplement
+                  </Th>
+                  <Th
+                    fontSize="13px"
+                    textTransform="capitalize"
+                    color="#000"
+                    fontWeight="600"
+                  >
+                    Type of Visit
+                  </Th>
+                
+                </Tr>
+              </Thead>
+              <Tbody>
+                {Data.children12to59receiveddeworming?.map((item, i) => (
+                  <TableRow
+                    type="nutrition-summary"
+                    count={item.count}
+                    age={item.parameters?.ageinmonths}
+                    gender={item.parameters?.gender}
+                    supplement={item.parameters?.vitaminasupplement}
+                    visitType={item.parameters?.typeofvisit}
+                    
+                  />
+                ))}
+              </Tbody>
+            </Table>
+          </TableContainer>
+            </>
+          )
+         
+        )}
       </Box>
     </Box>
   );
