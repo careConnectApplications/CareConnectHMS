@@ -21,7 +21,7 @@ export default function TableRow({
   labName,code,
   physicianName,
   collectedDate,
-  reportedDate,
+  reportedDate,visitType,supplement,gender,count,
   PaymentStatus,  sexualAssault,serviceNumber,policeCase,policeName,physicalAssault,
   dose,
   comment,
@@ -2876,6 +2876,37 @@ export default function TableRow({
               {diagnosis}
             </Text>
           </Td>
+        </>
+      )}
+      {type === "nutrition-summary" && (
+        <>
+        
+          <Td>
+            <Text fontWeight="400" fontSize="12px">
+              {count}
+            </Text>
+          </Td>
+           <Td>
+            <Text fontWeight="400" fontSize="12px">
+              {age}
+            </Text>
+          </Td>
+          <Td>
+            <Text fontWeight="400" fontSize="12px">
+              {gender}
+            </Text>
+          </Td>
+          <Td>
+            <Text fontWeight="400" fontSize="12px">
+              {supplement}
+            </Text>
+          </Td>
+          <Td>
+            <Text fontWeight="400" fontSize="12px">   
+              {visitType}
+            </Text>
+          </Td>
+         
         </>
       )}
     </Tr>
