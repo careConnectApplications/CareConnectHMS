@@ -20,7 +20,7 @@ export default function TableRow({
   email,
   labName,code,
   physicianName,
-  collectedDate,
+  collectedDate,facility, 
   reportedDate,visitType,supplement,gender,count,
   PaymentStatus,  sexualAssault,serviceNumber,policeCase,policeName,physicalAssault,
   dose,
@@ -2724,6 +2724,11 @@ export default function TableRow({
                 </Text>
               </Box>
             </HStack>
+          </Td>
+          <Td>
+            <Text fontWeight="400" fontSize="12px">
+              {facility}
+            </Text>
           </Td>
           <Td>
             <Text fontWeight="400" fontSize="12px">
