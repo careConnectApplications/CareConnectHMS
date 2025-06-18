@@ -51,6 +51,7 @@ export default function TableRowY({
   bedSpecialization,
   ward,
   totalBed,
+  productid,
   occupiedBed,
   vacantBed,
   createdBy,
@@ -199,7 +200,7 @@ export default function TableRowY({
   pulse,
   temp,
   druggiven,
-    consciousness,
+  consciousness,
   ventilation,
   movement,
   total,
@@ -207,9 +208,6 @@ export default function TableRowY({
   respiration,
   color,
   time,
-
-
-
 }) {
   const isServed = servedstatus?.toLowerCase() === "served";
   const isUnserved = servedstatus?.toLowerCase() === "unserved";
@@ -308,6 +306,11 @@ export default function TableRowY({
 
       {type === "inventory" && (
         <>
+          <Td>
+            <Text fontWeight="400" fontSize="12px">
+              {productid}
+            </Text>
+          </Td>
           <Td>
             <Text fontWeight="400" fontSize="12px">
               {pharmacy}
