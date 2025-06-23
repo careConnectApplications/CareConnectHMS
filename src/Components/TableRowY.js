@@ -208,6 +208,14 @@ export default function TableRowY({
   respiration,
   color,
   time,
+
+  pricingType,
+
+  ancClinic,
+
+  serviceTypeAdult,
+
+  serviceTypeChild,
 }) {
   const isServed = servedstatus?.toLowerCase() === "served";
   const isUnserved = servedstatus?.toLowerCase() === "unserved";
@@ -2850,6 +2858,78 @@ export default function TableRowY({
                   onClick={onEdit}
                 >
                   Edit
+                </MenuItem>
+              </MenuList>
+            </Menu>
+          </Td>
+        </>
+      )}
+      {type === "price-model" && (
+        <>
+                  <Td>
+            <Text fontWeight="400" fontSize="13px">
+              {sn}
+            </Text>
+          </Td>
+          {/* Pricing Type */}
+          <Td>
+            <Text fontWeight="400" fontSize="13px">
+              {pricingType}
+            </Text>
+          </Td>
+
+          {/* ANC Clinic */}
+          <Td>
+            <Text fontWeight="400" fontSize="13px">
+              {ancClinic}
+            </Text>
+          </Td>
+
+          {/* Service Type (Adult) */}
+          <Td>
+            <Text fontWeight="400" fontSize="13px">
+              {serviceTypeAdult}
+            </Text>
+          </Td>
+
+          {/* Service Type (Child) */}
+          <Td>
+            <Text fontWeight="400" fontSize="13px">
+              {serviceTypeChild}
+            </Text>
+          </Td>
+
+          {/* (Optional) Created Date */}
+          <Td>
+            <Text fontWeight="400" fontSize="13px">
+              {new Date(createdAt).toLocaleDateString()}
+            </Text>
+          </Td>
+
+          {/* Actions */}
+          <Td>
+            <Menu isLazy>
+              <MenuButton as={Box}>
+                <Flex justifyContent="center" color="#000" fontSize="16px">
+                  <BsThreeDots />
+                </Flex>
+              </MenuButton>
+
+              <MenuList>
+                <MenuItem
+                  onClick={onEdit}
+                  textTransform="capitalize"
+                  fontWeight="500"
+                  color="#2F2F2F"
+                  _hover={{
+                    bg: "blue.blue500",
+                    color: "#fff",
+                    fontWeight: "400",
+                  }}
+                >
+                  <HStack fontSize="14px">
+                    <Text>Edit</Text>
+                  </HStack>
                 </MenuItem>
               </MenuList>
             </Menu>
