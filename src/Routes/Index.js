@@ -27,7 +27,10 @@ import AddClinicalEncounter from "../Pages/AddClinicalEncounter";
 import ClinicalEncounterEdit from "../Pages/ClinicalEncounterEdit";
 import AddANC from "../Pages/AddANC";
 import AddANCv2 from "../Pages/AddANCv2";
+import AddANCv3 from "../Pages/AddANCv3";
+import EditANCv3 from "../Pages/EditANCv3";
 import AncFollowUp from "../Pages/AncFollowUp";
+import AncFollowUpv3 from "../Pages/AncFollowUpv3";
 import Inventory from "../Pages/Inventory";
 import Pharmacy from "../Pages/Pharmacy";
 import PharmacyNew from "../Pages/PharmacyNew";
@@ -106,9 +109,15 @@ export default function IndexRoutes() {
             />
             <Route path="/dashboard/add-new-anc/:id" element={<AddANC />} />
             <Route path="/dashboard/add-anc/:id" element={<AddANCv2 />} />
+            <Route path="/dashboard/add-anc-v3/:id" element={<AddANCv3 />} />
+            <Route path="/dashboard/edit-anc-v3/:id" element={<EditANCv3 />} />
             <Route
               path="/dashboard/anc-follow-up/:id"
               element={<AncFollowUp />}
+            />
+            <Route
+              path="/dashboard/anc-follow-up-v3/:id"
+              element={<AncFollowUpv3 />}
             />
           </Route>
           <Route element={<InPatientRoutes />}>
