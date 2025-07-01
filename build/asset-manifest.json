@@ -1,0 +1,20 @@
+{
+  "files": {
+    "main.css": "/static/css/main.3055610a.css",
+    "main.js": "/static/js/main.7994a1a5.js",
+    "static/js/453.618f8bde.chunk.js": "/static/js/453.618f8bde.chunk.js",
+    "static/media/background.jpg": "/static/media/background.204c7436bbf232f99d19.jpg",
+    "static/media/solomon.png": "/static/media/solomon.2eca1013360ee328f78f.png",
+    "static/media/carelogo.png": "/static/media/carelogo.65f7fb20a69646da09d1.png",
+    "static/media/duplicate.jpg": "/static/media/duplicate.97252eb0ee2cf0401572.jpg",
+    "static/media/authImage.svg": "/static/media/authImage.91b9bf942a25ebf880ccdd5a533c110b.svg",
+    "index.html": "/index.html",
+    "main.3055610a.css.map": "/static/css/main.3055610a.css.map",
+    "main.7994a1a5.js.map": "/static/js/main.7994a1a5.js.map",
+    "453.618f8bde.chunk.js.map": "/static/js/453.618f8bde.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.3055610a.css",
+    "static/js/main.7994a1a5.js"
+  ]
+}
