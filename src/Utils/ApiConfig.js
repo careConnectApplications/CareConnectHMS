@@ -32,7 +32,7 @@ if (baseChecker === "ehealthcareconnect.com") {
 }else if (baseChecker === "20.164.19.147") {
     FacilityName = "TEST HOSPITAL"
 }else {
-    FacilityName = "TEST HOSPITAL"
+    FacilityName = "GENERAL HOSPITAL, MALUMFASHI"
 }
 
 export const token = localStorage.getItem("token");
