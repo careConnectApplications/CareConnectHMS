@@ -34,6 +34,7 @@ if (baseChecker === "ehealthcareconnect.com") {
     FacilityName = "TEST HOSPITAL"
 }else {
     FacilityName = "CareConnect"
+   
 }
 
 export const token = localStorage.getItem("token");
