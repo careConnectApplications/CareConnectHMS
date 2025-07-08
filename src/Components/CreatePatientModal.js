@@ -748,15 +748,7 @@ export default function CreatePatientModal({
                       ))}
                     </Select>
                   </FormControl>
-                  <Input
-                    id="facilitypateintreferedfrom"
-                    name="facilitypateintreferedfrom"
-                    label="Facility Referred From"
-                    value={patientData.facilitypateintreferedfrom}
-                    onChange={handleInputChange}
-                    placeholder="Enter referring facility"
-                    leftIcon={<FaMedkit />}
-                  />
+
                 </SimpleGrid>
 
                 <Divider my={4} />
@@ -921,6 +913,15 @@ export default function CreatePatientModal({
                     value={patientData.HMOId}
                     onChange={handleInputChange}
                     name="HMOId"
+                    leftIcon={<FaMedkit />}
+                  />
+                                    <Input
+                    id="facilitypateintreferedfrom"
+                    name="facilitypateintreferedfrom"
+                    label="Facility Referred From"
+                    value={patientData.facilitypateintreferedfrom}
+                    onChange={handleInputChange}
+                    placeholder="Enter referring facility"
                     leftIcon={<FaMedkit />}
                   />
                   <Input
@@ -1300,15 +1301,6 @@ export default function CreatePatientModal({
                       ))}
                     </Select>
                   </FormControl>
-                  <Input
-                    id="facilitypateintreferedfrom"
-                    name="facilitypateintreferedfrom"
-                    label="Facility Referred From"
-                    value={UpdatedPayload.facilitypateintreferedfrom}
-                    onChange={handleUpdatedPayload}
-                    placeholder="Enter referring facility"
-                    leftIcon={<FaMedkit />}
-                  />
                 </SimpleGrid>
 
                 <Divider my={4} />
@@ -1477,6 +1469,15 @@ export default function CreatePatientModal({
                     onChange={handleUpdatedPayload}
                     name="HMOId"
                     placeholder="Old"
+                    leftIcon={<FaMedkit />}
+                  />
+                  <Input
+                    id="facilitypateintreferedfrom"
+                    name="facilitypateintreferedfrom"
+                    label="Facility Referred From"
+                    value={UpdatedPayload.facilitypateintreferedfrom}
+                    onChange={handleUpdatedPayload}
+                    placeholder="Enter referring facility"
                     leftIcon={<FaMedkit />}
                   />
                   <Input

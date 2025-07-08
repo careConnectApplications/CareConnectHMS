@@ -41,8 +41,8 @@ export default function Inventory() {
   const [SearchInput, setSearchInput] = useState("");
 
   // New state for filtering by a specific field.
-  // "default" means filtering by Service Type and Category (as before)
-  // Other options: "serviceCategory", "amount", "serviceType", "category", "quantity", "date"
+  // "default" means filtering by serviceType and category (as before)
+  // Other options: "productid", "serviceCategory", "amount", "serviceType", "category", "quantity", "date"
   const [selectedFilter, setSelectedFilter] = useState("default");
 
   // Date filter states
@@ -91,6 +91,7 @@ export default function Inventory() {
         if (Array.isArray(pricedetails)) {
           const formattedData = pricedetails.map((item) => ({
             id: item._id,
+            productid: item.productid,
             pharmacy: item.pharmacy,
             serviceCategory: item.servicecategory,
             amount: item.amount,
@@ -136,6 +137,11 @@ export default function Inventory() {
     if (!ByDate) {
       let filtered = [];
       switch (selectedFilter) {
+        case "productid":
+          filtered = Data.filter((item) =>
+            String(item.productid).toLowerCase().includes(value)
+          );
+          break;
         case "serviceCategory":
           filtered = Data.filter((item) =>
             item.serviceCategory.toLowerCase().includes(value)
@@ -426,10 +432,26 @@ export default function Inventory() {
                   <MenuItem
                     onClick={() => {
                       setByDate(false);
+                      setSelectedFilter("productid");
+                    }}
+                    textTransform="capitalize"
+                    fontWeight="500"
+                    color="#2F2F2F"
+                    _hover={{
+                      color: "#fff",
+                      fontWeight: "400",
+                      bg: "blue.blue500",
+                    }}
+                  >
+                    by Product ID
+                  </MenuItem>
+                  <MenuItem
+                    onClick={() => {
+                      setByDate(false);
                       setSelectedFilter("serviceCategory");
                     }}
                     textTransform="capitalize"
-                    fontWeight={"500"}
+                    fontWeight="500"
                     color="#2F2F2F"
                     _hover={{
                       color: "#fff",
@@ -445,7 +467,7 @@ export default function Inventory() {
                       setSelectedFilter("amount");
                     }}
                     textTransform="capitalize"
-                    fontWeight={"500"}
+                    fontWeight="500"
                     color="#2F2F2F"
                     _hover={{
                       color: "#fff",
@@ -461,7 +483,7 @@ export default function Inventory() {
                       setSelectedFilter("serviceType");
                     }}
                     textTransform="capitalize"
-                    fontWeight={"500"}
+                    fontWeight="500"
                     color="#2F2F2F"
                     _hover={{
                       color: "#fff",
@@ -477,7 +499,7 @@ export default function Inventory() {
                       setSelectedFilter("category");
                     }}
                     textTransform="capitalize"
-                    fontWeight={"500"}
+                    fontWeight="500"
                     color="#2F2F2F"
                     _hover={{
                       color: "#fff",
@@ -493,7 +515,7 @@ export default function Inventory() {
                       setSelectedFilter("quantity");
                     }}
                     textTransform="capitalize"
-                    fontWeight={"500"}
+                    fontWeight="500"
                     color="#2F2F2F"
                     _hover={{
                       color: "#fff",
@@ -509,7 +531,7 @@ export default function Inventory() {
                       setSelectedFilter("date");
                     }}
                     textTransform="capitalize"
-                    fontWeight={"500"}
+                    fontWeight="500"
                     color="#2F2F2F"
                     _hover={{
                       color: "#fff",
@@ -527,7 +549,7 @@ export default function Inventory() {
                       setSelectedFilter("default");
                     }}
                     textTransform="capitalize"
-                    fontWeight={"500"}
+                    fontWeight="500"
                     color="#2F2F2F"
                     _hover={{
                       color: "#fff",
@@ -558,7 +580,7 @@ export default function Inventory() {
             <Button
               mt={["10px", "10px", "0px", "0px"]}
               rightIcon={<HiOutlineDocumentArrowUp />}
-              background="#f8ddd1 "
+              background="#f8ddd1"
               border="1px solid #EA5937"
               color="blue.blue500"
               w={["100%", "100%", "144px", "144px"]}
@@ -584,7 +606,15 @@ export default function Inventory() {
           <Table variant="striped">
             <Thead bg="#fff">
               <Tr>
-              <Th
+                <Th
+                  fontSize="13px"
+                  textTransform="capitalize"
+                  color="#534D59"
+                  fontWeight="600"
+                >
+                  Product ID
+                </Th>
+                <Th
                   fontSize="13px"
                   textTransform="capitalize"
                   color="#534D59"
@@ -679,6 +709,7 @@ export default function Inventory() {
                 <TableRowY
                   key={item.id}
                   type="inventory"
+                  productid={item.productid}
                   pharmacy={item.pharmacy}
                   serviceCategory={item.serviceCategory}
                   amount={item.amount}

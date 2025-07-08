@@ -13,6 +13,7 @@ import Immunization from './Immunization'
 import SingleFamilyPlanning from './SingleFamilyPlanning'
 import AncCards from './AncCards'
 import ANC from './ANC'
+import ANC3 from './ANC3'
 import LabAppointment from './LabAppointment'
 import { useNavigate, useParams } from 'react-router-dom';
 import SingleVitalChart from "./SingleVitalChart"
@@ -65,6 +66,7 @@ export default function DoctorScheduleDetails() {
                     <Tab _focus={{outline: "none"}} _selected={{ color: "blue.blue500", fontWeight: "700" }}>Family Planning </Tab>
                     <Tab _focus={{outline: "none"}} _selected={{ color: "blue.blue500", fontWeight: "700" }}>ANC Card </Tab>
                     <Tab _focus={{outline: "none"}} _selected={{ color: "blue.blue500", fontWeight: "700" }}>ANC </Tab>
+                    <Tab _focus={{outline: "none"}} _selected={{ color: "blue.blue500", fontWeight: "700" }}>ANC 3</Tab>
                     <Tab _focus={{outline: "none"}} _selected={{ color: "blue.blue500", fontWeight: "700" }}>Partograph Entries</Tab>
                     <Tab _focus={{outline: "none"}} _selected={{ color: "blue.blue500", fontWeight: "700" }}>Partograph Chart </Tab>
                     <Tab _focus={{outline: "none"}} _selected={{ color: "blue.blue500", fontWeight: "700" }}>Delivery Note </Tab>
@@ -123,6 +125,9 @@ export default function DoctorScheduleDetails() {
                     </TabPanel>
                     <TabPanel p="0"> 
                     <ANC id={id}/>
+                    </TabPanel>
+                    <TabPanel p="0"> 
+                    <ANC3 id={id}/>
                     </TabPanel>
                     <TabPanel p="0">
                     <SinglePathograph/>

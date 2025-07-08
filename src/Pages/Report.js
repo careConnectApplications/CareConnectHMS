@@ -1457,6 +1457,14 @@ export default function Report() {
                                                 color="#534D59"
                                                 fontWeight="600"
                                             >
+                                                Facility
+                                            </Th>
+                                            <Th
+                                                fontSize="13px"
+                                                textTransform="capitalize"
+                                                color="#534D59"
+                                                fontWeight="600"
+                                            >
                                                 authorization code 
                                             </Th>
                                             <Th
@@ -1491,6 +1499,7 @@ export default function Report() {
                                             name={`${item.patient?.firstName} ${item.patient?.lastName}`}
                                             mrn={item.patient?.MRN}                                        
                                             code={item.patient?.authorizationcode}
+                                            facility={item.patient?.facilitypateintreferedfrom}
                                             serviceType={item.servicetype}
                                             date={moment(item.createdAt).format("lll")}
                                           

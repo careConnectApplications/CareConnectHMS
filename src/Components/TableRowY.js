@@ -51,6 +51,7 @@ export default function TableRowY({
   bedSpecialization,
   ward,
   totalBed,
+  productid,
   occupiedBed,
   vacantBed,
   createdBy,
@@ -199,7 +200,7 @@ export default function TableRowY({
   pulse,
   temp,
   druggiven,
-    consciousness,
+  consciousness,
   ventilation,
   movement,
   total,
@@ -208,8 +209,15 @@ export default function TableRowY({
   color,
   time,
 
+  pricingType,
 
+  ancClinic,
 
+  serviceTypeAdult,
+
+  serviceTypeChild,
+  outreachmedicationname,
+  outreachmedicationid,
 }) {
   const isServed = servedstatus?.toLowerCase() === "served";
   const isUnserved = servedstatus?.toLowerCase() === "unserved";
@@ -308,6 +316,11 @@ export default function TableRowY({
 
       {type === "inventory" && (
         <>
+          <Td>
+            <Text fontWeight="400" fontSize="12px">
+              {productid}
+            </Text>
+          </Td>
           <Td>
             <Text fontWeight="400" fontSize="12px">
               {pharmacy}
@@ -2847,6 +2860,138 @@ export default function TableRowY({
                   onClick={onEdit}
                 >
                   Edit
+                </MenuItem>
+              </MenuList>
+            </Menu>
+          </Td>
+        </>
+      )}
+      {type === "price-model" && (
+        <>
+          <Td>
+            <Text fontWeight="400" fontSize="13px">
+              {sn}
+            </Text>
+          </Td>
+          {/* Pricing Type */}
+          <Td>
+            <Text fontWeight="400" fontSize="13px">
+              {pricingType}
+            </Text>
+          </Td>
+
+          {/* ANC Clinic */}
+          <Td>
+            <Text fontWeight="400" fontSize="13px">
+              {ancClinic}
+            </Text>
+          </Td>
+
+          {/* Service Type (Adult) */}
+          <Td>
+            <Text fontWeight="400" fontSize="13px">
+              {serviceTypeAdult}
+            </Text>
+          </Td>
+
+          {/* Service Type (Child) */}
+          <Td>
+            <Text fontWeight="400" fontSize="13px">
+              {serviceTypeChild}
+            </Text>
+          </Td>
+
+          {/* (Optional) Created Date */}
+          <Td>
+            <Text fontWeight="400" fontSize="13px">
+              {new Date(createdAt).toLocaleDateString()}
+            </Text>
+          </Td>
+
+          {/* Actions */}
+          <Td>
+            <Menu isLazy>
+              <MenuButton as={Box}>
+                <Flex justifyContent="center" color="#000" fontSize="16px">
+                  <BsThreeDots />
+                </Flex>
+              </MenuButton>
+
+              <MenuList>
+                <MenuItem
+                  onClick={onEdit}
+                  textTransform="capitalize"
+                  fontWeight="500"
+                  color="#2F2F2F"
+                  _hover={{
+                    bg: "blue.blue500",
+                    color: "#fff",
+                    fontWeight: "400",
+                  }}
+                >
+                  <HStack fontSize="14px">
+                    <Text>Edit</Text>
+                  </HStack>
+                </MenuItem>
+              </MenuList>
+            </Menu>
+          </Td>
+        </>
+      )}
+      {type === "outreach-medication" && (
+        <>
+          <Td>
+            <Text fontWeight="400" fontSize="13px">
+              {sn}
+            </Text>
+          </Td>
+          {/* Outreach Medication Name */}
+          <Td>
+            <Text fontWeight="400" fontSize="13px">
+              {outreachmedicationname}
+            </Text>
+          </Td>
+          {/* Outreach Medication ID */}
+          <Td>
+            <Text fontWeight="400" fontSize="13px">
+              {outreachmedicationid}
+            </Text>
+          </Td>
+          {/* Status */}
+          <Td>
+            <Text fontWeight="400" fontSize="13px">
+              {status}
+            </Text>
+          </Td>
+          {/* Created Date */}
+          <Td>
+            <Text fontWeight="400" fontSize="13px">
+              {new Date(createdAt).toLocaleDateString()}
+            </Text>
+          </Td>
+          {/* Actions */}
+          <Td>
+            <Menu isLazy>
+              <MenuButton as={Box}>
+                <Flex justifyContent="center" color="#000" fontSize="16px">
+                  <BsThreeDots />
+                </Flex>
+              </MenuButton>
+              <MenuList>
+                <MenuItem
+                  onClick={onEdit}
+                  textTransform="capitalize"
+                  fontWeight="500"
+                  color="#2F2F2F"
+                  _hover={{
+                    bg: "blue.blue500",
+                    color: "#fff",
+                    fontWeight: "400",
+                  }}
+                >
+                  <HStack fontSize="14px">
+                    <Text>Edit</Text>
+                  </HStack>
                 </MenuItem>
               </MenuList>
             </Menu>

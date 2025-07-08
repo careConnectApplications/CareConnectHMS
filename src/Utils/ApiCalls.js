@@ -827,6 +827,35 @@ export const GetAllAncFollowUpApi = (id) => {
       }
     });
 };
+export const GetAllAncFollowUpApiv3 = (id) => {
+  // Configure the GET request
+  let config = {
+    method: "get",
+    url: `${baseUrl}/anc/readallancfollowupbyancv3/${id}`,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  };
+
+  return axios
+    .request(config)
+    .then((response) => {
+      return response.data; // Return the data part of the response
+    })
+    .catch((error) => {
+      console.log("Error fetching users:", error.response);
+      if (error.response && error.response.data.msg) {
+        throw new Error(error.response.data.msg);
+      } else if (error.response && error.response.data) {
+        throw new Error(error.response);
+      } else if (error.request) {
+        throw new Error(error.msg);
+      } else {
+        throw new Error(error.msg);
+      }
+    });
+};
 export const GetAllReferralApi = (id) => {
   // Configure the GET request
   let config = {
@@ -1065,6 +1094,35 @@ export const GetPreviousANCV2Api = (id) => {
   let config = {
     method: "get",
     url: `${baseUrl}/anc/readallancbypatientv2/${id}`,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  };
+
+  return axios
+    .request(config)
+    .then((response) => {
+      return response.data; // Return the data part of the response
+    })
+    .catch((error) => {
+      console.log("Error fetching users:", error.response);
+      if (error.response && error.response.data.msg) {
+        throw new Error(error.response.data.msg);
+      } else if (error.response && error.response.data) {
+        throw new Error(error.response);
+      } else if (error.request) {
+        throw new Error(error.msg);
+      } else {
+        throw new Error(error.msg);
+      }
+    });
+};
+export const GetPreviousANCV3Api = (id) => {
+  // Configure the GET request
+  let config = {
+    method: "get",
+    url: `${baseUrl}/anc/readallancbypatientv3/${id}`,
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
@@ -1989,6 +2047,72 @@ export const CreateAncV2API = (payload, id) => {
       }
     });
 };
+export const CreateAncV3API = (payload, id) => {
+  let data = JSON.stringify(payload);
+  console.log("CreateAncAPI_payload", payload);
+  let config = {
+    method: "POST",
+    maxBodyLength: Infinity,
+    url: `${baseUrl}/anc/createancv3/${id}`,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    data: data,
+  };
+
+  return axios
+    .request(config)
+    .then((response) => {
+      console.log(JSON.stringify(response.data));
+      return response;
+    })
+    .catch((error) => {
+      console.log("error", error.response);
+      if (error.response.data.msg) {
+        throw new Error(error.response.data.msg);
+      } else if (error.response.data) {
+        throw new Error(error.response);
+      } else if (error.request) {
+        throw new Error(error.msg);
+      } else {
+        throw new Error(error.msg);
+      }
+    });
+};
+export const EditAncV3API = (payload, id) => {
+  let data = JSON.stringify(payload);
+  console.log("CreateAncAPI_payload", payload);
+  let config = {
+    method: "PUT",
+    maxBodyLength: Infinity,
+    url: `${baseUrl}/anc/updateancsv3/${id}`,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    data: data,
+  };
+
+  return axios
+    .request(config)
+    .then((response) => {
+      console.log(JSON.stringify(response.data));
+      return response;
+    })
+    .catch((error) => {
+      console.log("error", error.response);
+      if (error.response.data.msg) {
+        throw new Error(error.response.data.msg);
+      } else if (error.response.data) {
+        throw new Error(error.response);
+      } else if (error.request) {
+        throw new Error(error.msg);
+      } else {
+        throw new Error(error.msg);
+      }
+    });
+};
 export const AddImmunizationAPI = (payload, id) => {
   let data = JSON.stringify(payload);
 
@@ -2095,6 +2219,39 @@ export const AddANCFollowUpAPI = (payload, id) => {
     method: "POST",
     maxBodyLength: Infinity,
     url: `${baseUrl}/anc/createancfollowupsv2/${id}`,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    data: data,
+  };
+
+  return axios
+    .request(config)
+    .then((response) => {
+      console.log(JSON.stringify(response.data));
+      return response;
+    })
+    .catch((error) => {
+      console.log("error", error.response);
+      if (error.response.data.msg) {
+        throw new Error(error.response.data.msg);
+      } else if (error.response.data) {
+        throw new Error(error.response);
+      } else if (error.request) {
+        throw new Error(error.msg);
+      } else {
+        throw new Error(error.msg);
+      }
+    });
+};
+export const AddANCFollowUpAPIv3 = (payload, id) => {
+  let data = JSON.stringify(payload);
+
+  let config = {
+    method: "POST",
+    maxBodyLength: Infinity,
+    url: `${baseUrl}/anc/createancfollowupsv3/${id}`,
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
@@ -2459,6 +2616,39 @@ export const UpdateAncFollowupAPI = (payload, id) => {
     method: "PUT",
     maxBodyLength: Infinity,
     url: `${baseUrl}/anc/updateancfollowupsv2/${id}`,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    data: data,
+  };
+
+  return axios
+    .request(config)
+    .then((response) => {
+      console.log(JSON.stringify(response.data));
+      return response;
+    })
+    .catch((error) => {
+      console.log("error", error.response);
+      if (error.response.data.msg) {
+        throw new Error(error.response.data.msg);
+      } else if (error.response.data) {
+        throw new Error(error.response);
+      } else if (error.request) {
+        throw new Error(error.msg);
+      } else {
+        throw new Error(error.msg);
+      }
+    });
+};
+export const UpdateAncFollowupAPIv3 = (payload, id) => {
+  let data = JSON.stringify(payload);
+
+  let config = {
+    method: "PUT",
+    maxBodyLength: Infinity,
+    url: `${baseUrl}/anc/updateancfollowupsv3/${id}`,
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
@@ -7108,3 +7298,197 @@ export const GetHistologyRequestFormAPI = (admissionId) => {
     });
 };
 
+export const AddPricingModelApi = (payload) => {
+  const data = JSON.stringify(payload);
+
+  const config = {
+    method: "post",
+    maxBodyLength: Infinity,
+    url: `${baseUrl}/settings/createpricingmodel`,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    data,
+  };
+
+  return axios
+    .request(config)
+    .then((response) => {
+      console.log("Pricing‑model created:", JSON.stringify(response.data));
+      return response;
+    })
+    .catch((error) => {
+      console.log("error", error.response);
+      if (error.response?.data?.msg) {
+        throw new Error(error.response.data.msg);
+      } else if (error.response?.data) {
+        throw new Error(error.response);
+      } else if (error.request) {
+        throw new Error(error.message);
+      } else {
+        throw new Error(error.message);
+      }
+    });
+};
+
+export const UpdatePricingModelApi = (payload, id) => {
+  const data = JSON.stringify(payload);
+
+  const config = {
+    method: "put",
+    maxBodyLength: Infinity,
+    url: `${baseUrl}/settings/updatepricingmodel/${id}`,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    data,
+  };
+
+  return axios
+    .request(config)
+    .then((response) => {
+      console.log("Pricing‑model updated:", JSON.stringify(response.data));
+      return response;
+    })
+    .catch((error) => {
+      console.log("error", error.response);
+      if (error.response?.data?.msg) {
+        throw new Error(error.response.data.msg);
+      } else if (error.response?.data) {
+        throw new Error(error.response);
+      } else if (error.request) {
+        throw new Error(error.message);
+      } else {
+        throw new Error(error.message);
+      }
+    });
+};
+
+export const GetPricingModelApi = () => {
+  const config = {
+    method: "get",
+    url: `${baseUrl}/settings/getpricingmodel`,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  };
+
+  return axios
+    .request(config)
+    .then((response) => response.data) // return only data payload
+    .catch((error) => {
+      console.log("error", error.response);
+      if (error.response?.data?.msg) {
+        throw new Error(error.response.data.msg);
+      } else if (error.response?.data) {
+        throw new Error(error.response);
+      } else if (error.request) {
+        throw new Error(error.message);
+      } else {
+        throw new Error(error.message);
+      }
+    });
+};
+export const AddOutreachMedicationApi = (payload) => {
+  const data = JSON.stringify(payload);
+
+  const config = {
+    method: "post",
+    maxBodyLength: Infinity,
+    url: `${baseUrl}/settings/createoutreachmedication`,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    data,
+  };
+
+  return axios
+    .request(config)
+    .then((response) => {
+      console.log(
+        "Outreach medication created:",
+        JSON.stringify(response.data)
+      );
+      return response;
+    })
+    .catch((error) => {
+      console.log("error", error.response);
+      if (error.response?.data?.msg) {
+        throw new Error(error.response.data.msg);
+      } else if (error.response?.data) {
+        throw new Error(error.response);
+      } else if (error.request) {
+        throw new Error(error.message);
+      } else {
+        throw new Error(error.message);
+      }
+    });
+};
+
+export const UpdateOutreachMedicationApi = (payload, id) => {
+  const data = JSON.stringify(payload);
+
+  const config = {
+    method: "put",
+    maxBodyLength: Infinity,
+    url: `${baseUrl}/settings/updateoutreachmedication/${id}`,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    data,
+  };
+
+  return axios
+    .request(config)
+    .then((response) => {
+      console.log(
+        "Outreach medication updated:",
+        JSON.stringify(response.data)
+      );
+      return response;
+    })
+    .catch((error) => {
+      console.log("error", error.response);
+      if (error.response?.data?.msg) {
+        throw new Error(error.response.data.msg);
+      } else if (error.response?.data) {
+        throw new Error(error.response);
+      } else if (error.request) {
+        throw new Error(error.message);
+      } else {
+        throw new Error(error.message);
+      }
+    });
+};
+
+export const GetAllOutreachMedicationApi = () => {
+  const config = {
+    method: "get",
+    url: `${baseUrl}/settings/getalloutreachmedication`,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  };
+
+  return axios
+    .request(config)
+    .then((response) => response.data)
+    .catch((error) => {
+      console.log("error", error.response);
+      if (error.response?.data?.msg) {
+        throw new Error(error.response.data.msg);
+      } else if (error.response?.data) {
+        throw new Error(error.response);
+      } else if (error.request) {
+        throw new Error(error.message);
+      } else {
+        throw new Error(error.message);
+      }
+    });
+};

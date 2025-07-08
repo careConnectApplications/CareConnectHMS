@@ -20,12 +20,12 @@ export default function TableRow({
   email,
   labName,code,
   physicianName,
-  collectedDate,
+  collectedDate,facility, 
   reportedDate,visitType,supplement,gender,count,
   PaymentStatus,  sexualAssault,serviceNumber,policeCase,policeName,physicalAssault,
   dose,
   comment,
-  vaccineType,
+  vaccineType, albendazole,sulfadoxinepyrimethamine,tetanustoxoid,oedema,protein,hb,foetalheight,presentationandposition,heightoffundus,glucose,presentingpart,
   vaccineCode,
   administeredBy,
   pharmacy,
@@ -2481,6 +2481,107 @@ export default function TableRow({
           </Td>
         </>
       )}
+      {type === "anc-followup-v3" && (
+        <>
+          <Td>
+            <Text fontWeight="400" fontSize={"13px"}>
+              {date}
+            </Text>
+          </Td>
+          <Td>
+            <Text fontWeight="400" fontSize={"13px"}>
+              {heightoffundus}
+            </Text>
+          </Td>
+          <Td>
+            <Text fontWeight="400" fontSize={"13px"}>
+              {presentationandposition}
+            </Text>
+          </Td>
+          <Td>
+            <Text fontWeight="400" fontSize={"13px"}>
+              {presentingpart}
+            </Text>
+          </Td>
+          <Td>
+            <Text fontWeight="400" fontSize={"13px"}>
+              {foetalheight}
+            </Text>
+          </Td>
+          <Td>
+            <Text fontWeight="400" fontSize={"13px"}>
+              {bp}
+            </Text>
+          </Td>
+          <Td>
+            <Text fontWeight="400" fontSize={"13px"}>
+              {hb}
+            </Text>
+          </Td>
+          <Td>
+            <Text fontWeight="400" fontSize={"13px"}>
+              {protein}
+            </Text>
+          </Td>
+          <Td>
+            <Text fontWeight="400" fontSize={"13px"}>
+              {glucose}
+            </Text>
+          </Td>
+          <Td>
+            <Text fontWeight="400" fontSize={"13px"}>
+              {weight}
+            </Text>
+          </Td>
+          <Td>
+            <Text fontWeight="400" fontSize={"13px"}>    
+              {oedema}
+            </Text>
+          </Td>
+          <Td>
+            <Text fontWeight="400" fontSize={"13px"}>
+              {tetanustoxoid}
+            </Text>
+          </Td>
+          <Td>
+            <Text fontWeight="400" fontSize={"13px"}>  
+              {sulfadoxinepyrimethamine}
+            </Text>
+          </Td>
+          <Td>
+            <Text fontWeight="400" fontSize={"13px"}>
+              {albendazole}
+            </Text>
+          </Td>
+          <Td>
+            <Text fontWeight="400" fontSize={"13px"}>
+              {remark}
+            </Text>
+          </Td>
+         
+         
+
+          <Td>
+            <Menu>
+              <MenuButton as={Box}>
+                <BsThreeDots />
+              </MenuButton>
+              <MenuList>
+                <MenuItem
+                  _hover={{
+                    color: "#fff",
+                    fontWeight: "400",
+                    bg: "blue.blue500",
+                  }}
+                  onClick={onEdit}
+                >
+                  Edit
+                </MenuItem>
+              </MenuList>
+            </Menu>
+          </Td>
+        </>
+      )}
 
       {type === "financial-report" && (
         <>
@@ -2724,6 +2825,11 @@ export default function TableRow({
                 </Text>
               </Box>
             </HStack>
+          </Td>
+          <Td>
+            <Text fontWeight="400" fontSize="12px">
+              {facility}
+            </Text>
           </Td>
           <Td>
             <Text fontWeight="400" fontSize="12px">

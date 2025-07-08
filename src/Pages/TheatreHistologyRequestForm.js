@@ -15,6 +15,8 @@ import { BiSearch } from "react-icons/bi";
 import { IoFilter } from "react-icons/io5";
 import { SlPlus } from "react-icons/sl";
 import { MdModeEdit } from "react-icons/md";
+import { useNavigate, useLocation, useParams } from "react-router-dom";
+
 import Button from "../Components/Button";
 import Input from "../Components/Input";
 import PreviewCard from "../Components/PreviewCard";
@@ -22,19 +24,23 @@ import PreviewCardV2 from "../Components/PreviewCardV2";
 import ShowToast from "../Components/ToastNotification";
 import Preloader from "../Components/Preloader";
 import { GetHistologyRequestFormAPI } from "../Utils/ApiCalls";
-import { useNavigate, useLocation } from "react-router-dom";
 
 export default function TheatreHistologyRequestForm({ hide = false, index }) {
   const [isLoading, setIsLoading] = useState(true);
   const [data, setData] = useState(null);
   const [filteredData, setFilteredData] = useState(null);
   const [searchInput, setSearchInput] = useState("");
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const { isOpen } = useDisclosure();
   const [trigger, setTrigger] = useState(false);
-  const [showToast, setShowToast] = useState({ show: false, message: "", status: "" });
+  const [showToast, setShowToast] = useState({
+    show: false,
+    message: "",
+    status: "",
+  });
 
-  const raw = localStorage.getItem("recoveryChartRecord");
-  const admissionId = raw ? JSON.parse(raw).theatreadmission : null;
+  // Pull the ID straight from the URL
+  const { id: admissionId } = useParams();
+
   const nav = useNavigate();
   const { pathname } = useLocation();
 
@@ -44,21 +50,36 @@ export default function TheatreHistologyRequestForm({ hide = false, index }) {
   };
 
   const getForm = async () => {
-    if (!admissionId) return;
+    if (!admissionId) {
+      setIsLoading(false);
+      setData(null);
+      return;
+    }
     setIsLoading(true);
     try {
       const res = await GetHistologyRequestFormAPI(admissionId);
       if (res.status) {
         setData(res.queryresult);
         setFilteredData(null);
-        localStorage.setItem("histologyRequestRecord", JSON.stringify(res.queryresult));
+        localStorage.setItem(
+          "histologyRequestRecord",
+          JSON.stringify(res.queryresult)
+        );
+      } else {
+        setData(null);
       }
     } catch (e) {
       activateNotifications(e.message, "error");
+      setData(null);
     } finally {
       setIsLoading(false);
     }
   };
+
+  // Re-fetch whenever the route ID (or your other triggers) changes
+  useEffect(() => {
+    getForm();
+  }, [admissionId, isOpen, trigger, index]);
 
   const filterBy = (field) => {
     if (!data) return;
@@ -72,10 +93,16 @@ export default function TheatreHistologyRequestForm({ hide = false, index }) {
         keep = data.nameofconsultant.toLowerCase().includes(term);
         break;
       case "hpi":
-        keep = data.historyofpresentillness.join(" ").toLowerCase().includes(term);
+        keep = data.historyofpresentillness
+          .join(" ")
+          .toLowerCase()
+          .includes(term);
         break;
       case "complaint":
-        keep = data.presentingcomplaint.join(" ").toLowerCase().includes(term);
+        keep = data.presentingcomplaint
+          .join(" ")
+          .toLowerCase()
+          .includes(term);
         break;
       default:
         keep = true;
@@ -98,16 +125,21 @@ export default function TheatreHistologyRequestForm({ hide = false, index }) {
     nav(`/dashboard/edit-histology-request-form/${data._id}`);
   };
 
-  useEffect(() => {
-    getForm();
-  }, [isOpen, trigger, index]);
-
   const display = filteredData || data;
 
   return (
-    <Box bg="#fff" border="1px solid #EFEFEF" mt="10px" py="17px" px="18px" rounded="10px">
+    <Box
+      bg="#fff"
+      border="1px solid #EFEFEF"
+      mt="10px"
+      py="17px"
+      px="18px"
+      rounded="10px"
+    >
       {isLoading && <Preloader />}
-      {showToast.show && <ShowToast message={showToast.message} status={showToast.status} />}
+      {showToast.show && (
+        <ShowToast message={showToast.message} status={showToast.status} />
+      )}
 
       {/* Search & Filter */}
       <Flex justify="space-between" flexWrap="wrap" mb="4">
@@ -127,7 +159,7 @@ export default function TheatreHistologyRequestForm({ hide = false, index }) {
           </Text>
         </HStack>
         {!hide && (
-          <Flex align="center" mt={["10px","10px","0","0"]}>
+          <Flex align="center" mt={["10px", "10px", "0", "0"]}>
             <HStack spacing="2">
               <Input
                 label="Search"
@@ -155,10 +187,18 @@ export default function TheatreHistologyRequestForm({ hide = false, index }) {
                   </Box>
                 </MenuButton>
                 <MenuList>
-                  <MenuItem onClick={() => filterBy("africa")}>by African Status</MenuItem>
-                  <MenuItem onClick={() => filterBy("consultant")}>by Consultant</MenuItem>
-                  <MenuItem onClick={() => filterBy("hpi")}>by HPI</MenuItem>
-                  <MenuItem onClick={() => filterBy("complaint")}>by Complaint</MenuItem>
+                  <MenuItem onClick={() => filterBy("africa")}>
+                    by African Status
+                  </MenuItem>
+                  <MenuItem onClick={() => filterBy("consultant")}>
+                    by Consultant
+                  </MenuItem>
+                  <MenuItem onClick={() => filterBy("hpi")}>
+                    by HPI
+                  </MenuItem>
+                  <MenuItem onClick={() => filterBy("complaint")}>
+                    by Complaint
+                  </MenuItem>
                   <MenuItem onClick={clearFilter}>Clear Filter</MenuItem>
                 </MenuList>
               </Menu>
@@ -185,7 +225,12 @@ export default function TheatreHistologyRequestForm({ hide = false, index }) {
       {/* Display */}
       {display && (
         <Box mt="20px" overflowX="auto">
-          <Text mb="20px" fontWeight="700" fontSize="16px" color="blue.blue500">
+          <Text
+            mb="20px"
+            fontWeight="700"
+            fontSize="16px"
+            color="blue.blue500"
+          >
             Previous Histology Request
           </Text>
 
@@ -203,20 +248,47 @@ export default function TheatreHistologyRequestForm({ hide = false, index }) {
             <Text>{moment(display.createdAt).format("L LT")}</Text>
           </HStack>
 
-          <Text mt="12px" mb="5" fontSize="15px" fontWeight="700" color="blue.blue500">
+          <Text
+            mt="12px"
+            mb="5"
+            fontSize="15px"
+            fontWeight="700"
+            color="blue.blue500"
+          >
             Basic Details
           </Text>
-          <PreviewCard title="African / Non-African" value={display.africannonafrican} />
-          <PreviewCard title="Consultant Name" value={display.nameofconsultant} />
+          <PreviewCard
+            title="African / Non-African"
+            value={display.africannonafrican}
+          />
+          <PreviewCard
+            title="Consultant Name"
+            value={display.nameofconsultant}
+          />
 
           {[
-            { key: "historyofpresentillness", title: "History of Present Illness" },
+            {
+              key: "historyofpresentillness",
+              title: "History of Present Illness",
+            },
             { key: "presentingcomplaint", title: "Presenting Complaint" },
-            { key: "findingonphysicalexamination", title: "Physical Exam Findings" },
+            {
+              key: "findingonphysicalexamination",
+              title: "Physical Exam Findings",
+            },
             { key: "otherfindings", title: "Other Findings" },
-            { key: "anatomicalsiteofbiopsy", title: "Anatomical Site of Biopsy" },
-            { key: "grossappearanceoflesion", title: "Gross Appearance of Lesion" },
-            { key: "previousreportwithnumberanddate", title: "Previous Report (No. & Date)" },
+            {
+              key: "anatomicalsiteofbiopsy",
+              title: "Anatomical Site of Biopsy",
+            },
+            {
+              key: "grossappearanceoflesion",
+              title: "Gross Appearance of Lesion",
+            },
+            {
+              key: "previousreportwithnumberanddate",
+              title: "Previous Report (No. & Date)",
+            },
           ].map(({ key, title }) =>
             display[key]?.length ? (
               <Box key={key} mt="12px" mb="5">
