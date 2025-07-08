@@ -1,4 +1,14 @@
-import { HStack, Radio, RadioGroup, Text } from "@chakra-ui/react";
+import {
+  HStack,
+  Radio,
+  RadioGroup,
+  Text,
+  Flex,
+  Box,
+  Checkbox,
+  CheckboxGroup,
+  useToast,
+} from "@chakra-ui/react";
 import React, { useState, useEffect } from "react";
 import {
   Modal,
@@ -21,6 +31,7 @@ import {
   SettingsApi,
   AddImmunizationAPI,
   UpdateImmunizationAPI,
+  GetAllOutreachMedicationApi,
 } from "../Utils/ApiCalls";
 import { FaArrowsToDot } from "react-icons/fa6";
 import { AiFillDatabase } from "react-icons/ai";
@@ -33,17 +44,22 @@ export default function CreateImmunizationModal({
   type,
   oldPayload,
 }) {
+  const toast = useToast();
   const [Disabled, setDisabled] = useState(true);
   const [Loading, setLoading] = useState(false);
   const [Settings, setSettings] = useState(null);
   const [schedules, setSchedules] = useState([]);
   const [vaccines, setVaccines] = useState([]);
+  const [selectedVaccines, setSelectedVaccines] = useState([]);
+  const [outreachMedications, setOutreachMedications] = useState([]);
+  const [selectedOutreachMedications, setSelectedOutreachMedications] =
+    useState([]);
 
   const date = Date.now();
   const currentDate = new Date(date).toISOString().split("T")[0];
   const id = localStorage.getItem("patientId");
 
-  const [Payload, setPayload] = useState({
+  const initialPayload = {
     vaccinecode: "",
     vaccinename: "",
     dateadministered: currentDate,
@@ -66,9 +82,16 @@ export default function CreateImmunizationModal({
     anynotedadverseeffect: "",
     adverseeffectseverity: "",
     medicationgiventomanageadverseeffect: "",
+    adverseEffectVaccine: "",
     schedule: "",
-    vaccination: "",
-  });
+    vaccination: [],
+    vaccinationlocation: "",
+    outreachMedications: [],
+    isFullyImmunized: null,
+    isZeroDoseChild: null,
+  };
+
+  const [Payload, setPayload] = useState(initialPayload);
 
   const [UpdatedPayload, setUpdatedPayload] = useState({
     vaccinecode: "",
@@ -93,26 +116,89 @@ export default function CreateImmunizationModal({
     anynotedadverseeffect: "",
     adverseeffectseverity: "",
     medicationgiventomanageadverseeffect: "",
+    adverseEffectVaccine: "",
     schedule: "",
-    vaccination: "",
+    vaccination: [],
+    vaccinationlocation: "",
+    outreachMedications: [],
+    isFullyImmunized: null,
+    isZeroDoseChild: null,
   });
 
   const handlePayload = (e) => {
-    setPayload({ ...Payload, [e.target.id]: e.target.value });
+    const { id, value } = e.target;
+    if (id === "vaccinationlocation" && value !== "outreach") {
+      setSelectedOutreachMedications([]);
+      setPayload({
+        ...Payload,
+        [id]: value,
+        outreachMedications: [],
+      });
+    } else if (id === "isFullyImmunized" || id === "isZeroDoseChild") {
+      setPayload({
+        ...Payload,
+        [id]: value === "true" ? true : value === "false" ? false : null,
+      });
+    } else {
+      setPayload({ ...Payload, [id]: value });
+    }
   };
 
   const handleUpdatedPayload = (e) => {
-    setUpdatedPayload({ ...UpdatedPayload, [e.target.id]: e.target.value });
+    const { id, value } = e.target;
+    if (id === "vaccinationlocation" && value !== "outreach") {
+      setSelectedOutreachMedications([]);
+      setUpdatedPayload({
+        ...UpdatedPayload,
+        [id]: value,
+        outreachMedications: [],
+      });
+    } else if (id === "isFullyImmunized" || id === "isZeroDoseChild") {
+      setUpdatedPayload({
+        ...UpdatedPayload,
+        [id]: value === "true" ? true : value === "false" ? false : null,
+      });
+    } else {
+      setUpdatedPayload({ ...UpdatedPayload, [id]: value });
+    }
+  };
+
+  const handleVaccineChange = (selected) => {
+    setSelectedVaccines(selected);
+    setPayload({ ...Payload, vaccination: selected });
+    setUpdatedPayload({ ...UpdatedPayload, vaccination: selected });
+  };
+
+  const handleOutreachMedicationChange = (selected) => {
+    setSelectedOutreachMedications(selected);
+    setPayload({ ...Payload, outreachMedications: selected });
+    setUpdatedPayload({ ...UpdatedPayload, outreachMedications: selected });
+  };
+
+  const validateVaccines = () => {
+    if (Payload.schedule && selectedVaccines.length < vaccines.length) {
+      toast({
+        title: "Warning",
+        description:
+          "Not all available vaccines for the selected schedule have been chosen.",
+        status: "warning",
+        duration: 5000,
+        isClosable: true,
+        position: "top",
+      });
+      return false;
+    }
+    return true;
   };
 
   const handleSubmitNew = async () => {
+    if (!validateVaccines()) return;
     setLoading(true);
     try {
       const result = await AddImmunizationAPI(Payload, id);
 
       if (result.status === 200) {
         setLoading(false);
-
         activateNotifications("Immunization done Successfully", "success");
         onClose();
       }
@@ -123,6 +209,7 @@ export default function CreateImmunizationModal({
   };
 
   const handleSubmitUpdate = async () => {
+    if (!validateVaccines()) return;
     setLoading(true);
     try {
       const result = await UpdateImmunizationAPI(
@@ -132,7 +219,6 @@ export default function CreateImmunizationModal({
 
       if (result.status === 200) {
         setLoading(false);
-
         activateNotifications("Immunization Updated Successfully", "success");
         onClose();
       }
@@ -154,10 +240,37 @@ export default function CreateImmunizationModal({
     }
   };
 
+  const getOutreachMedications = async () => {
+    try {
+      const result = await GetAllOutreachMedicationApi();
+      const queryResult = result?.queryresult?.outreachmedicationdetails
+        ? Array.isArray(result.queryresult.outreachmedicationdetails)
+          ? result.queryresult.outreachmedicationdetails
+          : [result.queryresult.outreachmedicationdetails]
+        : [];
+      setOutreachMedications(
+        queryResult.map((item) => item.outreachmedicationname)
+      );
+    } catch (e) {
+      console.error("Failed to fetch outreach medications:", e);
+      toast({
+        title: "Error",
+        description: e.message || "Failed to fetch outreach medications",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+        position: "top",
+      });
+    }
+  };
+
   useEffect(() => {
     if (
       Object.values(Payload).some(
-        (value) => value !== null && value !== "" && value !== undefined
+        (value) =>
+          (Array.isArray(value) && value.length > 0) ||
+          (typeof value === "string" && value !== "") ||
+          (value !== null && typeof value === "boolean")
       )
     ) {
       setDisabled(false);
@@ -165,51 +278,86 @@ export default function CreateImmunizationModal({
       setDisabled(true);
     }
     getSettings();
+    getOutreachMedications();
 
-    setUpdatedPayload({
-      vaccinecode: oldPayload?.vaccinecode || "",
-      vaccinename: oldPayload?.vaccinename || "",
-      dateadministered: currentDate,
-      vaccinetype: oldPayload?.vaccinetype || "",
-      manufacturer: oldPayload?.manufacturer || "",
-      batchno: oldPayload?.batchno || "",
-      expirydate: oldPayload?.expirydate || "",
-      dose: oldPayload?.dose || "",
-      doseamount: oldPayload?.doseamount || "",
-      administrationsite: oldPayload?.administrationsite || "",
-      administrationroute: oldPayload?.administrationroute || "",
-      consent: oldPayload?.consent || "",
-      immunizationstatus: oldPayload?.immunizationstatus || "",
-      comment: oldPayload?.comment || "",
-      adverseeventdescription: oldPayload?.adverseeventdescription || "",
-      onsetdateofreaction: oldPayload?.onsetdateofreaction || "",
-      reactcode: oldPayload?.reactcode || "",
-      reporter: oldPayload?.reporter || "",
-      reportingsource: oldPayload?.reportingsource || "",
-      anynotedadverseeffect: oldPayload?.anynotedadverseeffect || "",
-      adverseeffectseverity: oldPayload?.adverseeffectseverity || "",
-      medicationgiventomanageadverseeffect:
-        oldPayload?.medicationgiventomanageadverseeffect || "",
-      schedule: oldPayload?.schedule || "",
-      vaccination: oldPayload?.vaccination || "",
-    });
-  }, [isOpen, Payload]);
+    if (type === "edit" || type === "view") {
+      const initialVaccination = Array.isArray(oldPayload?.vaccination)
+        ? oldPayload.vaccination
+        : oldPayload?.vaccination
+        ? [oldPayload.vaccination]
+        : [];
+      const initialOutreachMedications = Array.isArray(
+        oldPayload?.outreachMedications
+      )
+        ? oldPayload.outreachMedications
+        : oldPayload?.outreachMedications
+        ? [oldPayload.outreachMedications]
+        : [];
+      setSelectedVaccines(initialVaccination);
+      setSelectedOutreachMedications(initialOutreachMedications);
+      setUpdatedPayload({
+        vaccinecode: oldPayload?.vaccinecode || "",
+        vaccinename: oldPayload?.vaccinename || "",
+        dateadministered: currentDate,
+        vaccinetype: oldPayload?.vaccinetype || "",
+        manufacturer: oldPayload?.manufacturer || "",
+        batchno: oldPayload?.batchno || "",
+        expirydate: oldPayload?.expirydate || "",
+        dose: oldPayload?.dose || "",
+        doseamount: oldPayload?.doseamount || "",
+        administrationsite: oldPayload?.administrationsite || "",
+        administrationroute: oldPayload?.administrationroute || "",
+        consent: oldPayload?.consent || "",
+        immunizationstatus: oldPayload?.immunizationstatus || "",
+        comment: oldPayload?.comment || "",
+        adverseeventdescription: oldPayload?.adverseeventdescription || "",
+        onsetdateofreaction: oldPayload?.onsetdateofreaction || "",
+        reactcode: oldPayload?.reactcode || "",
+        reporter: oldPayload?.reporter || "",
+        reportingsource: oldPayload?.reportingsource || "",
+        anynotedadverseeffect: oldPayload?.anynotedadverseeffect || "",
+        adverseeffectseverity: oldPayload?.adverseeffectseverity || "",
+        medicationgiventomanageadverseeffect:
+          oldPayload?.medicationgiventomanageadverseeffect || "",
+        adverseEffectVaccine: oldPayload?.adverseEffectVaccine || "",
+        schedule: oldPayload?.schedule || "",
+        vaccination: initialVaccination,
+        vaccinationlocation: oldPayload?.vaccinationlocation || "",
+        outreachMedications: initialOutreachMedications,
+        isFullyImmunized: oldPayload?.isFullyImmunized ?? null,
+        isZeroDoseChild: oldPayload?.isZeroDoseChild ?? null,
+      });
+    } else {
+      setSelectedVaccines([]);
+      setSelectedOutreachMedications([]);
+      setPayload(initialPayload);
+      setUpdatedPayload({
+        ...UpdatedPayload,
+        vaccination: [],
+        vaccinationlocation: "",
+        outreachMedications: [],
+        isFullyImmunized: null,
+        isZeroDoseChild: null,
+      });
+    }
+  }, [isOpen, type, oldPayload]);
 
   const handleScheduleChange = (e) => {
     const selectedSchedule = e.target.value;
-    setPayload({ ...Payload, schedule: selectedSchedule });
+    setPayload({ ...Payload, schedule: selectedSchedule, vaccination: [] });
+    setUpdatedPayload({
+      ...UpdatedPayload,
+      schedule: selectedSchedule,
+      vaccination: [],
+    });
+    setSelectedVaccines([]);
 
     // Find corresponding vaccines for the selected schedule
-    const selectedMapping = Settings?.vacinationmapping.find(
+    const selectedMapping = Settings?.vacinationmapping?.find(
       (item) => item.schedule === selectedSchedule
     );
     const selectedVaccines = selectedMapping?.vaccination || [];
     setVaccines(selectedVaccines);
-  };
-
-  const handleVaccineChange = (e) => {
-    const selectedVaccine = e.target.value;
-    setPayload({ ...Payload, vaccination: selectedVaccine });
   };
 
   return (
@@ -221,12 +369,11 @@ export default function CreateImmunizationModal({
         overflowY="auto"
       >
         <ModalHeader>
-          {" "}
           {type === "new"
             ? "Add New Immunization"
             : type === "edit"
             ? "Edit Immunization"
-            : "Immunization Details"}{" "}
+            : "Immunization Details"}
         </ModalHeader>
         <ModalCloseButton />
         <ModalBody>
@@ -244,7 +391,7 @@ export default function CreateImmunizationModal({
               >
                 <Input
                   leftIcon={<FaNoteSticky />}
-                  label="Vaccine Code "
+                  label="Vaccine Code"
                   type="text"
                   value={Payload.vaccinecode}
                   onChange={handlePayload}
@@ -252,13 +399,12 @@ export default function CreateImmunizationModal({
                 />
                 <Input
                   leftIcon={<FaNoteSticky />}
-                  label="Vaccine Name "
+                  label="Vaccine Name"
                   type="text"
                   value={Payload.vaccinename}
                   onChange={handlePayload}
                   id="vaccinename"
                 />
-
                 <Select
                   h="45px"
                   borderWidth="2px"
@@ -275,7 +421,6 @@ export default function CreateImmunizationModal({
                     </option>
                   ))}
                 </Select>
-
                 <Input
                   leftIcon={<FaNoteSticky />}
                   label="Manufacturer"
@@ -286,7 +431,7 @@ export default function CreateImmunizationModal({
                 />
                 <Input
                   leftIcon={<FaNoteSticky />}
-                  label="Batch  No"
+                  label="Batch No"
                   type="text"
                   value={Payload.batchno}
                   onChange={handlePayload}
@@ -300,6 +445,100 @@ export default function CreateImmunizationModal({
                   onChange={handlePayload}
                   id="expirydate"
                 />
+                <Select
+                  h="45px"
+                  borderWidth="2px"
+                  fontSize={
+                    Payload.vaccinationlocation !== "" ? "16px" : "13px"
+                  }
+                  borderColor="#6B7280"
+                  id="vaccinationlocation"
+                  value={Payload.vaccinationlocation}
+                  onChange={handlePayload}
+                  placeholder="Select Vaccination Location"
+                >
+                  {Settings?.vaccinationlocation?.map((item, i) => (
+                    <option value={`${item}`} key={i}>
+                      {item}
+                    </option>
+                  ))}
+                </Select>
+                {Payload.vaccinationlocation === "outreach" && (
+                  <Box>
+                    <Text fontSize="14px" fontWeight="500" mb="8px">
+                      Select Outreach Medications
+                    </Text>
+                    <CheckboxGroup
+                      colorScheme="blue"
+                      value={selectedOutreachMedications}
+                      onChange={handleOutreachMedicationChange}
+                    >
+                      <SimpleGrid columns={{ base: 1, md: 2 }} spacing={2}>
+                        {outreachMedications.length > 0 ? (
+                          outreachMedications.map((medication, i) => (
+                            <Checkbox
+                              key={i}
+                              value={medication}
+                              isChecked={selectedOutreachMedications.includes(
+                                medication
+                              )}
+                            >
+                              {medication}
+                            </Checkbox>
+                          ))
+                        ) : (
+                          <Text>No outreach medications available.</Text>
+                        )}
+                      </SimpleGrid>
+                    </CheckboxGroup>
+                  </Box>
+                )}
+                <Box>
+                  <Text fontSize="14px" fontWeight="500" mb="8px">
+                    Fully Immunized
+                  </Text>
+                  <RadioGroup
+                    id="isFullyImmunized"
+                    onChange={(value) =>
+                      handlePayload({
+                        target: { id: "isFullyImmunized", value },
+                      })
+                    }
+                    value={
+                      Payload.isFullyImmunized === null
+                        ? ""
+                        : Payload.isFullyImmunized.toString()
+                    }
+                  >
+                    <Stack direction="row" spacing={5}>
+                      <Radio value="true">Yes</Radio>
+                      <Radio value="false">No</Radio>
+                    </Stack>
+                  </RadioGroup>
+                </Box>
+                <Box>
+                  <Text fontSize="14px" fontWeight="500" mb="8px">
+                    Zero Dose Child
+                  </Text>
+                  <RadioGroup
+                    id="isZeroDoseChild"
+                    onChange={(value) =>
+                      handlePayload({
+                        target: { id: "isZeroDoseChild", value },
+                      })
+                    }
+                    value={
+                      Payload.isZeroDoseChild === null
+                        ? ""
+                        : Payload.isZeroDoseChild.toString()
+                    }
+                  >
+                    <Stack direction="row" spacing={5}>
+                      <Radio value="true">Yes</Radio>
+                      <Radio value="false">No</Radio>
+                    </Stack>
+                  </RadioGroup>
+                </Box>
               </SimpleGrid>
               <Text fontSize="18px" fontWeight={"700"} color="blue.blue500">
                 Administration
@@ -329,23 +568,35 @@ export default function CreateImmunizationModal({
                   ))}
                 </Select>
 
-                <Select
-                  leftIcon={<FaNoteSticky />}
-                  h="45px"
-                  borderWidth="2px"
-                  fontSize={Payload.vaccination !== "" ? "16px" : "13px"}
-                  borderColor="#6B7280"
-                  id="vaccination"
-                  value={Payload.vaccination}
-                  onChange={handleVaccineChange}
-                  placeholder="Select Vaccine"
-                >
-                  {vaccines.map((vaccine, i) => (
-                    <option key={i} value={vaccine}>
-                      {vaccine}
-                    </option>
-                  ))}
-                </Select>
+                <Box>
+                  <Text fontSize="14px" fontWeight="500" mb="8px">
+                    Select Vaccines
+                  </Text>
+                  <CheckboxGroup
+                    colorScheme="blue"
+                    value={selectedVaccines}
+                    onChange={handleVaccineChange}
+                  >
+                    <SimpleGrid columns={{ base: 1, md: 2 }} spacing={2}>
+                      {vaccines.length > 0 ? (
+                        vaccines.map((vaccine, i) => (
+                          <Checkbox
+                            key={i}
+                            value={vaccine}
+                            isChecked={selectedVaccines.includes(vaccine)}
+                          >
+                            {vaccine}
+                          </Checkbox>
+                        ))
+                      ) : (
+                        <Text>
+                          No vaccines available for the selected schedule.
+                        </Text>
+                      )}
+                    </SimpleGrid>
+                  </CheckboxGroup>
+                </Box>
+
                 <Input
                   leftIcon={<FaCalendarAlt />}
                   val={Payload.dateadministered !== "" ? true : false}
@@ -501,6 +752,14 @@ export default function CreateImmunizationModal({
                       onChange={handlePayload}
                       id="medicationgiventomanageadverseeffect"
                     />
+                    <Input
+                      leftIcon={<FaNoteSticky />}
+                      label="Vaccine Causing Adverse Effect"
+                      type="text"
+                      value={Payload.adverseEffectVaccine}
+                      onChange={handlePayload}
+                      id="adverseEffectVaccine"
+                    />
                   </>
                 )}
 
@@ -585,7 +844,7 @@ export default function CreateImmunizationModal({
               >
                 <Input
                   leftIcon={<FaNoteSticky />}
-                  label="Vaccine Code "
+                  label="Vaccine Code"
                   type="text"
                   value={UpdatedPayload.vaccinecode}
                   onChange={handleUpdatedPayload}
@@ -593,13 +852,12 @@ export default function CreateImmunizationModal({
                 />
                 <Input
                   leftIcon={<FaNoteSticky />}
-                  label="Vaccine Name "
+                  label="Vaccine Name"
                   type="text"
                   value={UpdatedPayload.vaccinename}
                   onChange={handleUpdatedPayload}
                   id="vaccinename"
                 />
-
                 <Select
                   h="45px"
                   borderWidth="2px"
@@ -616,7 +874,6 @@ export default function CreateImmunizationModal({
                     </option>
                   ))}
                 </Select>
-
                 <Input
                   leftIcon={<FaNoteSticky />}
                   label="Manufacturer"
@@ -627,7 +884,7 @@ export default function CreateImmunizationModal({
                 />
                 <Input
                   leftIcon={<FaNoteSticky />}
-                  label="Batch  No"
+                  label="Batch No"
                   type="text"
                   value={UpdatedPayload.batchno}
                   onChange={handleUpdatedPayload}
@@ -641,6 +898,100 @@ export default function CreateImmunizationModal({
                   onChange={handleUpdatedPayload}
                   id="expirydate"
                 />
+                <Select
+                  h="45px"
+                  borderWidth="2px"
+                  fontSize={
+                    UpdatedPayload.vaccinationlocation !== "" ? "16px" : "13px"
+                  }
+                  borderColor="#6B7280"
+                  id="vaccinationlocation"
+                  value={UpdatedPayload.vaccinationlocation}
+                  onChange={handleUpdatedPayload}
+                  placeholder="Select Vaccination Location"
+                >
+                  {Settings?.vaccinationlocation?.map((item, i) => (
+                    <option value={`${item}`} key={i}>
+                      {item}
+                    </option>
+                  ))}
+                </Select>
+                {UpdatedPayload.vaccinationlocation === "outreach" && (
+                  <Box>
+                    <Text fontSize="14px" fontWeight="500" mb="8px">
+                      Select Outreach Medications
+                    </Text>
+                    <CheckboxGroup
+                      colorScheme="blue"
+                      value={selectedOutreachMedications}
+                      onChange={handleOutreachMedicationChange}
+                    >
+                      <SimpleGrid columns={{ base: 1, md: 2 }} spacing={2}>
+                        {outreachMedications.length > 0 ? (
+                          outreachMedications.map((medication, i) => (
+                            <Checkbox
+                              key={i}
+                              value={medication}
+                              isChecked={selectedOutreachMedications.includes(
+                                medication
+                              )}
+                            >
+                              {medication}
+                            </Checkbox>
+                          ))
+                        ) : (
+                          <Text>No outreach medications available.</Text>
+                        )}
+                      </SimpleGrid>
+                    </CheckboxGroup>
+                  </Box>
+                )}
+                <Box>
+                  <Text fontSize="14px" fontWeight="500" mb="8px">
+                    Fully Immunized
+                  </Text>
+                  <RadioGroup
+                    id="isFullyImmunized"
+                    onChange={(value) =>
+                      handleUpdatedPayload({
+                        target: { id: "isFullyImmunized", value },
+                      })
+                    }
+                    value={
+                      UpdatedPayload.isFullyImmunized === null
+                        ? ""
+                        : UpdatedPayload.isFullyImmunized.toString()
+                    }
+                  >
+                    <Stack direction="row" spacing={5}>
+                      <Radio value="true">Yes</Radio>
+                      <Radio value="false">No</Radio>
+                    </Stack>
+                  </RadioGroup>
+                </Box>
+                <Box>
+                  <Text fontSize="14px" fontWeight="500" mb="8px">
+                    Zero Dose Child
+                  </Text>
+                  <RadioGroup
+                    id="isZeroDoseChild"
+                    onChange={(value) =>
+                      handleUpdatedPayload({
+                        target: { id: "isZeroDoseChild", value },
+                      })
+                    }
+                    value={
+                      UpdatedPayload.isZeroDoseChild === null
+                        ? ""
+                        : UpdatedPayload.isZeroDoseChild.toString()
+                    }
+                  >
+                    <Stack direction="row" spacing={5}>
+                      <Radio value="true">Yes</Radio>
+                      <Radio value="false">No</Radio>
+                    </Stack>
+                  </RadioGroup>
+                </Box>
               </SimpleGrid>
               <Text fontSize="18px" fontWeight={"700"} color="blue.blue500">
                 Administration
@@ -653,7 +1004,6 @@ export default function CreateImmunizationModal({
                 spacing={5}
               >
                 <Select
-                  
                   leftIcon={<FaNoteSticky />}
                   h="45px"
                   borderWidth="2px"
@@ -671,24 +1021,35 @@ export default function CreateImmunizationModal({
                   ))}
                 </Select>
 
-                <Select
-                 
-                  leftIcon={<FaNoteSticky />}
-                  h="45px"
-                  borderWidth="2px"
-                  fontSize={UpdatedPayload.vaccination !== "" ? "16px" : "13px"}
-                  borderColor="#6B7280"
-                  id="vaccination"
-                  value={UpdatedPayload.vaccination}
-                  onChange={handleUpdatedPayload}
-                  placeholder="Select Vaccine"
-                >
-                  {vaccines.map((vaccine, i) => (
-                    <option key={i} value={vaccine}>
-                      {vaccine}
-                    </option>
-                  ))}
-                </Select>
+                <Box>
+                  <Text fontSize="14px" fontWeight="500" mb="8px">
+                    Select Vaccines
+                  </Text>
+                  <CheckboxGroup
+                    colorScheme="blue"
+                    value={selectedVaccines}
+                    onChange={handleVaccineChange}
+                  >
+                    <SimpleGrid columns={{ base: 1, md: 2 }} spacing={2}>
+                      {vaccines.length > 0 ? (
+                        vaccines.map((vaccine, i) => (
+                          <Checkbox
+                            key={i}
+                            value={vaccine}
+                            isChecked={selectedVaccines.includes(vaccine)}
+                          >
+                            {vaccine}
+                          </Checkbox>
+                        ))
+                      ) : (
+                        <Text>
+                          No vaccines available for the selected schedule.
+                        </Text>
+                      )}
+                    </SimpleGrid>
+                  </CheckboxGroup>
+                </Box>
+
                 <Input
                   leftIcon={<FaCalendarAlt />}
                   val={UpdatedPayload.dateadministered !== "" ? true : false}
@@ -787,7 +1148,7 @@ export default function CreateImmunizationModal({
               </SimpleGrid>
 
               <Text fontSize="18px" fontWeight={"700"} color="blue.blue500">
-                Vaccine Reaction and Adverse Effects(AEFI)
+                Vaccine Reaction and Adverse Effects (AEFI)
               </Text>
 
               <SimpleGrid
@@ -851,6 +1212,14 @@ export default function CreateImmunizationModal({
                       }
                       onChange={handleUpdatedPayload}
                       id="medicationgiventomanageadverseeffect"
+                    />
+                    <Input
+                      leftIcon={<FaNoteSticky />}
+                      label="Vaccine Causing Adverse Effect"
+                      type="text"
+                      value={UpdatedPayload.adverseEffectVaccine}
+                      onChange={handleUpdatedPayload}
+                      id="adverseEffectVaccine"
                     />
                   </>
                 )}
@@ -937,7 +1306,7 @@ export default function CreateImmunizationModal({
                 <Input
                   isDisabled={true}
                   leftIcon={<FaNoteSticky />}
-                  label="Vaccine Code "
+                  label="Vaccine Code"
                   type="text"
                   value={UpdatedPayload.vaccinecode}
                   onChange={handleUpdatedPayload}
@@ -946,13 +1315,12 @@ export default function CreateImmunizationModal({
                 <Input
                   isDisabled={true}
                   leftIcon={<FaNoteSticky />}
-                  label="Vaccine Name "
+                  label="Vaccine Name"
                   type="text"
                   value={UpdatedPayload.vaccinename}
                   onChange={handleUpdatedPayload}
                   id="vaccinename"
                 />
-
                 <Select
                   isDisabled={true}
                   h="45px"
@@ -970,7 +1338,6 @@ export default function CreateImmunizationModal({
                     </option>
                   ))}
                 </Select>
-
                 <Input
                   isDisabled={true}
                   leftIcon={<FaNoteSticky />}
@@ -983,7 +1350,7 @@ export default function CreateImmunizationModal({
                 <Input
                   isDisabled={true}
                   leftIcon={<FaNoteSticky />}
-                  label="Batch  No"
+                  label="Batch No"
                   type="text"
                   value={UpdatedPayload.batchno}
                   onChange={handleUpdatedPayload}
@@ -998,6 +1365,93 @@ export default function CreateImmunizationModal({
                   onChange={handleUpdatedPayload}
                   id="expirydate"
                 />
+                <Select
+                  isDisabled={true}
+                  h="45px"
+                  borderWidth="2px"
+                  fontSize={
+                    UpdatedPayload.vaccinationlocation !== "" ? "16px" : "13px"
+                  }
+                  borderColor="#6B7280"
+                  id="vaccinationlocation"
+                  value={UpdatedPayload.vaccinationlocation}
+                  onChange={handleUpdatedPayload}
+                  placeholder="Select Vaccination Location"
+                >
+                  {Settings?.vaccinationlocation?.map((item, i) => (
+                    <option value={`${item}`} key={i}>
+                      {item}
+                    </option>
+                  ))}
+                </Select>
+                {UpdatedPayload.vaccinationlocation === "outreach" && (
+                  <Box>
+                    <Text fontSize="14px" fontWeight="500" mb="8px">
+                      Selected Outreach Medications
+                    </Text>
+                    <CheckboxGroup
+                      colorScheme="blue"
+                      value={selectedOutreachMedications}
+                      isDisabled={true}
+                    >
+                      <SimpleGrid columns={{ base: 1, md: 2 }} spacing={2}>
+                        {outreachMedications.length > 0 ? (
+                          outreachMedications.map((medication, i) => (
+                            <Checkbox
+                              key={i}
+                              value={medication}
+                              isChecked={selectedOutreachMedications.includes(
+                                medication
+                              )}
+                            >
+                              {medication}
+                            </Checkbox>
+                          ))
+                        ) : (
+                          <Text>No outreach medications available.</Text>
+                        )}
+                      </SimpleGrid>
+                    </CheckboxGroup>
+                  </Box>
+                )}
+                <Box>
+                  <Text fontSize="14px" fontWeight="500" mb="8px">
+                    Fully Immunized
+                  </Text>
+                  <RadioGroup
+                    id="isFullyImmunized"
+                    value={
+                      UpdatedPayload.isFullyImmunized === null
+                        ? ""
+                        : UpdatedPayload.isFullyImmunized.toString()
+                    }
+                    isDisabled={true}
+                  >
+                    <Stack direction="row" spacing={5}>
+                      <Radio value="true">Yes</Radio>
+                      <Radio value="false">No</Radio>
+                    </Stack>
+                  </RadioGroup>
+                </Box>
+                <Box>
+                  <Text fontSize="14px" fontWeight="500" mb="8px">
+                    Zero Dose Child
+                  </Text>
+                  <RadioGroup
+                    id="isZeroDoseChild"
+                    value={
+                      UpdatedPayload.isZeroDoseChild === null
+                        ? ""
+                        : UpdatedPayload.isZeroDoseChild.toString()
+                    }
+                    isDisabled={true}
+                  >
+                    <Stack direction="row" spacing={5}>
+                      <Radio value="true">Yes</Radio>
+                      <Radio value="false">No</Radio>
+                    </Stack>
+                  </RadioGroup>
+                </Box>
               </SimpleGrid>
               <Text fontSize="18px" fontWeight={"700"} color="blue.blue500">
                 Administration
@@ -1028,24 +1482,34 @@ export default function CreateImmunizationModal({
                   ))}
                 </Select>
 
-                <Select
-                  isDisabled={true}
-                  leftIcon={<FaNoteSticky />}
-                  h="45px"
-                  borderWidth="2px"
-                  fontSize={UpdatedPayload.vaccination !== "" ? "16px" : "13px"}
-                  borderColor="#6B7280"
-                  id="vaccination"
-                  value={UpdatedPayload.vaccination}
-                  onChange={handleUpdatedPayload}
-                  placeholder="Select Vaccine"
-                >
-                  {vaccines.map((vaccine, i) => (
-                    <option key={i} value={vaccine}>
-                      {vaccine}
-                    </option>
-                  ))}
-                </Select>
+                <Box>
+                  <Text fontSize="14px" fontWeight="500" mb="8px">
+                    Selected Vaccines
+                  </Text>
+                  <CheckboxGroup
+                    colorScheme="blue"
+                    value={selectedVaccines}
+                    isDisabled={true}
+                  >
+                    <SimpleGrid columns={{ base: 1, md: 2 }} spacing={2}>
+                      {vaccines.length > 0 ? (
+                        vaccines.map((vaccine, i) => (
+                          <Checkbox
+                            key={i}
+                            value={vaccine}
+                            isChecked={selectedVaccines.includes(vaccine)}
+                          >
+                            {vaccine}
+                          </Checkbox>
+                        ))
+                      ) : (
+                        <Text>
+                          No vaccines available for the selected schedule.
+                        </Text>
+                      )}
+                    </SimpleGrid>
+                  </CheckboxGroup>
+                </Box>
 
                 <Input
                   isDisabled={true}
@@ -1152,7 +1616,7 @@ export default function CreateImmunizationModal({
               </SimpleGrid>
 
               <Text fontSize="18px" fontWeight={"700"} color="blue.blue500">
-                Vaccine Reaction and Adverse Events
+                Vaccine Reaction and Adverse Effects (AEFI)
               </Text>
 
               <SimpleGrid
@@ -1161,18 +1625,77 @@ export default function CreateImmunizationModal({
                 columns={{ base: 1, md: 2, lg: 2 }}
                 spacing={5}
               >
-                <Input
+                <Select
                   isDisabled={true}
                   leftIcon={<FaNoteSticky />}
-                  val={
-                    UpdatedPayload.adverseeventdescription !== "" ? true : false
+                  h="45px"
+                  borderWidth="2px"
+                  fontSize={
+                    UpdatedPayload.anynotedadverseeffect !== ""
+                      ? "16px"
+                      : "13px"
                   }
-                  label="Adverse Event Description"
-                  type="text"
-                  value={UpdatedPayload.adverseeventdescription}
+                  borderColor="#6B7280"
+                  id="anynotedadverseeffect"
+                  value={UpdatedPayload.anynotedadverseeffect}
                   onChange={handleUpdatedPayload}
-                  id="adverseeventdescription"
-                />
+                  placeholder="Any Noted Adverse Effect?"
+                >
+                  {Settings?.anynotedadverseeffect?.map((item, i) => (
+                    <option key={i} value={item}>
+                      {item}
+                    </option>
+                  ))}
+                </Select>
+
+                {UpdatedPayload.anynotedadverseeffect === "Yes" && (
+                  <>
+                    <Select
+                      isDisabled={true}
+                      leftIcon={<FaNoteSticky />}
+                      h="45px"
+                      borderWidth="2px"
+                      fontSize={
+                        UpdatedPayload.adverseeffectseverity !== ""
+                          ? "16px"
+                          : "13px"
+                      }
+                      borderColor="#6B7280"
+                      id="adverseeffectseverity"
+                      value={UpdatedPayload.adverseeffectseverity}
+                      onChange={handleUpdatedPayload}
+                      placeholder="Adverse Effect Severity"
+                    >
+                      {Settings?.adverseeffectseverity?.map((item, i) => (
+                        <option key={i} value={item}>
+                          {item}
+                        </option>
+                      ))}
+                    </Select>
+
+                    <Input
+                      isDisabled={true}
+                      leftIcon={<FaNoteSticky />}
+                      label="Medication Given to Manage Adverse Effect"
+                      type="text"
+                      value={
+                        UpdatedPayload.medicationgiventomanageadverseeffect
+                      }
+                      onChange={handleUpdatedPayload}
+                      id="medicationgiventomanageadverseeffect"
+                    />
+                    <Input
+                      isDisabled={true}
+                      leftIcon={<FaNoteSticky />}
+                      label="Vaccine Causing Adverse Effect"
+                      type="text"
+                      value={UpdatedPayload.adverseEffectVaccine}
+                      onChange={handleUpdatedPayload}
+                      id="adverseEffectVaccine"
+                    />
+                  </>
+                )}
+
                 <Input
                   isDisabled={true}
                   leftIcon={<FaCalendarAlt />}
