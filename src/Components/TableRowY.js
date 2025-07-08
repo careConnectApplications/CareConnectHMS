@@ -216,6 +216,8 @@ export default function TableRowY({
   serviceTypeAdult,
 
   serviceTypeChild,
+  outreachmedicationname,
+  outreachmedicationid,
 }) {
   const isServed = servedstatus?.toLowerCase() === "served";
   const isUnserved = servedstatus?.toLowerCase() === "unserved";
@@ -2866,7 +2868,7 @@ export default function TableRowY({
       )}
       {type === "price-model" && (
         <>
-                  <Td>
+          <Td>
             <Text fontWeight="400" fontSize="13px">
               {sn}
             </Text>
@@ -2915,6 +2917,66 @@ export default function TableRowY({
                 </Flex>
               </MenuButton>
 
+              <MenuList>
+                <MenuItem
+                  onClick={onEdit}
+                  textTransform="capitalize"
+                  fontWeight="500"
+                  color="#2F2F2F"
+                  _hover={{
+                    bg: "blue.blue500",
+                    color: "#fff",
+                    fontWeight: "400",
+                  }}
+                >
+                  <HStack fontSize="14px">
+                    <Text>Edit</Text>
+                  </HStack>
+                </MenuItem>
+              </MenuList>
+            </Menu>
+          </Td>
+        </>
+      )}
+      {type === "outreach-medication" && (
+        <>
+          <Td>
+            <Text fontWeight="400" fontSize="13px">
+              {sn}
+            </Text>
+          </Td>
+          {/* Outreach Medication Name */}
+          <Td>
+            <Text fontWeight="400" fontSize="13px">
+              {outreachmedicationname}
+            </Text>
+          </Td>
+          {/* Outreach Medication ID */}
+          <Td>
+            <Text fontWeight="400" fontSize="13px">
+              {outreachmedicationid}
+            </Text>
+          </Td>
+          {/* Status */}
+          <Td>
+            <Text fontWeight="400" fontSize="13px">
+              {status}
+            </Text>
+          </Td>
+          {/* Created Date */}
+          <Td>
+            <Text fontWeight="400" fontSize="13px">
+              {new Date(createdAt).toLocaleDateString()}
+            </Text>
+          </Td>
+          {/* Actions */}
+          <Td>
+            <Menu isLazy>
+              <MenuButton as={Box}>
+                <Flex justifyContent="center" color="#000" fontSize="16px">
+                  <BsThreeDots />
+                </Flex>
+              </MenuButton>
               <MenuList>
                 <MenuItem
                   onClick={onEdit}
