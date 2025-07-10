@@ -10,7 +10,7 @@ export const baseUrl = `${window.location.protocol}//${window.location.hostname}
 
 const baseChecker = `${window.location.hostname}`;
 
-export let FacilityName = ""
+export let FacilityName = "";
 
 if (baseChecker === "ehealthcareconnect.com") {
   FacilityName = "GENERAL HOSPITAL, KATSINA";
@@ -29,13 +29,11 @@ if (baseChecker === "ehealthcareconnect.com") {
 } else if (baseChecker === "yerwaphc.ehealthcareconnect.com") {
   FacilityName = "YERWA PRIMARY HEALTHCARE CENTRE, MAIDUGURI";
 } else if (baseChecker === "mkachallaphc.ehealthcareconnect.com") {
-
-    FacilityName = "MALA KACHALLA PRIMARY HEALTHCARE CENTRE, MAIDUGURI"
-}else if (baseChecker === "20.164.19.147") {
-    FacilityName = "TEST HOSPITAL"
-}else {
-    FacilityName = "GENERAL HOSPITAL, KANKIA"
-
+  FacilityName = "MALA KACHALLA PRIMARY HEALTHCARE CENTRE, MAIDUGURI";
+} else if (baseChecker === "20.164.19.147") {
+  FacilityName = "TEST HOSPITAL";
+} else {
+  FacilityName = "GENERAL HOSPITAL, KANKIA";
 }
 
 export const token = localStorage.getItem("token");

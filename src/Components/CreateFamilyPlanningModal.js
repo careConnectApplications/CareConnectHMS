@@ -161,13 +161,15 @@ export default function CreateFamilyPlanningModal({
   const handleSubmitNew = async () => {
     setLoading(true);
 
-    let mergedPayload = { ...Payload, ...CheckedItems };
+    // Convert checkbox booleans to "Yes"/"No"
+    const checkboxPayload = prepareCheckboxPayload(CheckedItems);
+    let mergedPayload = { ...Payload, ...checkboxPayload };
+
     try {
       const result = await AddFamilyPlanAPI(mergedPayload, id);
 
       if (result.status === 200) {
         setLoading(false);
-
         activateNotifications("New Family Plan Added Successfully", "success");
         onClose();
       }
@@ -176,10 +178,15 @@ export default function CreateFamilyPlanningModal({
       activateNotifications(e.message, "error");
     }
   };
+
   const handleSubmitUpdate = async () => {
     setLoading(true);
+
+    // Convert checkbox booleans to "Yes"/"No"
+    const checkboxPayload = prepareCheckboxPayload(UpdatedCheckedItems);
+    let mergedPayload = { ...UpdatedPayload, ...checkboxPayload };
+
     try {
-      let mergedPayload = { ...UpdatedPayload, ...UpdatedCheckedItems };
       const result = await UpdateFamilyPlaningAPI(
         mergedPayload,
         oldPayload._id
@@ -187,7 +194,6 @@ export default function CreateFamilyPlanningModal({
 
       if (result.status === 200) {
         setLoading(false);
-
         activateNotifications(
           "Family Planning Updated Successfully",
           "success"
@@ -198,6 +204,12 @@ export default function CreateFamilyPlanningModal({
       setLoading(false);
       activateNotifications(e.message, "error");
     }
+  };
+  const prepareCheckboxPayload = (checkedItems) => {
+    return Object.keys(checkedItems).reduce((acc, key) => {
+      acc[key] = checkedItems[key] ? "Yes" : "No";
+      return acc;
+    }, {});
   };
 
   const getSettings = async () => {
@@ -211,60 +223,66 @@ export default function CreateFamilyPlanningModal({
   useEffect(() => {
     getSettings();
 
-    setUpdatedPayload({
-      weight: oldPayload?.weight,
-      bloodpressuresystolic: oldPayload?.bloodpressuresystolic,
-      parity: oldPayload?.parity,
-      counsellingonfamilyplanning: oldPayload?.counsellingonfamilyplanning,
-      counsellingonpostpartumfamilyplanning:
-        oldPayload?.counsellingonpostpartumfamilyplanning,
-      firsttimemodernfamilyplanninguser:
-        oldPayload?.firsttimemodernfamilyplanninguser,
-      emergencycontraception: oldPayload?.emergencycontraception,
-      typeoffamilyplanningclient: oldPayload?.typeoffamilyplanningclient,
-      oralpillsname: oldPayload?.oralpillsname,
-      orapillsquantity: oldPayload?.orapillsquantity,
-      nameofinjectable: oldPayload?.nameofinjectable,
-      injectablequantity: oldPayload?.injectablequantity,
-      selfinjection: oldPayload?.selfinjection,
-      typeofiud: oldPayload?.typeofiud,
-      typeofbarriermethods: oldPayload?.typeofbarriermethods,
-      barrierquantity: oldPayload?.barrierquantity,
-      typeofimplants: oldPayload?.typeofimplants,
-      voluntorysterilization: oldPayload?.voluntorysterilization,
-    });
-    setUpdatedCheckedItems({
-      oralnewacceptor: oldPayload?.oralnewacceptor,
-      oralrevisit: oldPayload?.oralrevisit,
-      injectableacceptor: oldPayload?.injectableacceptor,
-      injectablerevisit: oldPayload?.injectablerevisit,
-      iudinnewacceptor: oldPayload?.iudinnewacceptor,
-      iudinrevisit: oldPayload?.iudinrevisit,
-      iudoutnewacceptor: oldPayload?.iudoutnewacceptor,
-      iudoutrevisit: oldPayload?.iudoutrevisit,
-      barriernewacceptor: oldPayload?.barriernewacceptor,
-      barrierrevisit: oldPayload?.barrierrevisit,
-      implantsinnewacceptor: oldPayload?.implantsinnewacceptor,
-      implantsinrevisit: oldPayload?.implantsinrevisit,
-      implantsoutnewacceptor: oldPayload?.implantsoutnewacceptor,
-      implantsoutrevisit: oldPayload?.implantsoutrevisit,
-      naturalemthodsnewacceptorforcyclebeads:
-        oldPayload?.naturalemthodsnewacceptorforcyclebeads,
-      naturalemthodsrevisitforcyclebeads:
-        oldPayload?.naturalemthodsrevisitforcyclebeads,
-      naturalemthodsnewacceptorforothers:
-        oldPayload?.naturalemthodsnewacceptorforothers,
-      naturalemthodsrevisitforothers:
-        oldPayload?.naturalemthodsrevisitforothers,
-      referredoralpills: oldPayload?.referredoralpills,
-      referredinjectable: oldPayload?.referredinjectable,
-      referredip: oldPayload?.referredip,
-      referredintrauterinedevice: oldPayload?.referredintrauterinedevice,
-      referredsurgicalreferred: oldPayload?.referredsurgicalreferred,
-      referredmedicalreferred: oldPayload?.referredmedicalreferred,
-    });
-  }, [isOpen, Payload]);
+    if (type === "edit" || type === "view") {
+      setUpdatedPayload({
+        weight: oldPayload?.weight || "",
+        bloodpressuresystolic: oldPayload?.bloodpressuresystolic || "",
+        parity: oldPayload?.parity || "",
+        counsellingonfamilyplanning:
+          oldPayload?.counsellingonfamilyplanning || "",
+        counsellingonpostpartumfamilyplanning:
+          oldPayload?.counsellingonpostpartumfamilyplanning || "",
+        firsttimemodernfamilyplanninguser:
+          oldPayload?.firsttimemodernfamilyplanninguser || "",
+        emergencycontraception: oldPayload?.emergencycontraception || "",
+        typeoffamilyplanningclient:
+          oldPayload?.typeoffamilyplanningclient || "",
+        oralpillsname: oldPayload?.oralpillsname || "",
+        orapillsquantity: oldPayload?.orapillsquantity || "",
+        nameofinjectable: oldPayload?.nameofinjectable || "",
+        injectablequantity: oldPayload?.injectablequantity || "",
+        selfinjection: oldPayload?.selfinjection || "",
+        typeofiud: oldPayload?.typeofiud || "",
+        typeofbarriermethods: oldPayload?.typeofbarriermethods || "",
+        barrierquantity: oldPayload?.barrierquantity || "",
+        typeofimplants: oldPayload?.typeofimplants || "",
+        voluntorysterilization: oldPayload?.voluntorysterilization || "",
+      });
 
+      setUpdatedCheckedItems({
+        oralnewacceptor: oldPayload?.oralnewacceptor === "Yes",
+        oralrevisit: oldPayload?.oralrevisit === "Yes",
+        injectableacceptor: oldPayload?.injectableacceptor === "Yes",
+        injectablerevisit: oldPayload?.injectablerevisit === "Yes",
+        iudinnewacceptor: oldPayload?.iudinnewacceptor === "Yes",
+        iudinrevisit: oldPayload?.iudinrevisit === "Yes",
+        iudoutnewacceptor: oldPayload?.iudoutnewacceptor === "Yes",
+        iudoutrevisit: oldPayload?.iudoutrevisit === "Yes",
+        barriernewacceptor: oldPayload?.barriernewacceptor === "Yes",
+        barrierrevisit: oldPayload?.barrierrevisit === "Yes",
+        implantsinnewacceptor: oldPayload?.implantsinnewacceptor === "Yes",
+        implantsinrevisit: oldPayload?.implantsinrevisit === "Yes",
+        implantsoutnewacceptor: oldPayload?.implantsoutnewacceptor === "Yes",
+        implantsoutrevisit: oldPayload?.implantsoutrevisit === "Yes",
+        naturalemthodsnewacceptorforcyclebeads:
+          oldPayload?.naturalemthodsnewacceptorforcyclebeads === "Yes",
+        naturalemthodsrevisitforcyclebeads:
+          oldPayload?.naturalemthodsrevisitforcyclebeads === "Yes",
+        naturalemthodsnewacceptorforothers:
+          oldPayload?.naturalemthodsnewacceptorforothers === "Yes",
+        naturalemthodsrevisitforothers:
+          oldPayload?.naturalemthodsrevisitforothers === "Yes",
+        referredoralpills: oldPayload?.referredoralpills === "Yes",
+        referredinjectable: oldPayload?.referredinjectable === "Yes",
+        referredip: oldPayload?.referredip === "Yes",
+        referredintrauterinedevice:
+          oldPayload?.referredintrauterinedevice === "Yes",
+        referredsurgicalreferred:
+          oldPayload?.referredsurgicalreferred === "Yes",
+        referredmedicalreferred: oldPayload?.referredmedicalreferred === "Yes",
+      });
+    }
+  }, [isOpen, oldPayload, type]);
   return (
     <Modal isOpen={isOpen} onClose={onClose} isCentered size="lg">
       <ModalOverlay />
@@ -455,7 +473,7 @@ export default function CreateFamilyPlanningModal({
                   isChecked={CheckedItems.oralnewacceptor}
                   value="oralnewacceptor"
                 >
-                  <Text textTransform="capitalize"> New Acceptor</Text>
+                  <Text textTransform="capitalize">New Acceptor</Text>
                 </Checkbox>
                 <Checkbox
                   colorScheme="orange"
@@ -514,6 +532,7 @@ export default function CreateFamilyPlanningModal({
               <Text fontSize="15px" fontWeight={"700"} color="blue.blue500">
                 Tick As Appropriate:
               </Text>
+              {/* Injectable Checkboxes */}
               <SimpleGrid
                 mt="12px"
                 mb="5"
@@ -526,7 +545,7 @@ export default function CreateFamilyPlanningModal({
                   isChecked={CheckedItems.injectableacceptor}
                   value="injectableacceptor"
                 >
-                  <Text textTransform="capitalize"> New Acceptor</Text>
+                  <Text textTransform="capitalize">New Acceptor</Text>
                 </Checkbox>
                 <Checkbox
                   colorScheme="orange"
@@ -534,7 +553,7 @@ export default function CreateFamilyPlanningModal({
                   isChecked={CheckedItems.injectablerevisit}
                   value="injectablerevisit"
                 >
-                  <Text textTransform="capitalize"> Revisit</Text>
+                  <Text textTransform="capitalize">Revisit</Text>
                 </Checkbox>
               </SimpleGrid>
 
@@ -581,7 +600,7 @@ export default function CreateFamilyPlanningModal({
                   isChecked={CheckedItems.iudinnewacceptor}
                   value="iudinnewacceptor"
                 >
-                  <Text textTransform="capitalize"> New Acceptor</Text>
+                  <Text textTransform="capitalize">New Acceptor</Text>
                 </Checkbox>
                 <Checkbox
                   colorScheme="orange"
@@ -589,7 +608,7 @@ export default function CreateFamilyPlanningModal({
                   isChecked={CheckedItems.iudinrevisit}
                   value="iudinrevisit"
                 >
-                  <Text textTransform="capitalize"> Revisit</Text>
+                  <Text textTransform="capitalize">Revisit</Text>
                 </Checkbox>
               </SimpleGrid>
               <Text fontSize="15px" fontWeight={"700"} color="blue.blue500">
@@ -607,7 +626,7 @@ export default function CreateFamilyPlanningModal({
                   isChecked={CheckedItems.iudoutnewacceptor}
                   value="iudoutnewacceptor"
                 >
-                  <Text textTransform="capitalize"> New Acceptor</Text>
+                  <Text textTransform="capitalize">New Acceptor</Text>
                 </Checkbox>
                 <Checkbox
                   colorScheme="orange"
@@ -615,7 +634,7 @@ export default function CreateFamilyPlanningModal({
                   isChecked={CheckedItems.iudoutrevisit}
                   value="iudoutrevisit"
                 >
-                  <Text textTransform="capitalize"> Revisit</Text>
+                  <Text textTransform="capitalize">Revisit</Text>
                 </Checkbox>
               </SimpleGrid>
 
@@ -661,6 +680,7 @@ export default function CreateFamilyPlanningModal({
               <Text fontSize="15px" fontWeight={"700"} color="blue.blue500">
                 Tick As Appropriate:
               </Text>
+              {/* Barrier Methods Checkboxes */}
               <SimpleGrid
                 mt="12px"
                 mb="5"
@@ -673,7 +693,7 @@ export default function CreateFamilyPlanningModal({
                   isChecked={CheckedItems.barriernewacceptor}
                   value="barriernewacceptor"
                 >
-                  <Text textTransform="capitalize"> New Acceptor</Text>
+                  <Text textTransform="capitalize">New Acceptor</Text>
                 </Checkbox>
                 <Checkbox
                   colorScheme="orange"
@@ -681,7 +701,7 @@ export default function CreateFamilyPlanningModal({
                   isChecked={CheckedItems.barrierrevisit}
                   value="barrierrevisit"
                 >
-                  <Text textTransform="capitalize"> Revisit</Text>
+                  <Text textTransform="capitalize">Revisit</Text>
                 </Checkbox>
               </SimpleGrid>
 
@@ -728,7 +748,7 @@ export default function CreateFamilyPlanningModal({
                   isChecked={CheckedItems.implantsinnewacceptor}
                   value="implantsinnewacceptor"
                 >
-                  <Text textTransform="capitalize"> New Acceptor</Text>
+                  <Text textTransform="capitalize">New Acceptor</Text>
                 </Checkbox>
                 <Checkbox
                   colorScheme="orange"
@@ -736,9 +756,10 @@ export default function CreateFamilyPlanningModal({
                   isChecked={CheckedItems.implantsinrevisit}
                   value="implantsinrevisit"
                 >
-                  <Text textTransform="capitalize"> Revisit</Text>
+                  <Text textTransform="capitalize">Revisit</Text>
                 </Checkbox>
               </SimpleGrid>
+
               <Text fontSize="15px" fontWeight={"700"} color="blue.blue500">
                 OUT (Tick As Appropriate):
               </Text>
@@ -754,7 +775,7 @@ export default function CreateFamilyPlanningModal({
                   isChecked={CheckedItems.implantsoutnewacceptor}
                   value="implantsoutnewacceptor"
                 >
-                  <Text textTransform="capitalize"> New Acceptor</Text>
+                  <Text textTransform="capitalize">New Acceptor</Text>
                 </Checkbox>
                 <Checkbox
                   colorScheme="orange"
@@ -762,10 +783,9 @@ export default function CreateFamilyPlanningModal({
                   isChecked={CheckedItems.implantsoutrevisit}
                   value="implantsoutrevisit"
                 >
-                  <Text textTransform="capitalize"> Revisit</Text>
+                  <Text textTransform="capitalize">Revisit</Text>
                 </Checkbox>
               </SimpleGrid>
-
               <Text fontSize="15px" fontWeight={"700"} color="blue.blue500">
                 Voluntary Sterilization :
               </Text>
@@ -813,9 +833,7 @@ export default function CreateFamilyPlanningModal({
                   }
                   value="naturalemthodsnewacceptorforcyclebeads"
                 >
-                  <Text textTransform="capitalize">
-                    New Acceptor for Cycle Beads (NA)
-                  </Text>
+                  <Text>New Acceptor for Cycle Beads (NA)</Text>
                 </Checkbox>
                 <Checkbox
                   colorScheme="orange"
@@ -823,10 +841,7 @@ export default function CreateFamilyPlanningModal({
                   isChecked={CheckedItems.naturalemthodsrevisitforcyclebeads}
                   value="naturalemthodsrevisitforcyclebeads"
                 >
-                  <Text textTransform="capitalize">
-                    {" "}
-                    Revisit (RV) for Cycle Beads
-                  </Text>
+                  <Text>Revisit (RV) for Cycle Beads</Text>
                 </Checkbox>
                 <Checkbox
                   colorScheme="orange"
@@ -834,10 +849,7 @@ export default function CreateFamilyPlanningModal({
                   isChecked={CheckedItems.naturalemthodsnewacceptorforothers}
                   value="naturalemthodsnewacceptorforothers"
                 >
-                  <Text textTransform="capitalize">
-                    {" "}
-                    New Acceptor for Others (NA)
-                  </Text>
+                  <Text>New Acceptor for Others (NA)</Text>
                 </Checkbox>
                 <Checkbox
                   colorScheme="orange"
@@ -845,10 +857,7 @@ export default function CreateFamilyPlanningModal({
                   isChecked={CheckedItems.naturalemthodsrevisitforothers}
                   value="naturalemthodsrevisitforothers"
                 >
-                  <Text textTransform="capitalize">
-                    {" "}
-                    Revisit (RV) for Others
-                  </Text>
+                  <Text>Revisit (RV) for Others</Text>
                 </Checkbox>
               </SimpleGrid>
 
@@ -867,7 +876,7 @@ export default function CreateFamilyPlanningModal({
                   isChecked={CheckedItems.referredoralpills}
                   value="referredoralpills"
                 >
-                  <Text textTransform="capitalize">Oral Pills (OP)</Text>
+                  <Text>Oral Pills (OP)</Text>
                 </Checkbox>
                 <Checkbox
                   colorScheme="orange"
@@ -875,7 +884,7 @@ export default function CreateFamilyPlanningModal({
                   isChecked={CheckedItems.referredinjectable}
                   value="referredinjectable"
                 >
-                  <Text textTransform="capitalize"> Injectable (IJ)</Text>
+                  <Text>Injectable (IJ)</Text>
                 </Checkbox>
                 <Checkbox
                   colorScheme="orange"
@@ -883,7 +892,7 @@ export default function CreateFamilyPlanningModal({
                   isChecked={CheckedItems.referredip}
                   value="referredip"
                 >
-                  <Text textTransform="capitalize"> IP</Text>
+                  <Text>IP</Text>
                 </Checkbox>
                 <Checkbox
                   colorScheme="orange"
@@ -891,10 +900,7 @@ export default function CreateFamilyPlanningModal({
                   isChecked={CheckedItems.referredintrauterinedevice}
                   value="referredintrauterinedevice"
                 >
-                  <Text textTransform="capitalize">
-                    {" "}
-                    Intra-Uterine Device (IUD)
-                  </Text>
+                  <Text>Intra-Uterine Device (IUD)</Text>
                 </Checkbox>
                 <Checkbox
                   colorScheme="orange"
@@ -902,10 +908,7 @@ export default function CreateFamilyPlanningModal({
                   isChecked={CheckedItems.referredsurgicalreferred}
                   value="referredsurgicalreferred"
                 >
-                  <Text textTransform="capitalize">
-                    {" "}
-                    Surgical Referred (STER)
-                  </Text>
+                  <Text>Surgical Referred (STER)</Text>
                 </Checkbox>
                 <Checkbox
                   colorScheme="orange"
@@ -913,7 +916,7 @@ export default function CreateFamilyPlanningModal({
                   isChecked={CheckedItems.referredmedicalreferred}
                   value="referredmedicalreferred"
                 >
-                  <Text textTransform="capitalize"> Medical Referral (MR)</Text>
+                  <Text>Medical Referral (MR)</Text>
                 </Checkbox>
               </SimpleGrid>
 
@@ -1764,18 +1767,14 @@ export default function CreateFamilyPlanningModal({
                 <Checkbox
                   isDisabled={true}
                   colorScheme="orange"
-                  onChange={handleUpdatedCheckBoxChange}
-                  isChecked={UpdatedCheckedItems.oralnewacceptor}
-                  value="oralnewacceptor"
+                  isChecked={oldPayload?.oralnewacceptor === "Yes"}
                 >
-                  <Text textTransform="capitalize"> New Acceptor</Text>
+                  <Text textTransform="capitalize">New Acceptor</Text>
                 </Checkbox>
                 <Checkbox
                   isDisabled={true}
                   colorScheme="orange"
-                  onChange={handleUpdatedCheckBoxChange}
-                  isChecked={UpdatedCheckedItems.oralrevisit}
-                  value="oralrevisit"
+                  isChecked={oldPayload?.oralrevisit === "Yes"}
                 >
                   <Text textTransform="capitalize">Revisit</Text>
                 </Checkbox>
@@ -1842,20 +1841,16 @@ export default function CreateFamilyPlanningModal({
                 <Checkbox
                   isDisabled={true}
                   colorScheme="orange"
-                  onChange={handleUpdatedCheckBoxChange}
-                  isChecked={UpdatedCheckedItems.injectableacceptor}
-                  value="injectableacceptor"
+                  isChecked={oldPayload?.injectableacceptor === "Yes"}
                 >
-                  <Text textTransform="capitalize"> New Acceptor</Text>
+                  <Text textTransform="capitalize">New Acceptor</Text>
                 </Checkbox>
                 <Checkbox
                   isDisabled={true}
                   colorScheme="orange"
-                  onChange={handleUpdatedCheckBoxChange}
-                  isChecked={UpdatedCheckedItems.injectablerevisit}
-                  value="injectablerevisit"
+                  isChecked={oldPayload?.injectablerevisit === "Yes"}
                 >
-                  <Text textTransform="capitalize"> Revisit</Text>
+                  <Text textTransform="capitalize">Revisit</Text>
                 </Checkbox>
               </SimpleGrid>
 
@@ -1900,22 +1895,19 @@ export default function CreateFamilyPlanningModal({
                 <Checkbox
                   isDisabled={true}
                   colorScheme="orange"
-                  onChange={handleUpdatedCheckBoxChange}
-                  isChecked={UpdatedCheckedItems.iudinnewacceptor}
-                  value="iudinnewacceptor"
+                  isChecked={oldPayload?.iudinnewacceptor === "Yes"}
                 >
-                  <Text textTransform="capitalize"> New Acceptor</Text>
+                  <Text textTransform="capitalize">New Acceptor</Text>
                 </Checkbox>
                 <Checkbox
                   isDisabled={true}
                   colorScheme="orange"
-                  onChange={handleUpdatedCheckBoxChange}
-                  isChecked={UpdatedCheckedItems.iudinrevisit}
-                  value="iudinrevisit"
+                  isChecked={oldPayload?.iudinrevisit === "Yes"}
                 >
-                  <Text textTransform="capitalize"> Revisit</Text>
+                  <Text textTransform="capitalize">Revisit</Text>
                 </Checkbox>
               </SimpleGrid>
+
               <Text fontSize="15px" fontWeight={"700"} color="blue.blue500">
                 OUT (Tick As Appropriate):
               </Text>
@@ -1928,62 +1920,42 @@ export default function CreateFamilyPlanningModal({
                 <Checkbox
                   isDisabled={true}
                   colorScheme="orange"
-                  onChange={handleUpdatedCheckBoxChange}
-                  isChecked={UpdatedCheckedItems.iudoutnewacceptor}
-                  value="iudoutnewacceptor"
+                  isChecked={oldPayload?.iudoutnewacceptor === "Yes"}
                 >
-                  <Text textTransform="capitalize"> New Acceptor</Text>
+                  <Text textTransform="capitalize">New Acceptor</Text>
                 </Checkbox>
                 <Checkbox
                   isDisabled={true}
                   colorScheme="orange"
-                  onChange={handleUpdatedCheckBoxChange}
-                  isChecked={UpdatedCheckedItems.iudoutrevisit}
-                  value="iudoutrevisit"
+                  isChecked={oldPayload?.iudoutrevisit === "Yes"}
                 >
-                  <Text textTransform="capitalize"> Revisit</Text>
+                  <Text textTransform="capitalize">Revisit</Text>
                 </Checkbox>
               </SimpleGrid>
 
               <Text fontSize="15px" fontWeight={"700"} color="blue.blue500">
-                Barrier Methods :
+                Tick As Appropriate:
               </Text>
-
               <SimpleGrid
                 mt="12px"
                 mb="5"
                 columns={{ base: 1, md: 2, lg: 2 }}
                 spacing={5}
               >
-                <Select
+                <Checkbox
                   isDisabled={true}
-                  h="45px"
-                  borderWidth="2px"
-                  fontSize={
-                    UpdatedPayload.typeofbarriermethods !== "" ? "16px" : "13px"
-                  }
-                  borderColor="#6B7280"
-                  id="typeofbarriermethods"
-                  value={UpdatedPayload.typeofbarriermethods}
-                  onChange={handleUpdatedPayload}
-                  placeholder="Type Of Barrier Methods"
+                  colorScheme="orange"
+                  isChecked={oldPayload?.barriernewacceptor === "Yes"}
                 >
-                  {Settings?.typeofbarriermethods?.map((item, i) => (
-                    <option value={`${item}`} key={i}>
-                      {item}
-                    </option>
-                  ))}
-                </Select>
-
-                <Input
+                  <Text textTransform="capitalize">New Acceptor</Text>
+                </Checkbox>
+                <Checkbox
                   isDisabled={true}
-                  leftIcon={<FaNoteSticky />}
-                  label="Barrier Quantity"
-                  type="number"
-                  value={UpdatedPayload.barrierquantity}
-                  onChange={handleUpdatedPayload}
-                  id="barrierquantity"
-                />
+                  colorScheme="orange"
+                  isChecked={oldPayload?.barrierrevisit === "Yes"}
+                >
+                  <Text textTransform="capitalize">Revisit</Text>
+                </Checkbox>
               </SimpleGrid>
 
               <Text fontSize="15px" fontWeight={"700"} color="blue.blue500">
@@ -2058,20 +2030,16 @@ export default function CreateFamilyPlanningModal({
                 <Checkbox
                   isDisabled={true}
                   colorScheme="orange"
-                  onChange={handleUpdatedCheckBoxChange}
-                  isChecked={UpdatedCheckedItems.implantsinnewacceptor}
-                  value="implantsinnewacceptor"
+                  isChecked={oldPayload?.implantsinnewacceptor === "Yes"}
                 >
-                  <Text textTransform="capitalize"> New Acceptor</Text>
+                  <Text textTransform="capitalize">New Acceptor</Text>
                 </Checkbox>
                 <Checkbox
                   isDisabled={true}
                   colorScheme="orange"
-                  onChange={handleUpdatedCheckBoxChange}
-                  isChecked={UpdatedCheckedItems.implantsinrevisit}
-                  value="implantsinrevisit"
+                  isChecked={oldPayload?.implantsinrevisit === "Yes"}
                 >
-                  <Text textTransform="capitalize"> Revisit</Text>
+                  <Text textTransform="capitalize">Revisit</Text>
                 </Checkbox>
               </SimpleGrid>
               <Text fontSize="15px" fontWeight={"700"} color="blue.blue500">
@@ -2086,20 +2054,16 @@ export default function CreateFamilyPlanningModal({
                 <Checkbox
                   isDisabled={true}
                   colorScheme="orange"
-                  onChange={handleUpdatedCheckBoxChange}
-                  isChecked={UpdatedCheckedItems.implantsoutnewacceptor}
-                  value="implantsoutnewacceptor"
+                  isChecked={oldPayload?.implantsoutnewacceptor === "Yes"}
                 >
-                  <Text textTransform="capitalize"> New Acceptor</Text>
+                  <Text textTransform="capitalize">New Acceptor</Text>
                 </Checkbox>
                 <Checkbox
                   isDisabled={true}
                   colorScheme="orange"
-                  onChange={handleUpdatedCheckBoxChange}
-                  isChecked={UpdatedCheckedItems.implantsoutrevisit}
-                  value="implantsoutrevisit"
+                  isChecked={oldPayload?.implantsoutrevisit === "Yes"}
                 >
-                  <Text textTransform="capitalize"> Revisit</Text>
+                  <Text textTransform="capitalize">Revisit</Text>
                 </Checkbox>
               </SimpleGrid>
 
@@ -2148,55 +2112,38 @@ export default function CreateFamilyPlanningModal({
                 <Checkbox
                   isDisabled={true}
                   colorScheme="orange"
-                  onChange={handleUpdatedCheckBoxChange}
                   isChecked={
-                    UpdatedCheckedItems.naturalemthodsnewacceptorforcyclebeads
+                    oldPayload?.naturalemthodsnewacceptorforcyclebeads === "Yes"
                   }
-                  value="naturalemthodsnewacceptorforcyclebeads"
                 >
-                  <Text textTransform="capitalize">
-                    New Acceptor for Cycle Beads (NA)
-                  </Text>
+                  <Text>New Acceptor for Cycle Beads (NA)</Text>
                 </Checkbox>
                 <Checkbox
                   isDisabled={true}
                   colorScheme="orange"
-                  onChange={handleUpdatedCheckBoxChange}
                   isChecked={
-                    UpdatedCheckedItems.naturalemthodsrevisitforcyclebeads
+                    oldPayload?.naturalemthodsrevisitforcyclebeads === "Yes"
                   }
-                  value="naturalemthodsrevisitforcyclebeads"
                 >
-                  <Text textTransform="capitalize">
-                    {" "}
-                    Revisit (RV) for Cycle Beads
-                  </Text>
+                  <Text>Revisit (RV) for Cycle Beads</Text>
                 </Checkbox>
                 <Checkbox
                   isDisabled={true}
                   colorScheme="orange"
-                  onChange={handleUpdatedCheckBoxChange}
                   isChecked={
-                    UpdatedCheckedItems.naturalemthodsnewacceptorforothers
+                    oldPayload?.naturalemthodsnewacceptorforothers === "Yes"
                   }
-                  value="naturalemthodsnewacceptorforothers"
                 >
-                  <Text textTransform="capitalize">
-                    {" "}
-                    New Acceptor for Others (NA)
-                  </Text>
+                  <Text>New Acceptor for Others (NA)</Text>
                 </Checkbox>
                 <Checkbox
                   isDisabled={true}
                   colorScheme="orange"
-                  onChange={handleUpdatedCheckBoxChange}
-                  isChecked={UpdatedCheckedItems.naturalemthodsrevisitforothers}
-                  value="naturalemthodsrevisitforothers"
+                  isChecked={
+                    oldPayload?.naturalemthodsrevisitforothers === "Yes"
+                  }
                 >
-                  <Text textTransform="capitalize">
-                    {" "}
-                    Revisit (RV) for Others
-                  </Text>
+                  <Text>Revisit (RV) for Others</Text>
                 </Checkbox>
               </SimpleGrid>
 
@@ -2212,66 +2159,48 @@ export default function CreateFamilyPlanningModal({
                 <Checkbox
                   isDisabled={true}
                   colorScheme="orange"
-                  onChange={handleUpdatedCheckBoxChange}
-                  isChecked={UpdatedCheckedItems.referredoralpills}
-                  value="referredoralpills"
+                  isChecked={oldPayload?.referredoralpills === "Yes"}
                 >
-                  <Text textTransform="capitalize">Oral Pills (OP)</Text>
+                  <Text>Oral Pills (OP)</Text>
                 </Checkbox>
                 <Checkbox
                   isDisabled={true}
                   colorScheme="orange"
-                  onChange={handleUpdatedCheckBoxChange}
-                  isChecked={UpdatedCheckedItems.referredinjectable}
-                  value="referredinjectable"
+                  isChecked={oldPayload?.referredinjectable === "Yes"}
                 >
-                  <Text textTransform="capitalize"> Injectable (IJ)</Text>
+                  <Text>Injectable (IJ)</Text>
                 </Checkbox>
                 <Checkbox
                   isDisabled={true}
                   colorScheme="orange"
-                  onChange={handleUpdatedCheckBoxChange}
-                  isChecked={UpdatedCheckedItems.referredip}
-                  value="referredip"
+                  isChecked={oldPayload?.referredip === "Yes"}
                 >
-                  <Text textTransform="capitalize"> IP</Text>
+                  <Text>IP</Text>
                 </Checkbox>
                 <Checkbox
                   isDisabled={true}
                   colorScheme="orange"
-                  onChange={handleUpdatedCheckBoxChange}
-                  isChecked={UpdatedCheckedItems.referredintrauterinedevice}
-                  value="referredintrauterinedevice"
+                  isChecked={oldPayload?.referredintrauterinedevice === "Yes"}
                 >
-                  <Text textTransform="capitalize">
-                    {" "}
-                    Intra-Uterine Device (IUD)
-                  </Text>
+                  <Text>Intra-Uterine Device (IUD)</Text>
                 </Checkbox>
                 <Checkbox
                   isDisabled={true}
                   colorScheme="orange"
-                  onChange={handleUpdatedCheckBoxChange}
-                  isChecked={UpdatedCheckedItems.referredsurgicalreferred}
-                  value="referredsurgicalreferred"
+                  isChecked={oldPayload?.referredsurgicalreferred === "Yes"}
                 >
-                  <Text textTransform="capitalize">
-                    {" "}
-                    Surgical Referred (STER)
-                  </Text>
+                  <Text>Surgical Referred (STER)</Text>
                 </Checkbox>
                 <Checkbox
                   isDisabled={true}
                   colorScheme="orange"
-                  onChange={handleUpdatedCheckBoxChange}
-                  isChecked={UpdatedCheckedItems.referredmedicalreferred}
-                  value="referredmedicalreferred"
+                  isChecked={oldPayload?.referredmedicalreferred === "Yes"}
                 >
-                  <Text textTransform="capitalize"> Medical Referral (MR)</Text>
+                  <Text>Medical Referral (MR)</Text>
                 </Checkbox>
               </SimpleGrid>
 
-              <Button mt="32px" isLoading={Loading} onClick={handleSubmitNew}>
+              <Button mt="32px" isDisabled={true} >
                 Proceed
               </Button>
             </>
