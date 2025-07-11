@@ -58,6 +58,20 @@ export default function AddANCv3() {
         rs: "",
         pelvis: "",
         abdomen: "",
+        heightoffundus: "",
+        presentationandposition: "",
+        presentingpart: "",
+        foetalheight: "",
+        bp: "",
+        hb: "",
+        protein: "",
+        glucose: "",
+        weight: "",
+        oedema: "",
+        tetanustoxoid: "",
+        sulfadoxinepyrimethamine: "",
+        albendazole: "",
+        remark: ""
     })
 
 
@@ -392,6 +406,142 @@ export default function AddANCv3() {
 
                         </AccordionPanel>
                         <PreviousPregnancyModal isOpen={OpenObstetricHistoryModal} onClose={() => setOpenObstetricHistoryModal(false)} setOldPayload={setPayload} oldPayload={Payload} type={ModalState} activateNotifications={activateNotifications} />
+                    </AccordionItem>
+
+                           <AccordionItem mb="15px">
+
+                        <AccordionButton _hover={{ border: "1px solid #EA5937", color: "#000" }} _focus={{ outline: "none" }} border="1px solid #fff" _expanded={{ rounded: "8px 8px 0px 0px", border: 0 }} bg="#fff" color="#000" rounded="8px">
+                            <Box as='span' flex='1' textAlign='left'>
+                               Follow up 
+                            </Box>
+                            <AccordionIcon />
+                        </AccordionButton>
+
+                        <AccordionPanel pb={4} bg="#fff" rounded="0px 0px 8px 8px">
+                            <SimpleGrid
+                                                           mt="18px"
+                                                           mb="5"
+                                                           columns={{ base: 1, md: 2, lg: 2 }}
+                                                           spacing={5}
+                                                       >
+                                                           <Input
+                                                               leftIcon={<FaNoteSticky />}
+                                                               label="Height of fundus"
+                                                               type="text"
+                                                               value={Payload.heightoffundus}
+                                                               onChange={handlePayload}
+                                                               id="heightoffundus"
+                                                           />
+                                                           <Input
+                                                               leftIcon={<FaNoteSticky />}
+                                                               label="Presentation and position"
+                                                               type="text"
+                                                               value={Payload.presentationandposition}
+                                                               onChange={handlePayload}
+                                                               id="presentationandposition"
+                                                           />
+                                                           <Input
+                                                               leftIcon={<FaNoteSticky />}
+                                                               label="Presenting part"
+                                                               type="text"
+                                                               value={Payload.presentingpart}
+                                                               onChange={handlePayload}
+                                                               id="presentingpart"
+                                                           />
+                                                           <Input
+                                                               leftIcon={<FaNoteSticky />}
+                                                               label="Foetal height"
+                                                               type="text"
+                                                               value={Payload.foetalheight}
+                                                               onChange={handlePayload}
+                                                               id="foetalheight"
+                                                           />
+                                                           <Input
+                                                               leftIcon={<FaNoteSticky />}
+                                                               label="BP"
+                                                               type="text"
+                                                               value={Payload.bp}
+                                                               onChange={handlePayload}
+                                                               id="bp"
+                                                           />
+                                                           <Input
+                                                               leftIcon={<FaNoteSticky />}
+                                                               label="HB"
+                                                               type="text"
+                                                               value={Payload.hb}
+                                                               onChange={handlePayload}
+                                                               id="hb"
+                                                           />
+                                                           <Input
+                                                               leftIcon={<FaNoteSticky />}
+                                                               label="Protein"
+                                                               type="text"
+                                                               value={Payload.protein}
+                                                               onChange={handlePayload}
+                                                               id="protein"
+                                                           />
+                                                           <Input
+                                                               leftIcon={<FaNoteSticky />}
+                                                               label="Glucose"
+                                                               type="text"
+                                                               value={Payload.glucose}
+                                                               onChange={handlePayload}
+                                                               id="glucose"
+                                                           />
+                                                           <Input
+                                                               leftIcon={<FaNoteSticky />}
+                                                               label="Weight"
+                                                               type="text"
+                                                               value={Payload.weight}
+                                                               onChange={handlePayload}
+                                                               id="weight"
+                                                           />
+                                                           <Input
+                                                               leftIcon={<FaNoteSticky />}
+                                                               label="Oedema"
+                                                               type="text"
+                                                               value={Payload.oedema}
+                                                               onChange={handlePayload}
+                                                               id="oedema"
+                                                           />
+                                                           <Input
+                                                               leftIcon={<FaNoteSticky />}
+                                                               label="Tetanus toxoid"
+                                                               type="text"
+                                                               value={Payload.tetanustoxoid}
+                                                               onChange={handlePayload}
+                                                               id="tetanustoxoid"
+                                                           />
+                                                           <Input
+                                                               leftIcon={<FaNoteSticky />}
+                                                               label="Sulfadoxine pyrimethamine"
+                                                               type="text"
+                                                               value={Payload.sulfadoxinepyrimethamine}
+                                                               onChange={handlePayload}
+                                                               id="sulfadoxinepyrimethamine"
+                                                           />
+                                                           <Input
+                                                               leftIcon={<FaNoteSticky />}
+                                                               label="Albendazole"
+                                                               type="text"
+                                                               value={Payload.albendazole}
+                                                               onChange={handlePayload}
+                                                               id="albendazole"
+                                                           />
+                                                           <Input
+                                                               leftIcon={<FaNoteSticky />}
+                                                               label="remark"
+                                                               type="text"
+                                                               value={Payload.remark}
+                                                               onChange={handlePayload}
+                                                               id="remark"
+                                                           />
+                           
+                                                       </SimpleGrid>
+            
+
+
+                        </AccordionPanel>
                     </AccordionItem>
 
 
