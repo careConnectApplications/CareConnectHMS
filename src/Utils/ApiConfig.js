@@ -1,11 +1,11 @@
 export const nigeriaStateApiUrl = "https://nga-states-lga.onrender.com";
 // Test Base URL
 
-export const baseUrl = `${window.location.protocol}//${window.location.hostname}:5000/api/v1`;
+// export const baseUrl = `${window.location.protocol}//${window.location.hostname}:5000/api/v1`;
 
   // export const baseUrl = `http://20.164.19.147:5000/api/v1`;
 
-// export const baseUrl = `${window.location.protocol}//${window.location.hostname}/api/v1`;
+export const baseUrl = `${window.location.protocol}//${window.location.hostname}/api/v1`;
 // export let FacilityName = "TEST HOSPITAL"
 
 const baseChecker = `${window.location.hostname}`;
