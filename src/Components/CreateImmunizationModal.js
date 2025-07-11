@@ -45,7 +45,7 @@ export default function CreateImmunizationModal({
   oldPayload,
 }) {
   const toast = useToast();
-  const [Disabled, setDisabled] = useState(true);
+
   const [Loading, setLoading] = useState(false);
   const [Settings, setSettings] = useState(null);
   const [schedules, setSchedules] = useState([]);
@@ -124,6 +124,72 @@ export default function CreateImmunizationModal({
     isFullyImmunized: null,
     isZeroDoseChild: null,
   });
+  useEffect(() => {
+    // Always call these functions to populate dropdowns
+    getSettings();
+    getOutreachMedications();
+
+    if (type === "edit" || type === "view") {
+      const initialVaccination = Array.isArray(oldPayload?.vaccination)
+        ? oldPayload.vaccination
+        : oldPayload?.vaccination
+        ? [oldPayload.vaccination]
+        : [];
+      const initialOutreachMedications = Array.isArray(
+        oldPayload?.outreachMedications
+      )
+        ? oldPayload.outreachMedications
+        : oldPayload?.outreachMedications
+        ? [oldPayload.outreachMedications]
+        : [];
+      setSelectedVaccines(initialVaccination);
+      setSelectedOutreachMedications(initialOutreachMedications);
+      setUpdatedPayload({
+        vaccinecode: oldPayload?.vaccinecode || "",
+        vaccinename: oldPayload?.vaccinename || "",
+        dateadministered: currentDate,
+        vaccinetype: oldPayload?.vaccinetype || "",
+        manufacturer: oldPayload?.manufacturer || "",
+        batchno: oldPayload?.batchno || "",
+        expirydate: oldPayload?.expirydate || "",
+        dose: oldPayload?.dose || "",
+        doseamount: oldPayload?.doseamount || "",
+        administrationsite: oldPayload?.administrationsite || "",
+        administrationroute: oldPayload?.administrationroute || "",
+        consent: oldPayload?.consent || "",
+        immunizationstatus: oldPayload?.immunizationstatus || "",
+        comment: oldPayload?.comment || "",
+        adverseeventdescription: oldPayload?.adverseeventdescription || "",
+        onsetdateofreaction: oldPayload?.onsetdateofreaction || "",
+        reactcode: oldPayload?.reactcode || "",
+        reporter: oldPayload?.reporter || "",
+        reportingsource: oldPayload?.reportingsource || "",
+        anynotedadverseeffect: oldPayload?.anynotedadverseeffect || "",
+        adverseeffectseverity: oldPayload?.adverseeffectseverity || "",
+        medicationgiventomanageadverseeffect:
+          oldPayload?.medicationgiventomanageadverseeffect || "",
+        adverseEffectVaccine: oldPayload?.adverseEffectVaccine || "",
+        schedule: oldPayload?.schedule || "",
+        vaccination: initialVaccination,
+        vaccinationlocation: oldPayload?.vaccinationlocation || "",
+        outreachMedications: initialOutreachMedications,
+        isFullyImmunized: oldPayload?.isFullyImmunized ?? null,
+        isZeroDoseChild: oldPayload?.isZeroDoseChild ?? null,
+      });
+    } else {
+      setSelectedVaccines([]);
+      setSelectedOutreachMedications([]);
+      setPayload(initialPayload);
+      setUpdatedPayload({
+        ...UpdatedPayload,
+        vaccination: [],
+        vaccinationlocation: "",
+        outreachMedications: [],
+        isFullyImmunized: null,
+        isZeroDoseChild: null,
+      });
+    }
+  }, [isOpen, type, oldPayload]);
 
   const handlePayload = (e) => {
     const { id, value } = e.target;
@@ -174,7 +240,6 @@ export default function CreateImmunizationModal({
     setPayload({ ...Payload, outreachMedications: selected });
     setUpdatedPayload({ ...UpdatedPayload, outreachMedications: selected });
   };
-
   const validateVaccines = () => {
     if (Payload.schedule && selectedVaccines.length < vaccines.length) {
       toast({
@@ -186,7 +251,6 @@ export default function CreateImmunizationModal({
         isClosable: true,
         position: "top",
       });
-      return false;
     }
     return true;
   };
@@ -263,84 +327,6 @@ export default function CreateImmunizationModal({
       });
     }
   };
-
-  useEffect(() => {
-    if (
-      Object.values(Payload).some(
-        (value) =>
-          (Array.isArray(value) && value.length > 0) ||
-          (typeof value === "string" && value !== "") ||
-          (value !== null && typeof value === "boolean")
-      )
-    ) {
-      setDisabled(false);
-    } else {
-      setDisabled(true);
-    }
-    getSettings();
-    getOutreachMedications();
-
-    if (type === "edit" || type === "view") {
-      const initialVaccination = Array.isArray(oldPayload?.vaccination)
-        ? oldPayload.vaccination
-        : oldPayload?.vaccination
-        ? [oldPayload.vaccination]
-        : [];
-      const initialOutreachMedications = Array.isArray(
-        oldPayload?.outreachMedications
-      )
-        ? oldPayload.outreachMedications
-        : oldPayload?.outreachMedications
-        ? [oldPayload.outreachMedications]
-        : [];
-      setSelectedVaccines(initialVaccination);
-      setSelectedOutreachMedications(initialOutreachMedications);
-      setUpdatedPayload({
-        vaccinecode: oldPayload?.vaccinecode || "",
-        vaccinename: oldPayload?.vaccinename || "",
-        dateadministered: currentDate,
-        vaccinetype: oldPayload?.vaccinetype || "",
-        manufacturer: oldPayload?.manufacturer || "",
-        batchno: oldPayload?.batchno || "",
-        expirydate: oldPayload?.expirydate || "",
-        dose: oldPayload?.dose || "",
-        doseamount: oldPayload?.doseamount || "",
-        administrationsite: oldPayload?.administrationsite || "",
-        administrationroute: oldPayload?.administrationroute || "",
-        consent: oldPayload?.consent || "",
-        immunizationstatus: oldPayload?.immunizationstatus || "",
-        comment: oldPayload?.comment || "",
-        adverseeventdescription: oldPayload?.adverseeventdescription || "",
-        onsetdateofreaction: oldPayload?.onsetdateofreaction || "",
-        reactcode: oldPayload?.reactcode || "",
-        reporter: oldPayload?.reporter || "",
-        reportingsource: oldPayload?.reportingsource || "",
-        anynotedadverseeffect: oldPayload?.anynotedadverseeffect || "",
-        adverseeffectseverity: oldPayload?.adverseeffectseverity || "",
-        medicationgiventomanageadverseeffect:
-          oldPayload?.medicationgiventomanageadverseeffect || "",
-        adverseEffectVaccine: oldPayload?.adverseEffectVaccine || "",
-        schedule: oldPayload?.schedule || "",
-        vaccination: initialVaccination,
-        vaccinationlocation: oldPayload?.vaccinationlocation || "",
-        outreachMedications: initialOutreachMedications,
-        isFullyImmunized: oldPayload?.isFullyImmunized ?? null,
-        isZeroDoseChild: oldPayload?.isZeroDoseChild ?? null,
-      });
-    } else {
-      setSelectedVaccines([]);
-      setSelectedOutreachMedications([]);
-      setPayload(initialPayload);
-      setUpdatedPayload({
-        ...UpdatedPayload,
-        vaccination: [],
-        vaccinationlocation: "",
-        outreachMedications: [],
-        isFullyImmunized: null,
-        isZeroDoseChild: null,
-      });
-    }
-  }, [isOpen, type, oldPayload]);
 
   const handleScheduleChange = (e) => {
     const selectedSchedule = e.target.value;
@@ -821,12 +807,7 @@ export default function CreateImmunizationModal({
                 />
               </SimpleGrid>
 
-              <Button
-                mt="32px"
-                isLoading={Loading}
-                disabled={Disabled}
-                onClick={handleSubmitNew}
-              >
+              <Button mt="32px" isLoading={Loading} onClick={handleSubmitNew}>
                 Save
               </Button>
             </>
@@ -1285,7 +1266,6 @@ export default function CreateImmunizationModal({
               <Button
                 mt="32px"
                 isLoading={Loading}
-                disabled={Disabled}
                 onClick={handleSubmitUpdate}
               >
                 Save
