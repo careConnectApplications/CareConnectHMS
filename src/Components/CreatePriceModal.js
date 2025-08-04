@@ -111,7 +111,8 @@ export default function CreatePriceModal({ isOpen, onClose, type, activateNotifi
         setUpdatedPayload({
             servicecategory: oldPayload.servicecategory,
             amount: oldPayload.amount,
-            servicetype: oldPayload.servicetype
+            servicetype: oldPayload.servicetype,
+            percentageofhmocover: oldPayload.percentageofhmocover
         })
     }, [isOpen]);
 
