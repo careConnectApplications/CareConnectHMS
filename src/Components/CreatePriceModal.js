@@ -25,13 +25,13 @@ export default function CreatePriceModal({ isOpen, onClose, type, activateNotifi
     const [Payload, setPayload] = useState({
         servicecategory: "",
         amount: "",
-        isHMOCover: "",
+        percentageofhmocover: "",
         servicetype: ""
     });
     const [UpdatedPayload, setUpdatedPayload] = useState({
         servicecategory: "",
         amount: "",
-        isHMOCover: "",
+        percentageofhmocover: "",
         servicetype: ""
     });
 
@@ -111,7 +111,8 @@ export default function CreatePriceModal({ isOpen, onClose, type, activateNotifi
         setUpdatedPayload({
             servicecategory: oldPayload.servicecategory,
             amount: oldPayload.amount,
-            servicetype: oldPayload.servicetype
+            servicetype: oldPayload.servicetype,
+            percentageofhmocover: oldPayload.percentageofhmocover
         })
     }, [isOpen]);
 
@@ -175,22 +176,9 @@ export default function CreatePriceModal({ isOpen, onClose, type, activateNotifi
                                         )
                                     }
 
-                                    <Input val={Payload.servicetype !== "" ? true : false} leftIcon={<FaMoneyBill />} onChange={handlePayload} id="amount" value={Payload.amount} label="Amount" />
-                                    <Select
-                                        id="isHMOCover"
-                                        value={Payload.isHMOCover}
-                                        onChange={handlePayload}
-                                        placeholder="Select HMO Option"
-                                        fontSize={Payload.isHMOCover !== "" ? "16px" : "13px"}
-                                        size="lg"
-                                        border="2px solid"
-                                        borderColor="gray.500"
-                                    >
-
-                                        <option value={"Yes"}>Yes</option>
-                                        <option value={"No"}>No</option>
-
-                                    </Select>
+                                    <Input val={Payload.amount !== "" ? true : false} leftIcon={<FaMoneyBill />} onChange={handlePayload} id="amount" value={Payload.amount} label="Amount" />
+                                    <Input val={Payload.percentageofhmocover !== "" ? true : false} leftIcon={<FaMoneyBill />} onChange={handlePayload} id="percentageofhmocover" value={Payload.percentageofhmocover} label="HMO % cover" />
+                                   
                                 </Stack>
                                 <Button mt="32px" isLoading={Loading} onClick={AddPrice}>Add Price</Button>
                             </>
@@ -243,22 +231,9 @@ export default function CreatePriceModal({ isOpen, onClose, type, activateNotifi
                                         )
                                     }
 
-                                    <Input val={UpdatedPayload.servicetype !== "" ? true : false} leftIcon={<FaMoneyBill />} onChange={handleUpdatedPayload} id="amount" value={UpdatedPayload.amount} label="Amount" />
-                                    <Select
-                                        id="isHMOCover"
-                                        value={UpdatedPayload.isHMOCover}
-                                        onChange={handleUpdatedPayload}
-                                        placeholder="Select HMO Option"
-                                        fontSize={UpdatedPayload.isHMOCover !== "" ? "16px" : "13px"}
-                                        size="lg"
-                                        border="2px solid"
-                                        borderColor="gray.500"
-                                    >
-
-                                        <option value={"Yes"}>Yes</option>
-                                        <option value={"No"}>No</option>
-
-                                    </Select>
+                                    <Input val={UpdatedPayload.amount !== "" ? true : false} leftIcon={<FaMoneyBill />} onChange={handleUpdatedPayload} id="amount" value={UpdatedPayload.amount} label="Amount" />
+                                    <Input val={UpdatedPayload.percentageofhmocover !== "" ? true : false} leftIcon={<FaMoneyBill />} onChange={handleUpdatedPayload} id="percentageofhmocover" value={UpdatedPayload.percentageofhmocover} label="Hmo % cover" />
+                                    
                                 </Stack>
                                 <Button mt="32px" isLoading={Loading} onClick={UpdatePrice}>Update Price</Button>
                             </>
