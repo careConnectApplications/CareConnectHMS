@@ -27,6 +27,7 @@ import Button from "../Components/Button";
 import Input from "../Components/Input";
 import VitalsModal from "../Components/VitalsModal";
 import ScheduleProcedureModal from "../Components/ScheduleProcedureModal";
+import DicomViewerModal from "../Components/DicomViewerModal";
 import ShowToast from "../Components/ToastNotification";
 import { BiSearch } from "react-icons/bi";
 import { IoFilter } from "react-icons/io5";
@@ -67,6 +68,11 @@ export default function ScheduleProcedure() {
   const [OpenProcedureModal, setOpenProcedureModal] = useState(false);
   const [ModalState, setModalState] = useState("");
   const { isOpen, onOpen, onClose } = useDisclosure();
+  
+  // DICOM Viewer Modal states
+  const [viewerModalOpen, setViewerModalOpen] = useState(false);
+  const [viewerImageUrls, setViewerImageUrls] = useState([]);
+  const [viewerTestName, setViewerTestName] = useState("");
 
   // Pagination settings
   const [CurrentPage, setCurrentPage] = useState(1);
@@ -262,55 +268,14 @@ export default function ScheduleProcedure() {
     setUploadProcedureId(null);
   };
 
-  const handleViewResult = async (resultArray) => {
+  const handleViewResult = async (resultArray, procedureName = "Procedure Result") => {
     if (resultArray && resultArray.length > 0) {
       try {
         const urls = await ViewMultipleRadiologyResultsApi(resultArray);
-        const newWindow = window.open("", "_blank");
-        if (!newWindow) {
-          alert("Popup blocked. Please allow popups for this site.");
-          return;
-        }
-        const html = `
-                  <!DOCTYPE html>
-                  <html>
-                  <head>
-                    <title>Procedure Results Slideshow</title>
-                    <style>
-                      body { font-family: Arial, sans-serif; text-align: center; background-color: #f2f2f2; margin: 0; padding: 20px; }
-                      #slideshow { max-width: 90%; margin: 0 auto; }
-                      #slideshow img { display: block; margin: 0 auto; width: auto; max-width: 100%; height: auto; max-height: 80vh; }
-                      .nav { cursor: pointer; font-size: 2rem; user-select: none; padding: 10px; }
-                      .nav:hover { color: #EA5937; }
-                      .nav-container { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
-                    </style>
-                  </head>
-                  <body>
-                    <div id="slideshow">
-                      <img id="slide" src="${urls[0]}" alt="Procedure Result">
-                    </div>
-                    <div class="nav-container">
-                      <div id="prev" class="nav">&laquo; Prev</div>
-                      <div id="next" class="nav">Next &raquo;</div>
-                    </div>
-                    <script>
-                      const urls = ${JSON.stringify(urls)};
-                      let index = 0;
-                      const slide = document.getElementById("slide");
-                      document.getElementById("prev").addEventListener("click", () => {
-                        index = (index === 0) ? urls.length - 1 : index - 1;
-                        slide.src = urls[index];
-                      });
-                      document.getElementById("next").addEventListener("click", () => {
-                        index = (index === urls.length - 1) ? 0 : index + 1;
-                        slide.src = urls[index];
-                      });
-                    </script>
-                  </body>
-                  </html>
-                `;
-        newWindow.document.write(html);
-        newWindow.document.close();
+        // Use DICOM viewer modal instead of popup
+        setViewerImageUrls(urls);
+        setViewerTestName(procedureName);
+        setViewerModalOpen(true);
       } catch (error) {
         activateNotifications("Error fetching procedure results", "error");
       }
@@ -712,7 +677,7 @@ export default function ScheduleProcedure() {
                       onEdit={() => handleEdit(item)}
                       onView={() => handleView(item)}
                       onViewResult={() =>
-                        handleViewResult(item.procedureresult)
+                        handleViewResult(item.procedureresult, item.procedure)
                       }
                       onUpload={() => handleUploadClick(item._id)}
                     />
@@ -732,7 +697,7 @@ export default function ScheduleProcedure() {
                       onEdit={() => handleEdit(item)}
                       onView={() => handleView(item)}
                       onViewResult={() =>
-                        handleViewResult(item.procedureresult)
+                        handleViewResult(item.procedureresult, item.procedure)
                       }
                       onUpload={() => handleUploadClick(item._id)}
                     />
@@ -774,6 +739,14 @@ export default function ScheduleProcedure() {
         ref={fileInputRef}
         style={{ display: "none" }}
         onChange={handleProcedureFileChange}
+      />
+      
+      {/* DICOM Viewer Modal for procedure results */}
+      <DicomViewerModal
+        isOpen={viewerModalOpen}
+        onClose={() => setViewerModalOpen(false)}
+        imageUrls={viewerImageUrls}
+        testName={viewerTestName}
       />
     </MainLayout>
   );
