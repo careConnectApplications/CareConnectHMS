@@ -36,6 +36,7 @@ import TableRowY from "../Components/TableRowY";
 import SingleRadiologyModal from "../Components/SingleRadiologyModal";
 import ConfirmRadiologyOrderModal from "../Components/ConfirmRadiologyOrderModal";
 import RadiologyResultModal from "../Components/RadiologyResultModal";
+import DicomViewerModal from "../Components/DicomViewerModal";
 import MainLayout from "../Layouts/Index";
 
 export default function RadiologyPage() {
@@ -324,12 +325,17 @@ export default function RadiologyPage() {
     newWindow.document.close();
   };
 
-  // ------------- View Radiology Result Handler -------------
-  const handleView = async (testResultArray) => {
+  // ------------- View Radiology Result Handler (DICOM Viewer for ALL images) -------------
+  const handleView = async (testResultArray, testName = "Radiology Result") => {
+    console.log("testResultArray", testResultArray);
     if (testResultArray && testResultArray.length > 0) {
       try {
         const urls = await ViewMultipleRadiologyResultsApi(testResultArray);
-        openSlideshow(urls);
+        console.log("urls",urls);
+        // Always use DICOM viewer modal for ALL images (DICOM, JPG, PNG, etc.)
+        setDicomUrls(urls);
+        setCurrentTestName(testName);
+        onDicomViewerOpen();
       } catch (error) {
         setToast({
           show: true,
@@ -384,6 +390,15 @@ export default function RadiologyPage() {
     setSelectedViewRecord(record);
     onViewOpen();
   };
+
+  // DICOM Viewer Modal state
+  const { 
+    isOpen: isDicomViewerOpen, 
+    onOpen: onDicomViewerOpen, 
+    onClose: onDicomViewerClose 
+  } = useDisclosure();
+  const [dicomUrls, setDicomUrls] = useState([]);
+  const [currentTestName, setCurrentTestName] = useState("");
 
   const handleFetchRadiology = async (status) => {
     setIsLoading(true);
@@ -843,7 +858,7 @@ export default function RadiologyPage() {
                         department={item.department}
                         note={item.note}
                         status={item.status}
-                        onView={() => handleView(item.testresult)}
+                        onView={() => handleView(item.testresult, item.testname)}
                         onUpload={() => handleUploadClick(item._id)}
                         onEdit={() => handleEdit(item)}
                         onEnterResult={() =>
@@ -874,7 +889,7 @@ export default function RadiologyPage() {
                       department={item.department}
                       note={item.note}
                       status={item.status}
-                      onView={() => handleView(item.testresult)}
+                      onView={() => handleView(item.testresult, item.testname)}
                       onUpload={() => handleUploadClick(item._id)}
                       onEdit={() => handleEdit(item)}
                       onEnterResult={() => handleEnterResultClick(item._id)}
@@ -941,6 +956,14 @@ export default function RadiologyPage() {
           oldResults={selectedForView}
           mode="view"
           record={selectedViewRecord}
+        />
+        
+        {/* DICOM Viewer Modal */}
+        <DicomViewerModal
+          isOpen={isDicomViewerOpen}
+          onClose={onDicomViewerClose}
+          imageUrls={dicomUrls}
+          testName={currentTestName}
         />
       </Box>
     </MainLayout>
