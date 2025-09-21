@@ -29,6 +29,7 @@ import ShowToast from "../Components/ToastNotification";
 import { ReadAllRadiologyByPatientApi, ViewMultipleRadiologyResultsApi } from "../Utils/ApiCalls";
 import RadiologyOrderRequestModal from "../Components/RadiologyOrderRequestModal";
 import TableRowY from "../Components/TableRowY";
+import DicomViewerModal from "../Components/DicomViewerModal";
 
 // Helper function to format the date and time in a simpler format
 const formatDateTime = (dateString) => {
@@ -58,6 +59,15 @@ export default function Radiology() {
   const [modalType, setModalType] = useState("create"); // "create" or "edit"
   const [selectedRadiology, setSelectedRadiology] = useState(null);
   const { isOpen, onOpen, onClose } = useDisclosure();
+  
+  // DICOM Viewer Modal state
+  const { 
+    isOpen: isDicomViewerOpen, 
+    onOpen: onDicomViewerOpen, 
+    onClose: onDicomViewerClose 
+  } = useDisclosure();
+  const [dicomUrls, setDicomUrls] = useState([]);
+  const [currentTestName, setCurrentTestName] = useState("");
 
   const [currentPage, setCurrentPage] = useState(1);
   const postsPerPage = configuration.sizePerPage;
@@ -165,12 +175,17 @@ export default function Radiology() {
     setTrigger(!trigger); // Refresh data after creation/updating
   };
 
-  // --- View Radiology Result Handler (Slideshow Approach) ---
-  const handleView = async (testResultArray) => {
+  // --- View Radiology Result Handler (DICOM Viewer for ALL images) ---
+  const handleView = async (testResultArray, testName = "Radiology Result") => {
     if (testResultArray && testResultArray.length > 0) {
       try {
         const urls = await ViewMultipleRadiologyResultsApi(testResultArray);
-        openSlideshow(urls);
+        console.log("urls", urls);
+        
+        // Always use DICOM viewer modal for ALL images (DICOM, JPG, PNG, etc.)
+        setDicomUrls(urls);
+        setCurrentTestName(testName);
+        onDicomViewerOpen();
       } catch (error) {
         setShowToast({ show: true, message: "Error fetching radiology results", status: "error" });
       }
@@ -438,7 +453,7 @@ export default function Radiology() {
                   department={item.department}
                   note={item.note}
                   status={item.status}
-                  onView={() => handleView(item.testresult)}
+                  onView={() => handleView(item.testresult, item.testname)}
                   onEdit={() => handleEdit(item)}
                 />
               ))}
@@ -460,6 +475,14 @@ export default function Radiology() {
         type={modalType}
         initialData={selectedRadiology}
         onSuccess={handleSuccess}
+      />
+
+      {/* DICOM Viewer Modal */}
+      <DicomViewerModal
+        isOpen={isDicomViewerOpen}
+        onClose={onDicomViewerClose}
+        imageUrls={dicomUrls}
+        testName={currentTestName}
       />
     </Box>
   );
