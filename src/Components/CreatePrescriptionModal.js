@@ -14,12 +14,15 @@ import {
   Box,
   Flex,
   SimpleGrid,
+  Input as ChakraInput,
+  Stack,
 } from "@chakra-ui/react";
 import Input from "./Input";
 import Button from "./Button";
 import Preloader from "./Preloader";
-import { MdClose } from "react-icons/md";
+import { MdClose, MdNote } from "react-icons/md";
 import { SlPlus } from "react-icons/sl";
+import { IoIosCloseCircle } from "react-icons/io";
 import {
   PlaceOrderApi,
   GetAllClinicApi,
@@ -27,14 +30,19 @@ import {
   GetPharmarcystockbyname,
 } from "../Utils/ApiCalls";
 
-export default function CreatePrescriptionModal({ isOpen, onClose, onSuccess, oldPayload }) {
+export default function CreatePrescriptionModal({
+  isOpen,
+  onClose,
+  onSuccess,
+  oldPayload,
+}) {
   // Loading state for data fetching and submission
   const [isLoading, setIsLoading] = useState(false);
   // Pharmacies for the pharmacy dropdown
   const [pharmacies, setPharmacies] = useState([]);
   // Settings for dropdown (frequency)
   const [settings, setSettings] = useState({});
-  // Products array – each product now contains pharmacy, drug, frequency, duration, dosage, drugOptions, and drugSearch for filtering
+  // Products array – each product now contains pharmacy, drug, frequency, duration, dosage, doctorsNotes (array), doctorsNoteInput, drugOptions, and drugSearch
   const [products, setProducts] = useState([
     {
       pharmacy: "",
@@ -42,14 +50,48 @@ export default function CreatePrescriptionModal({ isOpen, onClose, onSuccess, ol
       frequency: "",
       duration: "",
       dosage: "",
+      doctorsNotes: [], // Array for storing multiple notes
+      doctorsNoteInput: "", // Input field for adding new notes
       drugOptions: [],
       drugSearch: "",
     },
   ]);
 
-  // Fetch pharmacies and settings when the modal opens
+  // Initialize form when modal opens or oldPayload changes
   useEffect(() => {
     if (isOpen) {
+      // If oldPayload has existing products, prefill them
+      if (oldPayload?.products && Array.isArray(oldPayload.products)) {
+        setProducts(
+          oldPayload.products.map((product) => ({
+            ...product,
+            // Convert existing doctorsnote string to array, or use existing array
+            doctorsNotes: product.doctorsnote
+              ? [product.doctorsnote]
+              : product.doctorsNotes && Array.isArray(product.doctorsNotes)
+              ? product.doctorsNotes
+              : [],
+            doctorsNoteInput: "", // Initialize input field
+            drugOptions: [], // Will be fetched when pharmacy is selected
+            drugSearch: "",
+          }))
+        );
+      } else {
+        setProducts([
+          {
+            pharmacy: "",
+            drug: "",
+            frequency: "",
+            duration: "",
+            dosage: "",
+            doctorsNotes: [],
+            doctorsNoteInput: "",
+            drugOptions: [],
+            drugSearch: "",
+          },
+        ]);
+      }
+
       setIsLoading(true);
       const fetchData = async () => {
         try {
@@ -73,7 +115,7 @@ export default function CreatePrescriptionModal({ isOpen, onClose, onSuccess, ol
       };
       fetchData();
     }
-  }, [isOpen]);
+  }, [isOpen, oldPayload]);
 
   // Handle changes for each product row
   const handleProductChange = (index, field, value) => {
@@ -82,9 +124,8 @@ export default function CreatePrescriptionModal({ isOpen, onClose, onSuccess, ol
 
     // When a pharmacy is selected, fetch its available drugs (medicine)
     if (field === "pharmacy") {
-      // Reset the current medicine selection, its options and clear the search field.
+      // Reset the current medicine selection and clear the search field.
       newProducts[index]["drug"] = "";
-      newProducts[index]["drugOptions"] = [];
       newProducts[index]["drugSearch"] = "";
       if (value) {
         GetPharmarcystockbyname(value)
@@ -113,17 +154,41 @@ export default function CreatePrescriptionModal({ isOpen, onClose, onSuccess, ol
     }
   };
 
-  // Add a new empty product row
+  // Add a doctors note to a specific product
+  const addDoctorsNote = (index) => {
+    if (!products[index].doctorsNoteInput.trim()) return;
+
+    const newProducts = [...products];
+    newProducts[index].doctorsNotes = [
+      ...newProducts[index].doctorsNotes,
+      newProducts[index].doctorsNoteInput.trim(),
+    ];
+    newProducts[index].doctorsNoteInput = ""; // Clear input after adding
+    setProducts(newProducts);
+  };
+
+  // Remove a doctors note from a specific product
+  const removeDoctorsNote = (index, noteIndex) => {
+    const newProducts = [...products];
+    newProducts[index].doctorsNotes = newProducts[index].doctorsNotes.filter(
+      (_, i) => i !== noteIndex
+    );
+    setProducts(newProducts);
+  };
+
+  // Add a new product row, preserving the previous product's pharmacy and drug options
   const addProduct = () => {
     setProducts((prev) => [
       ...prev,
       {
-        pharmacy: "",
+        pharmacy: prev.length > 0 ? prev[prev.length - 1].pharmacy : "",
         drug: "",
         frequency: "",
         duration: "",
         dosage: "",
-        drugOptions: [],
+        doctorsNotes: [],
+        doctorsNoteInput: "",
+        drugOptions: prev.length > 0 ? prev[prev.length - 1].drugOptions : [],
         drugSearch: "",
       },
     ]);
@@ -135,13 +200,23 @@ export default function CreatePrescriptionModal({ isOpen, onClose, onSuccess, ol
     setProducts((prev) => prev.filter((_, i) => i !== index));
   };
 
-  // Validate that every non-array field in a product is non-empty
-  const isProductComplete = (product) =>
-    Object.entries(product).every(([key, value]) => {
-      // Skip checking the search field and options array.
-      if (key === "drugOptions" || key === "drugSearch") return true;
-      return value && value.toString().trim() !== "";
-    });
+  // Validate that pharmacy and medicine are optional, but other fields are required
+  const isProductComplete = (product) => {
+    const requiredFields = ["frequency", "duration", "dosage"];
+
+    return requiredFields.every(
+      (field) => product[field] && product[field].toString().trim() !== ""
+    );
+
+    // Pharmacy and drug are optional, so we don't validate them
+  };
+
+  // Check if at least one product has either pharmacy or drug filled (optional validation)
+  const hasAtLeastOneProductWithDetails = () => {
+    return products.some(
+      (product) => product.pharmacy.trim() !== "" || product.drug.trim() !== ""
+    );
+  };
 
   // Handle form submission with toast notifications for success/failure
   const handleSubmit = async () => {
@@ -152,26 +227,58 @@ export default function CreatePrescriptionModal({ isOpen, onClose, onSuccess, ol
       }
       return;
     }
+
     if (products.length === 0 || !products.every(isProductComplete)) {
       if (onSuccess) {
-        onSuccess("Please fill all fields for each product.", "error");
+        onSuccess(
+          "Please fill frequency, duration, and dosage for each product.",
+          "error"
+        );
       }
       return;
     }
 
-    // Build payload and only add appointmentid if oldPayload is provided
-    const payload = { products };
+    // Optional: Add warning if no pharmacy/drug is specified, but still allow submission
+    if (!hasAtLeastOneProductWithDetails()) {
+      // You can show a warning or just proceed - here we'll proceed with a warning
+      console.warn(
+        "No pharmacy or medicine specified - submitting with only prescription details"
+      );
+    }
+
+    // Build payload with products (sending doctorsNotes array as doctorsnote to API)
+    const payload = {
+      products: products.map((product) => ({
+        pharmacy: product.pharmacy || "", // Send empty string if not provided
+        drug: product.drug || "", // Send empty string if not provided
+        frequency: product.frequency,
+        duration: product.duration,
+        dosage: product.dosage,
+        doctorsnote: product.doctorsNotes, // Send array as doctorsnote (singular) to API
+      })),
+    };
+
     if (oldPayload?.id) {
       payload.appointmentid = oldPayload.id;
+    }
+
+    // If editing an existing order, include the order ID
+    if (oldPayload?.orderId) {
+      payload.orderId = oldPayload.orderId;
     }
 
     try {
       const response = await PlaceOrderApi(payload, patientId);
       if (onSuccess) {
-        onSuccess("Order placed successfully.", "success");
+        onSuccess(
+          oldPayload?.orderId
+            ? "Order updated successfully."
+            : "Order placed successfully.",
+          "success"
+        );
       }
       onClose();
-      // Reset the products form
+      // Reset the form
       setProducts([
         {
           pharmacy: "",
@@ -179,6 +286,8 @@ export default function CreatePrescriptionModal({ isOpen, onClose, onSuccess, ol
           frequency: "",
           duration: "",
           dosage: "",
+          doctorsNotes: [],
+          doctorsNoteInput: "",
           drugOptions: [],
           drugSearch: "",
         },
@@ -186,7 +295,10 @@ export default function CreatePrescriptionModal({ isOpen, onClose, onSuccess, ol
     } catch (error) {
       console.error("Error placing order:", error);
       if (onSuccess) {
-        onSuccess(error.message || "An error occurred while placing the order.", "error");
+        onSuccess(
+          error.message || "An error occurred while placing the order.",
+          "error"
+        );
       }
     }
   };
@@ -203,6 +315,8 @@ export default function CreatePrescriptionModal({ isOpen, onClose, onSuccess, ol
           frequency: "",
           duration: "",
           dosage: "",
+          doctorsNotes: [],
+          doctorsNoteInput: "",
           drugOptions: [],
           drugSearch: "",
         },
@@ -211,7 +325,8 @@ export default function CreatePrescriptionModal({ isOpen, onClose, onSuccess, ol
     }, 200);
   };
 
-  const isFormComplete = products.length > 0 && products.every(isProductComplete);
+  const isFormComplete =
+    products.length > 0 && products.every(isProductComplete);
 
   return (
     <Modal
@@ -223,14 +338,19 @@ export default function CreatePrescriptionModal({ isOpen, onClose, onSuccess, ol
     >
       <ModalOverlay />
       {isLoading ? (
-        <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
+        <Box
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          height="100vh"
+        >
           <Preloader />
         </Box>
       ) : (
         <ModalContent maxW={{ base: "90%", md: "70%" }} borderRadius="lg" p={4}>
           <ModalHeader>
             <Text fontSize="lg" fontWeight="bold">
-              Place Order
+              {oldPayload?.orderId ? "Edit Order" : "Place Order"}
             </Text>
             <ModalCloseButton onClick={handleCloseWithLoader} />
           </ModalHeader>
@@ -240,18 +360,34 @@ export default function CreatePrescriptionModal({ isOpen, onClose, onSuccess, ol
               <Text fontWeight="bold" mb={2}>
                 Medicine Order
               </Text>
+
+
               {products.map((product, index) => (
-                <Box key={index} p={4} borderWidth="1px" borderRadius="md" mb={4} position="relative">
-                  <Flex justifyContent="space-between" alignItems="center" mb={4}>
+                <Box
+                  key={index}
+                  p={4}
+                  borderWidth="1px"
+                  borderRadius="md"
+                  mb={4}
+                  position="relative"
+                >
+                  <Flex
+                    justifyContent="space-between"
+                    alignItems="center"
+                    mb={4}
+                  >
                     <Text fontWeight="bold">Medicine {index + 1}</Text>
                     {products.length > 1 && (
-                      <Box cursor="pointer" onClick={() => removeProduct(index)}>
+                      <Box
+                        cursor="pointer"
+                        onClick={() => removeProduct(index)}
+                      >
                         <MdClose size={20} />
                       </Box>
                     )}
                   </Flex>
                   <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
-                    {/* Pharmacy */}
+                    {/* Pharmacy - Optional */}
                     <FormControl>
                       <FormLabel>Pharmacy</FormLabel>
                       <Select
@@ -270,20 +406,26 @@ export default function CreatePrescriptionModal({ isOpen, onClose, onSuccess, ol
                         ))}
                       </Select>
                     </FormControl>
-                    {/* Medicine Search */}
+
+                    {/* Medicine Search - Optional */}
                     <FormControl>
-                      <FormLabel>Search Medicine</FormLabel>
+                      <FormLabel>Search Medicine </FormLabel>
                       <Input
                         value={product.drugSearch}
                         onChange={(e) =>
-                          handleProductChange(index, "drugSearch", e.target.value)
+                          handleProductChange(
+                            index,
+                            "drugSearch",
+                            e.target.value
+                          )
                         }
-                        placeholder="Type to filter medicines"
+                        placeholder="Type to filter medicines "
                         border="2px solid"
                         borderColor="gray.500"
                       />
                     </FormControl>
-                    {/* Medicine Dropdown */}
+
+                    {/* Medicine Dropdown - Optional */}
                     <FormControl>
                       <FormLabel>Medicine</FormLabel>
                       <Select
@@ -294,13 +436,16 @@ export default function CreatePrescriptionModal({ isOpen, onClose, onSuccess, ol
                         }
                         border="2px solid"
                         borderColor="gray.500"
-                        disabled={!product.pharmacy || !product.drugOptions.length}
+                        disabled={!product.pharmacy} // Only enable if pharmacy is selected
                       >
+                        <option value="">No specific medicine</option>
                         {product.drugOptions
                           .filter((type) => {
                             // If no search text is entered, show all options.
                             if (!product.drugSearch) return true;
-                            return type.toLowerCase().includes(product.drugSearch.toLowerCase());
+                            return type
+                              .toLowerCase()
+                              .includes(product.drugSearch.toLowerCase());
                           })
                           .map((type, idx) => (
                             <option key={idx} value={type}>
@@ -309,64 +454,149 @@ export default function CreatePrescriptionModal({ isOpen, onClose, onSuccess, ol
                           ))}
                       </Select>
                     </FormControl>
-                    {/* Frequency */}
-                    <FormControl>
-                      <FormLabel>Frequency</FormLabel>
+
+                    {/* Frequency - Required */}
+                    <FormControl isRequired>
+                      <FormLabel>Frequency </FormLabel>
                       <Select
-                        placeholder="Select Frequency"
+                        placeholder="Select Frequency *"
                         value={product.frequency}
                         onChange={(e) =>
-                          handleProductChange(index, "frequency", e.target.value)
+                          handleProductChange(
+                            index,
+                            "frequency",
+                            e.target.value
+                          )
                         }
                         border="2px solid"
                         borderColor="gray.500"
+                        required
                       >
-                        {settings?.medicationchartfrequency?.map((option, idx) => (
-                          <option key={idx} value={option}>
-                            {option}
-                          </option>
-                        ))}
+                        {settings?.medicationchartfrequency?.map(
+                          (option, idx) => (
+                            <option key={idx} value={option}>
+                              {option}
+                            </option>
+                          )
+                        )}
                       </Select>
                     </FormControl>
-                    {/* Duration */}
-                    <FormControl>
-                      <FormLabel>Duration</FormLabel>
+
+                    {/* Duration - Required */}
+                    <FormControl isRequired>
+                      <FormLabel>Duration </FormLabel>
                       <Input
                         value={product.duration}
                         onChange={(e) =>
                           handleProductChange(index, "duration", e.target.value)
                         }
-                        label="Duration"
-                        placeholder="Enter Duration"
+                        placeholder="Enter Duration *"
                         border="2px solid"
                         borderColor="gray.500"
+                        required
                       />
                     </FormControl>
-                    {/* Dosage */}
-                    <FormControl>
-                      <FormLabel>Dosage</FormLabel>
+
+                    {/* Dosage - Required */}
+                    <FormControl isRequired>
+                      <FormLabel>Dosage </FormLabel>
                       <Input
                         value={product.dosage}
                         onChange={(e) =>
                           handleProductChange(index, "dosage", e.target.value)
                         }
-                        label="Dosage"
-                        placeholder="Enter Dosage"
+                        placeholder="Enter Dosage *"
                         border="2px solid"
                         borderColor="gray.500"
+                        required
                       />
                     </FormControl>
                   </SimpleGrid>
+
+                  {/* Doctor's Notes for this specific medicine - Optional */}
+                  <FormControl mt={4}>
+                    <FormLabel>Doctor's Notes </FormLabel>
+                    <Stack spacing={3}>
+                      {/* Input for adding new notes */}
+                      <Flex direction={{ base: "column", md: "row" }} gap={2}>
+                        <ChakraInput
+                          value={product.doctorsNoteInput}
+                          onChange={(e) =>
+                            handleProductChange(
+                              index,
+                              "doctorsNoteInput",
+                              e.target.value
+                            )
+                          }
+                          placeholder="Enter a note"
+                          border="2px solid"
+                          borderColor="gray.500"
+                          flex="1"
+                          leftIcon={<MdNote color="blue.500" />}
+                        />
+                        <Button
+                          onClick={() => addDoctorsNote(index)}
+                          w={{ base: "100%", md: "150px" }}
+                          rightIcon={<SlPlus />}
+                          disabled={!product.doctorsNoteInput.trim()}
+                        >
+                          Add Note
+                        </Button>
+                      </Flex>
+
+                      {/* Display existing notes as chips */}
+                      {product.doctorsNotes.length > 0 && (
+                        <SimpleGrid columns={{ base: 1, md: 2 }} spacing={2}>
+                          {product.doctorsNotes.map((note, noteIndex) => (
+                            <Flex
+                              key={noteIndex}
+                              cursor="pointer"
+                              px="10px"
+                              py="8px"
+                              rounded="md"
+                              bg="blue.500"
+                              color="white"
+                              fontSize="sm"
+                              _hover={{ bg: "blue.400" }}
+                              alignItems="center"
+                              justifyContent="space-between"
+                            >
+                              <Text fontWeight="medium" flex="1" mr={2}>
+                                {note}
+                              </Text>
+                              <Box
+                                fontSize="lg"
+                                onClick={() =>
+                                  removeDoctorsNote(index, noteIndex)
+                                }
+                              >
+                                <IoIosCloseCircle />
+                              </Box>
+                            </Flex>
+                          ))}
+                        </SimpleGrid>
+                      )}
+                    </Stack>
+                  </FormControl>
                 </Box>
               ))}
-              <Button onClick={addProduct} mt={2} w="150px" rightIcon={<SlPlus />}>
+              <Button
+                onClick={addProduct}
+                mt={2}
+                w="150px"
+                rightIcon={<SlPlus />}
+              >
                 Add Medicine
               </Button>
             </Box>
           </ModalBody>
           <ModalFooter>
-            <Button onClick={handleSubmit} disabled={!isFormComplete || isLoading} isLoading={isLoading}>
-              Submit Order
+            <Button
+              onClick={handleSubmit}
+              disabled={!isFormComplete || isLoading}
+              isLoading={isLoading}
+            >
+              {oldPayload?.orderId ? "Update Order" : "Submit Order"}
             </Button>
           </ModalFooter>
         </ModalContent>
