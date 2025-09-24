@@ -8,7 +8,7 @@ import {
   TabIndicator,
   Image,
 } from "@chakra-ui/react";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import MainLayout from "../Layouts/Index";
 import Seo from "../Utils/Seo";
 import Examine from "./Examine";
@@ -33,16 +33,29 @@ import SingleReferral from "./SingleReferral";
 import SingleDeliveryNote from "./SingleDeliveryNote";
 import ReferTheatreAdmissionPage from "./ReferTheatreAdmissionPage";
 import NutritionPage from "./NutritionPage";
+import { getPatientData } from "../Utils/ApiCalls";
 
 export default function DoctorScheduleDetails() {
   const { id } = useParams();
+  const [patient, setPatient] = useState({});
+  const [isLoading, setIsLoading] = useState(true);
 
-  localStorage.setItem("patientId", id);
-  let patientName = localStorage.getItem("PatientName");
+  useEffect(() => {
+    const fetchPatientData = async () => {
+      try {
+        const data = await getPatientData(id);
+        setPatient(data);
+      } catch (error) {
+        console.error("Failed to fetch patient data", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchPatientData();
+  }, [id]);
+
   let pathName = localStorage.getItem("pathLocation");
-
-  // Get patient data from localStorage similar to InPatientTimeline
-  let patient = JSON.parse(localStorage.getItem("inPatient")) || {};
 
   const nav = useNavigate();
   return (
@@ -63,7 +76,7 @@ export default function DoctorScheduleDetails() {
         </Text>
         <Text fontSize="15px" fontWeight="400" color="#8A8D8E">
           {" "}
-          {`> ${patientName}`}
+          {`> ${patient.firstName || ""} ${patient.lastName || ""}`}
         </Text>
       </HStack>
       <Text color="#686C75" mt="9px" fontWeight="400" fontSize="15px">
@@ -219,7 +232,6 @@ export default function DoctorScheduleDetails() {
         </TabList>
         {/* <TabIndicator mt='-1.5px' height='2px' bg='blue.blue500' borderRadius='1px' /> */}
         <TabPanels>
-
           <TabPanel p="0">
             <ClinicalEncounter index={1} id={id} />
           </TabPanel>
