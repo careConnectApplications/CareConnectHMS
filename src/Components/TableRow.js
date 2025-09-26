@@ -16,6 +16,7 @@ import { useNavigate } from "react-router-dom";
 
 export default function TableRow({
   type,
+  doctorsnote,
   name,
   email,
   labName,code,
@@ -1826,6 +1827,11 @@ export default function TableRow({
           <Td>
             <Text fontWeight="400" fontSize={"13px"}>
               {drug}
+            </Text>
+          </Td>
+                    <Td>
+            <Text fontWeight="400" fontSize={"13px"}>
+              {doctorsnote}
             </Text>
           </Td>
           <Td>
