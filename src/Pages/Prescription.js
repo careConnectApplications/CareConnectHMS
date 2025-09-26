@@ -1,6 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import { Text, Flex, HStack, Box, useDisclosure } from "@chakra-ui/react";
-import { Table, Thead, Tbody, Tr, Th, TableContainer, Menu, MenuButton, MenuList, MenuItem } from "@chakra-ui/react";
+import {
+  Table,
+  Thead,
+  Tbody,
+  Tr,
+  Th,
+  TableContainer,
+  Menu,
+  MenuButton,
+  MenuList,
+  MenuItem,
+} from "@chakra-ui/react";
 import moment from "moment";
 import TableRow from "../Components/TableRow";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -13,10 +24,13 @@ import { IoFilter } from "react-icons/io5";
 import { HiOutlineDocumentArrowUp } from "react-icons/hi2";
 import { BiSearch } from "react-icons/bi";
 import { SlPlus } from "react-icons/sl";
-import { GetSinglePatientHistoryApi, GetAllPatientPharmacyApi } from "../Utils/ApiCalls";
+import {
+  GetSinglePatientHistoryApi,
+  GetAllPatientPharmacyApi,
+} from "../Utils/ApiCalls";
 import Pagination from "../Components/Pagination";
 import CreatePrescriptionModal from "../Components/CreatePrescriptionModal";
-import { configuration } from '../Utils/Helpers';
+import { configuration } from "../Utils/Helpers";
 import Preloader from "../Components/Preloader";
 
 export default function Prescription() {
@@ -48,15 +62,23 @@ export default function Prescription() {
 
   const filterBy = (title) => {
     if (title === "appointmentId") {
-      let filter = Data.filter(item => item.appointmentid?.toLowerCase().includes(SearchInput.toLowerCase()));
+      let filter = Data.filter((item) =>
+        item.appointmentid?.toLowerCase().includes(SearchInput.toLowerCase())
+      );
       setFilteredData(filter);
     } else if (title === "appointmentCategory") {
-      let filter = Data.filter(item => item.appointmentcategory?.toLowerCase().includes(SearchInput.toLowerCase()));
+      let filter = Data.filter((item) =>
+        item.appointmentcategory
+          ?.toLowerCase()
+          .includes(SearchInput.toLowerCase())
+      );
       setFilteredData(filter);
     } else if (title === "appointmentType") {
       let filter = Data.filter(
-        item =>
-          item.appointmenttype?.toLowerCase().includes(SearchInput.toLowerCase()) ||
+        (item) =>
+          item.appointmenttype
+            ?.toLowerCase()
+            .includes(SearchInput.toLowerCase()) ||
           item.lastName?.toLowerCase().includes(SearchInput.toLowerCase())
       );
       setFilteredData(filter);
@@ -153,7 +175,9 @@ export default function Prescription() {
       rounded="10px"
     >
       {IsLoading && <Preloader />}
-      {showToast.show && <ShowToast message={showToast.message} status={showToast.status} />}
+      {showToast.show && (
+        <ShowToast message={showToast.message} status={showToast.status} />
+      )}
       {/* Filter section */}
       <Flex justifyContent="space-between" flexWrap="wrap">
         <Flex
@@ -224,7 +248,11 @@ export default function Prescription() {
                   textTransform="capitalize"
                   fontWeight={"500"}
                   color="#2F2F2F"
-                  _hover={{ color: "#fff", fontWeight: "400", bg: "blue.blue500" }}
+                  _hover={{
+                    color: "#fff",
+                    fontWeight: "400",
+                    bg: "blue.blue500",
+                  }}
                 >
                   <HStack fontSize="14px">
                     <Text>clear filter</Text>
@@ -242,7 +270,11 @@ export default function Prescription() {
         mt={["10px", "10px", "10px", "10px"]}
         w={["100%", "100%", "50%", "37%"]}
       >
-        <Button rightIcon={<SlPlus />} w={["100%", "100%", "144px", "144px"]} onClick={handleTakeOrderClick}>
+        <Button
+          rightIcon={<SlPlus />}
+          w={["100%", "100%", "144px", "144px"]}
+          onClick={handleTakeOrderClick}
+        >
           Place Order
         </Button>
       </Flex>
@@ -264,22 +296,60 @@ export default function Prescription() {
           <Table variant="striped">
             <Thead bg="#fff">
               <Tr>
-                <Th fontSize="13px" textTransform="capitalize" color="#534D59" fontWeight="600">
+                <Th
+                  fontSize="13px"
+                  textTransform="capitalize"
+                  color="#534D59"
+                  fontWeight="600"
+                >
                   Patient name
                 </Th>
-                <Th fontSize="13px" textTransform="capitalize" color="#534D59" fontWeight="600">
+                <Th
+                  fontSize="13px"
+                  textTransform="capitalize"
+                  color="#534D59"
+                  fontWeight="600"
+                >
                   Pharmacy
                 </Th>
-                <Th fontSize="13px" textTransform="capitalize" color="#534D59" fontWeight="600">
+                <Th
+                  fontSize="13px"
+                  textTransform="capitalize"
+                  color="#534D59"
+                  fontWeight="600"
+                >
                   Drug
                 </Th>
-                <Th fontSize="13px" textTransform="capitalize" color="#534D59" fontWeight="600">
+                <Th
+                  fontSize="13px"
+                  textTransform="capitalize"
+                  color="#534D59"
+                  fontWeight="600"
+                >
+                  Doctors Note
+                </Th>
+                <Th
+                  fontSize="13px"
+                  textTransform="capitalize"
+                  color="#534D59"
+                  fontWeight="600"
+                >
                   Prescriber Name
                 </Th>
-                <Th fontSize="13px" textTransform="capitalize" color="#534D59" fontWeight="600">
+                <Th
+                  fontSize="13px"
+                  textTransform="capitalize"
+                  color="#534D59"
+                  fontWeight="600"
+                >
                   Date
                 </Th>
-                <Th fontSize="13px" textTransform="capitalize" color="#534D59" fontWeight="600">
+                <Th
+                  fontSize="13px"
+                  textTransform="capitalize"
+                  color="#534D59"
+                  fontWeight="600"
+                >
                   Dispense Status
                 </Th>
               </Tr>
@@ -293,6 +363,9 @@ export default function Prescription() {
                   mrn={item.patient?.MRN}
                   pharmacy={item.pharmacy}
                   drug={item.prescription}
+                  doctorsnote={
+                    item.doctorsnote ? item.doctorsnote.join(", ") : "N/A"
+                  }
                   doctor={item.prescribersname}
                   date={moment(item.createdAt).format("lll")}
                   status={item.dispensestatus}
@@ -308,7 +381,12 @@ export default function Prescription() {
         onClose={onClose}
         onSuccess={activateNotifications}
       />
-      <Pagination postPerPage={PostPerPage} currentPage={CurrentPage} totalPosts={Data.length} paginate={paginate} />
+      <Pagination
+        postPerPage={PostPerPage}
+        currentPage={CurrentPage}
+        totalPosts={Data.length}
+        paginate={paginate}
+      />
     </Box>
   );
 }
