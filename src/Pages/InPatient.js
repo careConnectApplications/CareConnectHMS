@@ -176,6 +176,7 @@ export default function InPatient() {
   const ExaminePatient = (item) => {
     // Save the complete patient record to localStorage
     localStorage.setItem("inPatient", JSON.stringify(item.patient));
+    localStorage.setItem("patientId", item.patient._id);
     localStorage.setItem("appointmentId", item._id);
     localStorage.setItem(
       "PatientName",
