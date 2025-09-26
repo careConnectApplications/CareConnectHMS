@@ -42,7 +42,7 @@ export default function CreatePrescriptionModal({
   const [pharmacies, setPharmacies] = useState([]);
   // Settings for dropdown (frequency)
   const [settings, setSettings] = useState({});
-  // Products array – each product now contains pharmacy, drug, frequency, duration, dosage, doctorsNotes (array), doctorsNoteInput, drugOptions, and drugSearch
+  // Products array – each product contains only medicine-related fields
   const [products, setProducts] = useState([
     {
       pharmacy: "",
@@ -50,12 +50,14 @@ export default function CreatePrescriptionModal({
       frequency: "",
       duration: "",
       dosage: "",
-      doctorsNotes: [], // Array for storing multiple notes
-      doctorsNoteInput: "", // Input field for adding new notes
       drugOptions: [],
       drugSearch: "",
     },
   ]);
+
+  // Separate state for doctor's notes (sent at root level as doctorsnote)
+  const [doctorsNotes, setDoctorsNotes] = useState([]);
+  const [doctorsNoteInput, setDoctorsNoteInput] = useState("");
 
   // Initialize form when modal opens or oldPayload changes
   useEffect(() => {
@@ -64,18 +66,24 @@ export default function CreatePrescriptionModal({
       if (oldPayload?.products && Array.isArray(oldPayload.products)) {
         setProducts(
           oldPayload.products.map((product) => ({
-            ...product,
-            // Convert existing doctorsnote string to array, or use existing array
-            doctorsNotes: product.doctorsnote
-              ? [product.doctorsnote]
-              : product.doctorsNotes && Array.isArray(product.doctorsNotes)
-              ? product.doctorsNotes
-              : [],
-            doctorsNoteInput: "", // Initialize input field
-            drugOptions: [], // Will be fetched when pharmacy is selected
+            pharmacy: product.pharmacy || "",
+            drug: product.drug || "",
+            frequency: product.frequency || "",
+            duration: product.duration || "",
+            dosage: product.dosage || "",
+            drugOptions: [],
             drugSearch: "",
           }))
         );
+
+        // Handle existing doctors notes (if any)
+        if (oldPayload.doctorsnote) {
+          if (Array.isArray(oldPayload.doctorsnote)) {
+            setDoctorsNotes(oldPayload.doctorsnote);
+          } else if (typeof oldPayload.doctorsnote === "string") {
+            setDoctorsNotes([oldPayload.doctorsnote]);
+          }
+        }
       } else {
         setProducts([
           {
@@ -84,14 +92,14 @@ export default function CreatePrescriptionModal({
             frequency: "",
             duration: "",
             dosage: "",
-            doctorsNotes: [],
-            doctorsNoteInput: "",
             drugOptions: [],
             drugSearch: "",
           },
         ]);
+        setDoctorsNotes([]);
       }
 
+      setDoctorsNoteInput("");
       setIsLoading(true);
       const fetchData = async () => {
         try {
@@ -154,26 +162,17 @@ export default function CreatePrescriptionModal({
     }
   };
 
-  // Add a doctors note to a specific product
-  const addDoctorsNote = (index) => {
-    if (!products[index].doctorsNoteInput.trim()) return;
+  // Add a doctors note (separate from medicines, sent at root level)
+  const addDoctorsNote = () => {
+    if (!doctorsNoteInput.trim()) return;
 
-    const newProducts = [...products];
-    newProducts[index].doctorsNotes = [
-      ...newProducts[index].doctorsNotes,
-      newProducts[index].doctorsNoteInput.trim(),
-    ];
-    newProducts[index].doctorsNoteInput = ""; // Clear input after adding
-    setProducts(newProducts);
+    setDoctorsNotes([...doctorsNotes, doctorsNoteInput.trim()]);
+    setDoctorsNoteInput(""); // Clear input after adding
   };
 
-  // Remove a doctors note from a specific product
-  const removeDoctorsNote = (index, noteIndex) => {
-    const newProducts = [...products];
-    newProducts[index].doctorsNotes = newProducts[index].doctorsNotes.filter(
-      (_, i) => i !== noteIndex
-    );
-    setProducts(newProducts);
+  // Remove a doctors note
+  const removeDoctorsNote = (noteIndex) => {
+    setDoctorsNotes(doctorsNotes.filter((_, i) => i !== noteIndex));
   };
 
   // Add a new product row, preserving the previous product's pharmacy and drug options
@@ -186,8 +185,6 @@ export default function CreatePrescriptionModal({
         frequency: "",
         duration: "",
         dosage: "",
-        doctorsNotes: [],
-        doctorsNoteInput: "",
         drugOptions: prev.length > 0 ? prev[prev.length - 1].drugOptions : [],
         drugSearch: "",
       },
@@ -206,15 +203,6 @@ export default function CreatePrescriptionModal({
 
     return requiredFields.every(
       (field) => product[field] && product[field].toString().trim() !== ""
-    );
-
-    // Pharmacy and drug are optional, so we don't validate them
-  };
-
-  // Check if at least one product has either pharmacy or drug filled (optional validation)
-  const hasAtLeastOneProductWithDetails = () => {
-    return products.some(
-      (product) => product.pharmacy.trim() !== "" || product.drug.trim() !== ""
     );
   };
 
@@ -238,15 +226,7 @@ export default function CreatePrescriptionModal({
       return;
     }
 
-    // Optional: Add warning if no pharmacy/drug is specified, but still allow submission
-    if (!hasAtLeastOneProductWithDetails()) {
-      // You can show a warning or just proceed - here we'll proceed with a warning
-      console.warn(
-        "No pharmacy or medicine specified - submitting with only prescription details"
-      );
-    }
-
-    // Build payload with products (sending doctorsNotes array as doctorsnote to API)
+    // Build payload with products (without doctors notes in each product)
     const payload = {
       products: products.map((product) => ({
         pharmacy: product.pharmacy || "", // Send empty string if not provided
@@ -254,8 +234,10 @@ export default function CreatePrescriptionModal({
         frequency: product.frequency,
         duration: product.duration,
         dosage: product.dosage,
-        doctorsnote: product.doctorsNotes, // Send array as doctorsnote (singular) to API
+        // Note: doctorsnote is NOT included here with each medicine
       })),
+      // Add doctors notes at the root level of the payload as doctorsnote
+      doctorsnote: doctorsNotes.length > 0 ? doctorsNotes : "",
     };
 
     if (oldPayload?.id) {
@@ -286,12 +268,12 @@ export default function CreatePrescriptionModal({
           frequency: "",
           duration: "",
           dosage: "",
-          doctorsNotes: [],
-          doctorsNoteInput: "",
           drugOptions: [],
           drugSearch: "",
         },
       ]);
+      setDoctorsNotes([]);
+      setDoctorsNoteInput("");
     } catch (error) {
       console.error("Error placing order:", error);
       if (onSuccess) {
@@ -315,12 +297,12 @@ export default function CreatePrescriptionModal({
           frequency: "",
           duration: "",
           dosage: "",
-          doctorsNotes: [],
-          doctorsNoteInput: "",
           drugOptions: [],
           drugSearch: "",
         },
       ]);
+      setDoctorsNotes([]);
+      setDoctorsNoteInput("");
       setIsLoading(false);
     }, 200);
   };
@@ -360,7 +342,6 @@ export default function CreatePrescriptionModal({
               <Text fontWeight="bold" mb={2}>
                 Medicine Order
               </Text>
-
 
               {products.map((product, index) => (
                 <Box
@@ -512,72 +493,6 @@ export default function CreatePrescriptionModal({
                       />
                     </FormControl>
                   </SimpleGrid>
-
-                  {/* Doctor's Notes for this specific medicine - Optional */}
-                  <FormControl mt={4}>
-                    <FormLabel>Doctor's Notes </FormLabel>
-                    <Stack spacing={3}>
-                      {/* Input for adding new notes */}
-                      <Flex direction={{ base: "column", md: "row" }} gap={2}>
-                        <ChakraInput
-                          value={product.doctorsNoteInput}
-                          onChange={(e) =>
-                            handleProductChange(
-                              index,
-                              "doctorsNoteInput",
-                              e.target.value
-                            )
-                          }
-                          placeholder="Enter a note"
-                          border="2px solid"
-                          borderColor="gray.500"
-                          flex="1"
-                          leftIcon={<MdNote color="blue.500" />}
-                        />
-                        <Button
-                          onClick={() => addDoctorsNote(index)}
-                          w={{ base: "100%", md: "150px" }}
-                          rightIcon={<SlPlus />}
-                          disabled={!product.doctorsNoteInput.trim()}
-                        >
-                          Add Note
-                        </Button>
-                      </Flex>
-
-                      {/* Display existing notes as chips */}
-                      {product.doctorsNotes.length > 0 && (
-                        <SimpleGrid columns={{ base: 1, md: 2 }} spacing={2}>
-                          {product.doctorsNotes.map((note, noteIndex) => (
-                            <Flex
-                              key={noteIndex}
-                              cursor="pointer"
-                              px="10px"
-                              py="8px"
-                              rounded="md"
-                              bg="blue.500"
-                              color="white"
-                              fontSize="sm"
-                              _hover={{ bg: "blue.400" }}
-                              alignItems="center"
-                              justifyContent="space-between"
-                            >
-                              <Text fontWeight="medium" flex="1" mr={2}>
-                                {note}
-                              </Text>
-                              <Box
-                                fontSize="lg"
-                                onClick={() =>
-                                  removeDoctorsNote(index, noteIndex)
-                                }
-                              >
-                                <IoIosCloseCircle />
-                              </Box>
-                            </Flex>
-                          ))}
-                        </SimpleGrid>
-                      )}
-                    </Stack>
-                  </FormControl>
                 </Box>
               ))}
               <Button
@@ -588,6 +503,69 @@ export default function CreatePrescriptionModal({
               >
                 Add Medicine
               </Button>
+            </Box>
+
+            {/* Separate Doctor's Notes Section (sent at root level as doctorsnote) */}
+            <Box mt={6}>
+              <Text fontWeight="bold" mb={2}>
+                Doctor's Notes 
+              </Text>
+              <FormControl>
+             
+                <Stack spacing={3}>
+                  {/* Input for adding new notes */}
+                  <Flex direction={{ base: "column", md: "row" }} gap={2}>
+                    <ChakraInput
+                      value={doctorsNoteInput}
+                      onChange={(e) => setDoctorsNoteInput(e.target.value)}
+                      placeholder="Enter general notes for this prescription"
+                      border="2px solid"
+                      borderColor="gray.500"
+                      flex="1"
+                      leftIcon={<MdNote color="blue.500" />}
+                    />
+                    <Button
+                      onClick={addDoctorsNote}
+                      w={{ base: "100%", md: "150px" }}
+                      rightIcon={<SlPlus />}
+                      disabled={!doctorsNoteInput.trim()}
+                    >
+                      Add Note
+                    </Button>
+                  </Flex>
+
+                  {/* Display existing notes as chips */}
+                  {doctorsNotes.length > 0 && (
+                    <SimpleGrid columns={{ base: 1, md: 2 }} spacing={2}>
+                      {doctorsNotes.map((note, noteIndex) => (
+                        <Flex
+                          key={noteIndex}
+                          cursor="pointer"
+                          px="10px"
+                          py="8px"
+                          rounded="md"
+                          bg="blue.blue500"
+                          color="white"
+                          fontSize="sm"
+                          _hover={{ bg: "blue.blue400" }}
+                          alignItems="center"
+                          justifyContent="space-between"
+                        >
+                          <Text fontWeight="medium" flex="1" mr={2}>
+                            {note}
+                          </Text>
+                          <Box
+                            fontSize="lg"
+                            onClick={() => removeDoctorsNote(noteIndex)}
+                          >
+                            <IoIosCloseCircle />
+                          </Box>
+                        </Flex>
+                      ))}
+                    </SimpleGrid>
+                  )}
+                </Stack>
+              </FormControl>
             </Box>
           </ModalBody>
           <ModalFooter>
