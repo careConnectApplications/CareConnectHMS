@@ -25,13 +25,14 @@ import Input from "../Components/Input";
 import ShowToast from "../Components/ToastNotification";
 import Pagination from "../Components/Pagination";
 import Preloader from "../Components/Preloader";
-import MedicalChartModal from "../Components/MedicalChartModal";
 
-import { GetAllPatientPharmacyApi } from "../Utils/ApiCalls";
+import {
+  GetAllPatientPharmacyApi,
+  CreateMedicationChartForNursingCareAPI,
+} from "../Utils/ApiCalls";
 import { configuration } from "../Utils/Helpers";
 
 export default function NursingPrescription() {
-
   const [isLoading, setIsLoading] = useState(true);
   const [data, setData] = useState([]);
   const [filterData, setFilterData] = useState([]);
@@ -42,14 +43,7 @@ export default function NursingPrescription() {
   const [searchInput, setSearchInput] = useState("");
   const [toast, setToast] = useState(null);
 
-
-  const {
-    isOpen: isServeOpen,
-    onOpen: openServeModal,
-    onClose: closeServeModal,
-  } = useDisclosure();
-  const [selectedDrug, setSelectedDrug] = useState("");
-  const [selectedPrescriptionId, setSelectedPrescriptionId] = useState("");
+  const [servingId, setServingId] = useState(null); // Track which prescription is being served
 
   const paginate = (p) => setCurrentPage(p);
   const indexOfLast = currentPage * postPerPage;
@@ -84,32 +78,34 @@ export default function NursingPrescription() {
     getAllPharmacy();
   }, []);
 
+  const handleServe = async (prescriptionId) => {
+    setServingId(prescriptionId); // Set loading state for this specific row
 
-  const handleServe = (drug, prescriptionId) => {
-    setSelectedDrug(drug);
-    setSelectedPrescriptionId(prescriptionId);
-    openServeModal();
-  };
-  const handleServeSuccess = (apiResponse) => {
-    console.log("MedicalChart API response:", apiResponse);
+    try {
+      const payload = {
+        prescription: prescriptionId,
+      };
 
-    if (apiResponse?.message && apiResponse?.status) {
-      showToast(apiResponse.message, apiResponse.status);
-    } else {
-      showToast("Medical chart saved!", "success");
+      // Get patient ID from localStorage
+      const patientId = localStorage.getItem("patientId");
+
+      const res = await CreateMedicationChartForNursingCareAPI(
+        payload,
+        patientId // Pass patient ID to the API URL
+      );
+
+      if (res.status) {
+        showToast("Medication chart created successfully!", "success");
+        // Reload the page to get updated status from backend
+        window.location.reload();
+      }
+    } catch (err) {
+      console.error("Error creating medication chart:", err);
+      showToast(err.message || "Failed to create medication chart", "error");
+    } finally {
+      setServingId(null); // Clear loading state
     }
-
-    if (apiResponse?.prescriptionId && apiResponse?.servedstatus) {
-      const { prescriptionId, servedstatus } = apiResponse;
-      const merge = (arr) =>
-        arr.map((row) =>
-          row._id === prescriptionId ? { ...row, servedstatus } : row
-        );
-      setData(merge);
-      setFilterData(merge);
-    }
   };
-
 
   return (
     <Box
@@ -167,7 +163,6 @@ export default function NursingPrescription() {
         </Flex>
       </Flex>
 
-
       <Box
         bg="#fff"
         border="1px solid #EFEFEF"
@@ -188,6 +183,9 @@ export default function NursingPrescription() {
                   "Patient name",
                   "Pharmacy",
                   "Drug",
+                  "Dosage",
+                  "Duration",
+                  "Frequency",
                   "Prescriber Name",
                   "Date",
                   "Dispense Status",
@@ -216,11 +214,15 @@ export default function NursingPrescription() {
                   mrn={row.patient?.MRN}
                   pharmacy={row.pharmacy}
                   drug={row.prescription}
+                  dosage={row.dosage}
+                  duration={row.duration}
+                  frequency={row.frequency}
                   doctor={row.prescribersname}
                   date={moment(row.createdAt).format("lll")}
                   status={row.dispensestatus}
                   servedstatus={row.servedstatus}
-                  onServe={() => handleServe(row.prescription, row._id)}
+                  onServe={() => handleServe(row._id)}
+                  isServing={servingId === row._id} // Pass loading state to row
                 />
               ))}
             </Tbody>
@@ -228,20 +230,11 @@ export default function NursingPrescription() {
         </TableContainer>
       </Box>
 
-
       <Pagination
         postPerPage={postPerPage}
         currentPage={currentPage}
         totalPosts={data.length}
         paginate={paginate}
-      />
-
-      <MedicalChartModal
-        isOpen={isServeOpen}
-        onClose={closeServeModal}
-        onSuccess={handleServeSuccess}
-        selectedDrug={selectedDrug}
-        selectedPrescriptionId={selectedPrescriptionId}
       />
     </Box>
   );
