@@ -56,6 +56,7 @@ export default function DoctorScheduleDetails() {
   }, [id]);
 
   let pathName = localStorage.getItem("pathLocation");
+   localStorage.setItem("patientId", id);
 
   const nav = useNavigate();
   return (
