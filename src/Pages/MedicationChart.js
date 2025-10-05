@@ -30,45 +30,42 @@ import ShowToast from "../Components/ToastNotification";
 import { ReadAllMedicationChartByAdmissionApi } from "../Utils/ApiCalls";
 
 const MedicationChart = () => {
-
   const [medicationData, setMedicationData] = useState([]);
-  const [filteredData, setFilteredData]     = useState([]);
-  const [currentPage, setCurrentPage]       = useState(1);
-  const [loading, setLoading]               = useState(false);
-  const [error, setError]                   = useState(null);
+  const [filteredData, setFilteredData] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  const [toast, setToast] = useState(null);                 
+  const [toast, setToast] = useState(null);
 
-  const [filter, setFilter]           = useState("all");
+  const [filter, setFilter] = useState("all");
   const [searchInput, setSearchInput] = useState("");
-  const [StartDate, setStartDate]     = useState("");
-  const [EndDate, setEndDate]         = useState("");
-  const [byDate, setByDate]           = useState(false);
+  const [StartDate, setStartDate] = useState("");
+  const [EndDate, setEndDate] = useState("");
+  const [byDate, setByDate] = useState(false);
 
-  const [isModalOpen, setIsModalOpen]         = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedMedication, setSelectedMedication] = useState(null);
-  const [modalType, setModalType]             = useState("create");
+  const [modalType, setModalType] = useState("create");
 
   const [trigger, setTrigger] = useState(false);
   const postPerPage = configuration.sizePerPage;
 
- 
-  const storedPatient = localStorage.getItem("inPatient");
-  let patient = storedPatient ? JSON.parse(storedPatient) : null;
-  const admissionId =
-    patient && Array.isArray(patient.admission)
-      ? patient.admission[0]
-      : localStorage.getItem("admissionId");
+  // Get patientId from localStorage exactly like in NursingPrescription
+  const patientId = localStorage.getItem("patientId");
+  const admissionId = patientId;
 
- 
   const showToast = (message, status = "success") => {
     setToast({ message, status });
     setTimeout(() => setToast(null), 5000);
   };
 
-
   useEffect(() => {
-    if (!admissionId) return;
+    if (!admissionId) {
+      console.error("No admission ID found");
+      return;
+    }
+
     setLoading(true);
     ReadAllMedicationChartByAdmissionApi(admissionId)
       .then((response) => {
@@ -81,7 +78,7 @@ const MedicationChart = () => {
           frequency: item.frequency,
           route: item.route,
           createdBy: item.createdBy || item.staffname || "Unknown",
-          createdOn: new Date(item.createdAt).toISOString().split("T")[0],
+          createdOn: new Date(item.createdAt).toLocaleString(),
         }));
         setMedicationData(transformed);
         setFilteredData(transformed);
@@ -94,7 +91,6 @@ const MedicationChart = () => {
       });
   }, [admissionId, trigger]);
 
-  
   useEffect(() => {
     if (filter === "all") {
       setFilteredData(medicationData);
@@ -126,10 +122,11 @@ const MedicationChart = () => {
     }
   }, [filter, searchInput, StartDate, EndDate, medicationData]);
 
-  
-  const indexOfLast   = currentPage * postPerPage;
-  const paginatedData = filteredData.slice(indexOfLast - postPerPage, indexOfLast);
-
+  const indexOfLast = currentPage * postPerPage;
+  const paginatedData = filteredData.slice(
+    indexOfLast - postPerPage,
+    indexOfLast
+  );
 
   const handleAddMedication = () => {
     setModalType("create");
@@ -142,10 +139,8 @@ const MedicationChart = () => {
     setIsModalOpen(true);
   };
 
-
   const handleModalSuccess = (payload) => {
     console.log("MedicationChartModal response:", payload);
-
 
     if (payload?.message && payload?.status) {
       showToast(payload.message, payload.status);
@@ -157,19 +152,23 @@ const MedicationChart = () => {
       setMedicationData((prev) => [payload.medication, ...prev]);
       setFilteredData((prev) => [payload.medication, ...prev]);
     } else {
-      
       setTrigger((p) => !p);
     }
 
     setIsModalOpen(false);
   };
 
- 
   return (
-    <Box bg="#fff" border="1px solid #EFEFEF" mt="10px" py="17px" px="18px" rounded="10px">
+    <Box
+      bg="#fff"
+      border="1px solid #EFEFEF"
+      mt="10px"
+      py="17px"
+      px="18px"
+      rounded="10px"
+    >
       {toast && <ShowToast message={toast.message} status={toast.status} />}
 
-     
       <Flex justifyContent="space-between" flexWrap="wrap" mb="20px">
         {/* 
         <Button rightIcon={<SlPlus />} onClick={handleAddMedication}>
@@ -249,7 +248,11 @@ const MedicationChart = () => {
                       setSearchInput("");
                     }}
                     fontWeight="500"
-                    _hover={{ bg: "blue.blue500", color: "#fff", fontWeight: "400" }}
+                    _hover={{
+                      bg: "blue.blue500",
+                      color: "#fff",
+                      fontWeight: "400",
+                    }}
                   >
                     {label}
                   </MenuItem>
@@ -260,7 +263,6 @@ const MedicationChart = () => {
         </Flex>
       </Flex>
 
-    
       <Box mt="12px" py="15px" px="15px" rounded="10px" overflowX="auto">
         {loading ? (
           <Flex justifyContent="center" minH="100px">
@@ -275,13 +277,24 @@ const MedicationChart = () => {
             <Table variant="striped">
               <Thead>
                 <Tr>
-                  {["Drug", "Note", "Dose", "Frequency", "Route", "Created By", "Created On", "Actions"].map(
-                    (h) => (
-                      <Th key={h} fontSize="13px" color="#534D59" fontWeight="600">
-                        {h}
-                      </Th>
-                    )
-                  )}
+                  {[
+                    "Drug",
+                    "Note",
+                    "Dose",
+                    "Frequency",
+                    "Route",
+                    "Served By",
+                    "Date Served",
+                  ].map((h) => (
+                    <Th
+                      key={h}
+                      fontSize="13px"
+                      color="#534D59"
+                      fontWeight="600"
+                    >
+                      {h}
+                    </Th>
+                  ))}
                 </Tr>
               </Thead>
               <Tbody>

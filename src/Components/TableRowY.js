@@ -1013,7 +1013,7 @@ export default function TableRowY({
               {createdOn}
             </Text>
           </Td>
-          <Td>
+          {/* <Td>
             <Menu>
               <MenuButton as={Box}>
                 <BsThreeDots />
@@ -1031,7 +1031,7 @@ export default function TableRowY({
                 </MenuItem>
               </MenuList>
             </Menu>
-          </Td>
+          </Td> */}
         </>
       )}
 
@@ -2390,6 +2390,21 @@ export default function TableRowY({
           </Td>
           <Td>
             <Text fontWeight="400" fontSize={"13px"}>
+              {dosage}
+            </Text>
+          </Td>
+          <Td>
+            <Text fontWeight="400" fontSize={"13px"}>
+              {duration}
+            </Text>
+          </Td>
+          <Td>
+            <Text fontWeight="400" fontSize={"13px"}>
+              {frequency}
+            </Text>
+          </Td>
+          <Td>
+            <Text fontWeight="400" fontSize={"13px"}>
               {doctor}
             </Text>
           </Td>
@@ -2436,36 +2451,32 @@ export default function TableRowY({
             </HStack>
           </Td>
 
-          {/*  Action cell — only show the Menu when the row is UN‑served  */}
+          {/*  Action cell — ALWAYS show the Menu (removed conditional rendering)  */}
           <Td>
-            {isUnserved ? (
-              <Menu isLazy>
-                <MenuButton as={Box}>
-                  <Flex justifyContent="center" color="#000" fontSize="16px">
-                    <BsThreeDots />
-                  </Flex>
-                </MenuButton>
-                <MenuList>
-                  <MenuItem
-                    onClick={onServe}
-                    textTransform="capitalize"
-                    fontWeight="500"
-                    color="#2F2F2F"
-                    _hover={{
-                      color: "#fff",
-                      bg: "blue.blue500",
-                      fontWeight: "400",
-                    }}
-                  >
-                    <HStack fontSize="14px">
-                      <Text>Serve</Text>
-                    </HStack>
-                  </MenuItem>
-                </MenuList>
-              </Menu>
-            ) : (
-              <Box />
-            )}
+            <Menu isLazy>
+              <MenuButton as={Box}>
+                <Flex justifyContent="center" color="#000" fontSize="16px">
+                  <BsThreeDots />
+                </Flex>
+              </MenuButton>
+              <MenuList>
+                <MenuItem
+                  onClick={onServe}
+                  textTransform="capitalize"
+                  fontWeight="500"
+                  color="#2F2F2F"
+                  _hover={{
+                    color: "#fff",
+                    bg: "blue.blue500",
+                    fontWeight: "400",
+                  }}
+                >
+                  <HStack fontSize="14px">
+                    <Text>Serve</Text>
+                  </HStack>
+                </MenuItem>
+              </MenuList>
+            </Menu>
           </Td>
         </>
       )}
