@@ -78,7 +78,7 @@ const MedicationChart = () => {
           frequency: item.frequency,
           route: item.route,
           createdBy: item.createdBy || item.staffname || "Unknown",
-          createdOn: new Date(item.createdAt).toISOString().split("T")[0],
+          createdOn: new Date(item.createdAt).toLocaleString(),
         }));
         setMedicationData(transformed);
         setFilteredData(transformed);
