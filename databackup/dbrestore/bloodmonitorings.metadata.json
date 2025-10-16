@@ -1,0 +1,1 @@
+{"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_"}],"uuid":"867548354de846e99690b5eb792ec133","collectionName":"bloodmonitorings","type":"collection"}

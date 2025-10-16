@@ -93,7 +93,7 @@ export default function PrintPaymentReceipt() {
             <Box border="1px solid gray" p="8px" mt="10px" rounded="8px">
                 <SimpleGrid columns={{ base: 1, md: 2 }} spacing={1}>
                     <PrintCard title="payment reference" value={Data?.paymentreference} />
-                    <PrintCard title="date" value={moment(Data?.createdAt).format("LL")} />
+                    <PrintCard title="date" value={moment(Data?.updatedAt).format("LL")} />
                     <PrintCard title="Client Name" value={`${Data?.patient?.firstName} ${Data?.patient?.lastName}`} />
                     <PrintCard title="Client MRN" value={`${Data?.patient?.MRN}`} />
                     <PrintCard title="HMO ID" value={Data?.patient?.HMOId} />

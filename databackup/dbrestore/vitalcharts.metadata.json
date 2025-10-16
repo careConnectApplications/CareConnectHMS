@@ -1,0 +1,1 @@
+{"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_"}],"uuid":"59b59497eaeb45f0ac9c846c24079579","collectionName":"vitalcharts","type":"collection"}
