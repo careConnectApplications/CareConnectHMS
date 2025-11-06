@@ -117,7 +117,7 @@ export const isScheduleProcedureStaff = () => {
 
 };
 export const isPharmacyStaff = () => {
-    let roles = ["1","20", "2","5","28","3", "6","18", "11","22","27"]
+    let roles = ["1","20", "2","28","3", "6","18", "11","22","27"]
 
     let result = roles.includes(role)
 
