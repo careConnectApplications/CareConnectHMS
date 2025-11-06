@@ -283,10 +283,10 @@ export default function DoctoerSchedule() {
       setFilterData([]);
       setQueueData([]);
       setFilteredData(null);
-      setClinic(null);
+      //setClinic(null);
       setTotalData("");
       setCurrentPage(1);
-      localStorage.removeItem("patientList");
+      //localStorage.removeItem("patientList");
     };
   }, [isOpen, Trigger, CurrentPage]);
 
