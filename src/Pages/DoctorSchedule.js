@@ -281,7 +281,7 @@ export default function DoctoerSchedule() {
       // Clear the state when the component unmounts
       setData([]);
       setFilterData([]);
-      setQueueData([]);
+      //setQueueData([]);
       setFilteredData(null);
       //setClinic(null);
       setTotalData("");
