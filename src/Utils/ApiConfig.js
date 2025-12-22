@@ -34,10 +34,13 @@ if (baseChecker === "ehealthcareconnect.com") {
 else if (baseChecker === "garsh.ehealthcareconnect.com") {
   FacilityName = "GENERAL AMADI RIMI SPECIALIST, HOSPITAL";
 }
+else if (baseChecker === "dalphc.ehealthcareconnect.com") {
+  FacilityName = "Dalaram Primary Health Center Jere Local Government";
+}
 else if (baseChecker === "20.164.19.147") {
   FacilityName = "TEST HOSPITAL";
 } else {
-  FacilityName = "GENERAL HOSPITAL, FUNTUA";
+  FacilityName = "GENERAL HOSPITAL, MALUMFASHI";
 }
 
 export const token = localStorage.getItem("token");
