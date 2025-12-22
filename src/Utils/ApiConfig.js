@@ -34,6 +34,9 @@ if (baseChecker === "ehealthcareconnect.com") {
 else if (baseChecker === "garsh.ehealthcareconnect.com") {
   FacilityName = "GENERAL AMADI RIMI SPECIALIST, HOSPITAL";
 }
+else if (baseChecker === "dalphc.ehealthcareconnect.com") {
+  FacilityName = "GENERAL AMADI RIMI SPECIALIST, HOSPITAL";
+}
 else if (baseChecker === "20.164.19.147") {
   FacilityName = "TEST HOSPITAL";
 } else {
