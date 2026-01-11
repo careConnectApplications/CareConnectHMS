@@ -285,8 +285,8 @@ export default function DoctoerSchedule() {
       /*setFilteredData(null);*/
       //setClinic(null);
       /*setTotalData("");*/
-      /*setCurrentPage(1);*/
-      //localStorage.removeItem("patientList");
+      setCurrentPage(1);
+      localStorage.removeItem("patientList");
     };
   }, [isOpen, Trigger, CurrentPage]);
 
