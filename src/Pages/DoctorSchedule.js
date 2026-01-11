@@ -263,36 +263,25 @@ export default function DoctoerSchedule() {
   };
   
 
-  useEffect(() => {
-    getAllClinic();
-    getAllTodayQueue();
+ useEffect(() => {
+  getAllClinic();
+  getAllTodayQueue();
 
-    if (Clinic != null) {
-      if (FilteredData?.length > 0 || FilteredData !== null) {
-        getFilteredScheduled(Key, Value);
-      } else {
-        if (All === true) {
-          getAllPatientHistory("scheduled");
-        } else if (Completed === true) {
-          getAllPatientHistory("complete");
-        } else if (Inprogress === true) {
-          getAllPatientHistory("inprogress");
-        }
+  if (Clinic != null) {
+    if (FilteredData?.length > 0 && FilteredData !== null) {
+      getFilteredScheduled(Key, Value);
+    } else {
+      if (All) {
+        getAllPatientHistory("scheduled");
+      } else if (Completed) {
+        getAllPatientHistory("complete");
+      } else if (Inprogress) {
+        getAllPatientHistory("inprogress");
       }
     }
-    
-    /*return () => {
-      // Clear the state when the component unmounts
-      /*setData([]);*/
-      /*setFilterData([]);*/
-      //setQueueData([]);
-      /*setFilteredData(null);*/
-      //setClinic(null);
-      /*setTotalData("");*/
-      /*setCurrentPage(1);*/
-      /*localStorage.removeItem("patientList");*/
-    };*/
-  }, [isOpen, Trigger, CurrentPage]);
+  }
+}, [isOpen, Trigger, CurrentPage]);
+
 
   return (
     <MainLayout>
