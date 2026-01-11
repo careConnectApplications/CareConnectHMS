@@ -261,6 +261,8 @@ export default function DoctoerSchedule() {
     getAllPatientHistory("scheduled");
     getAllTodayQueue();
   };
+  
+
   useEffect(() => {
     getAllClinic();
     getAllTodayQueue();
@@ -278,7 +280,8 @@ export default function DoctoerSchedule() {
         }
       }
     }
-    return () => {
+    
+    /*return () => {
       // Clear the state when the component unmounts
       /*setData([]);*/
       /*setFilterData([]);*/
@@ -286,9 +289,9 @@ export default function DoctoerSchedule() {
       /*setFilteredData(null);*/
       //setClinic(null);
       /*setTotalData("");*/
-      setCurrentPage(1);
-      localStorage.removeItem("patientList");
-    };
+      /*setCurrentPage(1);*/
+      /*localStorage.removeItem("patientList");*/
+    };*/
   }, [isOpen, Trigger, CurrentPage]);
 
   return (
@@ -706,6 +709,7 @@ export default function DoctoerSchedule() {
           onClose={onClose}
           type={ModalState}
           activateNotifications={activateNotifications}
+          onSuccess={() => setTrigger(prev => !prev)}
         />
       </Box>
     </MainLayout>
