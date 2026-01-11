@@ -706,6 +706,7 @@ export default function DoctoerSchedule() {
           onClose={onClose}
           type={ModalState}
           activateNotifications={activateNotifications}
+          onSuccess={() => setTrigger(prev => !prev)}
         />
       </Box>
     </MainLayout>
