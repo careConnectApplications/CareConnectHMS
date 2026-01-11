@@ -266,6 +266,7 @@ export default function DoctoerSchedule() {
  useEffect(() => {
   getAllClinic();
   getAllTodayQueue();
+  filterTodayQueue();
    console.log("got to use effect")
 
   if (Clinic != null) {
