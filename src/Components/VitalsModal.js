@@ -78,6 +78,7 @@ export default function VitalsModal({ isOpen, onClose, type, activateNotificatio
 
                 activateNotifications("Vitals Saved Successfully", "success")
                 onClose()
+                onSuccess();
 
             }
 
