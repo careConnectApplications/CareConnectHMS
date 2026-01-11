@@ -279,13 +279,13 @@ export default function DoctoerSchedule() {
     }
     return () => {
       // Clear the state when the component unmounts
-      setData([]);
-      setFilterData([]);
+      /*setData([]);*/
+      /*setFilterData([]);*/
       //setQueueData([]);
-      setFilteredData(null);
+      /*setFilteredData(null);*/
       //setClinic(null);
-      setTotalData("");
-      setCurrentPage(1);
+      /*setTotalData("");*/
+      /*setCurrentPage(1);*/
       //localStorage.removeItem("patientList");
     };
   }, [isOpen, Trigger, CurrentPage]);
