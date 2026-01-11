@@ -21,7 +21,7 @@ import { GiEnergyBreath } from "react-icons/gi";
 import { GiWeight } from "react-icons/gi";
 import { TbMichelinStarFilled } from "react-icons/tb";
 
-export default function VitalsModal({ isOpen, onClose, type, activateNotifications, oldPayload }) {
+export default function VitalsModal({ isOpen, onClose, type, activateNotifications, oldPayload, onSuccess }) {
 
 
     let id = localStorage.getItem('appointmentId')
