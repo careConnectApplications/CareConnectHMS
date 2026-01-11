@@ -263,6 +263,7 @@ export default function DoctoerSchedule() {
   };
   useEffect(() => {
     getAllClinic();
+    getAllTodayQueue();
 
     if (Clinic != null) {
       if (FilteredData?.length > 0 || FilteredData !== null) {
