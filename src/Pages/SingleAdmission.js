@@ -16,6 +16,7 @@ import { SlPlus } from "react-icons/sl";
 import { UpdateAdmissionStatusAPI, GetAllAdmissionHistoryApi } from "../Utils/ApiCalls";
 import Pagination from "../Components/Pagination";
 import ToTransferModal from "../Components/ToTransferModal";
+import ToDischargeModal from "../Components/ToDischargeModal";
 import AdmissionModal from "../Components/AdmissionModal";
 import { configuration } from '../Utils/Helpers'
 import Preloader from "../Components/Preloader";
@@ -33,7 +34,8 @@ export default function SingleAdmission() {
 
 
     const [FilterData, setFilterData] = useState([]);
-    const { isOpen, onOpen, onClose } = useDisclosure()
+    const { isOpen, onOpen, onClose } = useDisclosure();
+    const { isOpen: isDischargeOpen, onOpen: onDischargeOpen, onClose: onDischargeClose } = useDisclosure();
     const [Trigger, setTrigger] = useState(false);
 
     // Pagination settings to follow
@@ -175,24 +177,10 @@ export default function SingleAdmission() {
     }
 
 
-    const handleDischarge = async (id) => {
-        
-        try {
-            const result = await UpdateAdmissionStatusAPI( { status: "todischarge"} ,id);
-       
-            if (result.status === 200) {
-              
-                setTrigger(!Trigger)
-                activateNotifications("Admission Status Updated To Discharge Successfully", "success")
-                onClose()
-
-            }
-
-        } catch (e) {
-           
-            activateNotifications(e.message, "error")
-        }
-    }
+    const handleDischarge = (id) => {
+        setOldPayload({ id: id });
+        onDischargeOpen();
+    };
 
     const handleTransfer = (id)=>{
         setOldPayload({id: id})
@@ -204,7 +192,7 @@ export default function SingleAdmission() {
 
         getAllAdmissionHistory()
 
-    }, [isOpen, OpenAdmissionModal, Trigger]);
+    }, [isOpen, isDischargeOpen, OpenAdmissionModal, Trigger]);
 
     return (
         <Box
@@ -403,6 +391,14 @@ export default function SingleAdmission() {
                 oldPayload={OldPayload}
                 onClose={onClose}
                 activateNotifications={activateNotifications}
+            />
+                <ToDischargeModal
+                isOpen={isDischargeOpen}
+                oldPayload={OldPayload}
+                onClose={onDischargeClose}
+                activateNotifications={activateNotifications}
+                setTrigger={setTrigger}
+                Trigger={Trigger}
             />
             </Box>
 

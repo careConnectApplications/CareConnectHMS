@@ -85,12 +85,23 @@ export default function Report() {
     const [FilteredData, setFilteredData] = useState(null);
 
     const handleInputChange = (e) => {
+        let val = e.target.value.toLowerCase();
         let filter = Data.filter(
             (item) =>
-                item.role?.toLowerCase().includes(e.target.value.toLowerCase()) ||
-                item.email?.toLowerCase().includes(e.target.value.toLowerCase()) ||
-                item.firstName?.toLowerCase().includes(e.target.value.toLowerCase()) ||
-                item.lastName?.toLowerCase().includes(e.target.value.toLowerCase())
+                item.role?.toLowerCase().includes(val) ||
+                item.email?.toLowerCase().includes(val) ||
+                item.firstName?.toLowerCase().includes(val) ||
+                item.lastName?.toLowerCase().includes(val) ||
+                item.patientName?.toLowerCase().includes(val) ||
+                item.nameOfPt?.toLowerCase().includes(val) ||
+                item.patientNumber?.toLowerCase().includes(val) ||
+                item.ptNumber?.toLowerCase().includes(val) ||
+                item.patientSurname?.toLowerCase().includes(val) ||
+                item.patientFirstName?.toLowerCase().includes(val) ||
+                item.diagnosis?.toLowerCase().includes(val) ||
+                item.presentingComplaint?.toLowerCase().includes(val) ||
+                item.labinvestigation?.toLowerCase().includes(val) ||
+                item.ageGroup?.toLowerCase().includes(val)
         );
         console.log("filter checking", filter);
         setFilteredData(filter);
@@ -116,7 +127,10 @@ export default function Report() {
             let filter = Data.filter(
                 (item) =>
                     item.firstName?.toLowerCase().includes(SearchInput.toLowerCase()) ||
-                    item.lastName?.toLowerCase().includes(SearchInput.toLowerCase())
+                    item.lastName?.toLowerCase().includes(SearchInput.toLowerCase()) ||
+                    item.patientName?.toLowerCase().includes(SearchInput.toLowerCase()) ||
+                    item.patientSurname?.toLowerCase().includes(SearchInput.toLowerCase()) ||
+                    item.patientFirstName?.toLowerCase().includes(SearchInput.toLowerCase())
             );
             setFilteredData(filter);
             console.log("filter checking", filter);
@@ -212,17 +226,81 @@ export default function Report() {
 
   
     const DownloadFile = () => {
-
         var workbook = XLSX.utils.book_new();
-    
-        var worksheet = XLSX.utils.json_to_sheet(Data);
-    
+        let exportData = Data;
+
+        if (QueryType === "inpatientregister" || QueryType === "inpatientregisterreport" || QueryType === "admissionreport") {
+            exportData = Data.map((item, index) => {
+                const formatDateStr = (d) => {
+                    if (!d) return "";
+                    const m = moment(d);
+                    return m.isValid() ? m.format("DD/MM/YYYY") : d;
+                };
+
+                const pName = item.patientName || `${item.patientSurname || ''} ${item.patientFirstName || ''}`.trim() || `${item.patient?.lastName || ''} ${item.patient?.firstName || ''}`.trim();
+                const pNum = item.patientNumber || item.patient?.MRN || "";
+                const pSex = item.sex || item.patient?.gender || "";
+                const pAge = item.age || item.patient?.age || "";
+                const diag = item.diagnosis || (Array.isArray(item.alldiagnosis) ? item.alldiagnosis.map(d => typeof d === 'string' ? d : (d.diagnosis || d.note || '')).filter(Boolean).join(", ") : "");
+                
+                const outcome = item.admissionOutcome || {
+                    abs: item.dischargereason?.toUpperCase().includes("ABS") ? item.dischargedate : null,
+                    disch: item.dischargereason?.toUpperCase().includes("DISCH") ? item.dischargedate : null,
+                    ref: item.dischargereason?.toUpperCase().includes("REF") ? item.dischargedate : null,
+                    lama: item.dischargereason?.toUpperCase().includes("LAMA") ? item.dischargedate : null,
+                    death: (item.dischargereason?.toUpperCase().includes("DEATH") || item.dischargereason?.toUpperCase().includes("DEAD")) ? item.dischargedate : null
+                };
+
+                return {
+                    "S/N": item.sn || index + 1,
+                    "Date of Admission": formatDateStr(item.dateOfAdmission || item.referddate),
+                    "Name of Patient (Surname First)": pName,
+                    "Patient number": pNum,
+                    "Sex": pSex,
+                    "Age": pAge,
+                    "Diagnosis": diag,
+                    "ABS": formatDateStr(outcome?.abs),
+                    "DISCH": formatDateStr(outcome?.disch),
+                    "REF": formatDateStr(outcome?.ref),
+                    "LAMA": formatDateStr(outcome?.lama),
+                    "DEATH": formatDateStr(outcome?.death)
+                };
+            });
+        } else if (QueryType === "outpatientregister" || QueryType === "outpatientregisterreport") {
+            exportData = Data.map((item, index) => {
+                const formatDateStr = (d) => {
+                    if (!d) return "";
+                    const m = moment(d);
+                    return m.isValid() ? m.format("DD/MM/YYYY") : d;
+                };
+
+                return {
+                    "S/N": item.sn || index + 1,
+                    "DATE": formatDateStr(item.date || item.appointmentdate),
+                    "NAME OF PT": item.nameOfPt || item.patientName || `${item.lastName || ''} ${item.firstName || ''}`.trim(),
+                    "PT NUMBER": item.ptNumber || item.patientNumber || item.MRN || "",
+                    "Sex": item.sex || item.patient?.gender || "",
+                    "Age": item.age || item.patient?.age || "",
+                    "TYPE OF Attendance New/F/up": item.typeOfAttendance || item.appointmenttype || "",
+                    "Presenting complaint": item.presentingComplaint || item.reason || "",
+                    "Diagnosis": item.diagnosis || "",
+                    "Laboratory investigation": item.labinvestigation || ""
+                };
+            });
+        } else if (QueryType === "generalattendance" || QueryType === "generalattendancereport") {
+            exportData = Data.map((item) => ({
+                "Age Group": item.ageGroup,
+                "M": item.M ?? item.male ?? 0,
+                "F": item.F ?? item.female ?? 0,
+                "TOTAL": item.total ?? item.TOTAL ?? 0
+            }));
+        }
+
+        var worksheet = XLSX.utils.json_to_sheet(exportData);
         XLSX.utils.book_append_sheet(workbook, worksheet);
-    
-        let date = moment(Date.now()).format("DD/MM/YYYY")
-    
+        let date = moment(Date.now()).format("DD/MM/YYYY");
         XLSX.writeFile(workbook, `${date}_Care Connect_${QueryType}_report.xlsx`);
-      }
+    }
     useEffect(() => {
 
         getReportSettings()
@@ -278,7 +356,7 @@ export default function Report() {
 
                             {
                                 QuerySettings?.map((item, i) => (
-                                    <option value={`${item.querytype}`} key={i}>{item.querytype.replace("report"," report ").replace("hmo","hmo ").replace("for"," for ").replace("secondaryservice","Secondary service")} </option>
+                                    <option value={`${item.querytype}`} key={i}>{item.querytype === "generalattendance" ? "General Attendance Report" : item.querytype === "outpatientregister" ? "Outpatient Register Report" : item.querytype === "inpatientregister" ? "Inpatient Register Report" : item.querytype.replace("report"," report ").replace("hmo","hmo ").replace("for"," for ").replace("secondaryservice","Secondary service")}</option>
 
                                 ))
                             }
@@ -845,88 +923,189 @@ export default function Report() {
                             )
                         }
                         {
-                            QueryType === "admissionreport" && (
+                            (QueryType === "inpatientregister" || QueryType === "inpatientregisterreport" || QueryType === "admissionreport") && (
                                 <TableContainer>
-                                <Table variant="striped">
-                                    <Thead bg="#fff">
-                                        <Tr>
-                                            <Th
-                                                fontSize="13px"
-                                                textTransform="capitalize"
-                                                color="#534D59"
-                                                fontWeight="600"
-                                            >
-                                                patient name
-                                            </Th>
-                                            <Th
-                                                fontSize="13px"
-                                                textTransform="capitalize"
-                                                color="#534D59"
-                                                fontWeight="600"
-                                            >
-                                                Clinic
-                                            </Th>
-                                            <Th
-                                                fontSize="13px"
-                                                textTransform="capitalize"
-                                                color="#534D59"
-                                                fontWeight="600"
-                                            >
-                                                Doctor
-                                            </Th>
-                                            <Th
-                                                fontSize="13px"
-                                                textTransform="capitalize"
-                                                color="#534D59"
-                                                fontWeight="600"
-                                            >
-                                                Referred Date
-                                            </Th>
-                                           
-                                           
-                                            <Th
-                                                fontSize="13px"
-                                                textTransform="capitalize"
-                                                color="#534D59"
-                                                fontWeight="600"
-                                            >
-                                                date created
-                                            </Th>
-                                            <Th
-                                                fontSize="13px"
-                                                textTransform="capitalize"
-                                                color="#534D59"
-                                                fontWeight="600"
-                                            >
-                                                status
-                                            </Th>
-                                           
-                                        </Tr>
-                                    </Thead>
-                                    <Tbody>
-
-                                    {
-                                        FilterData.map((item,i)=> (
-                                            <TableRow
-                                            key={i}
-                                            type="admission-report"
-                                            name={`${item.patient[0]?.firstName} ${item.patient[0]?.lastName}`}
-                                            mrn={item.patient[0]?.MRN}                                        
-                                            clinic={item.admittospecialization}
-                                            referredDate={moment(item.referddate).format("lll")}
-                                            date={moment(item.createdAt).format("lll")}
-                                            doctor={item.doctorname}
-                                            status={item.status}
-                                           
-                                        />
-                                        ))
-                                    }
-
-                                       
-
-                                    </Tbody>
-                                </Table>
-                            </TableContainer>
+                                    <Text color="#1F2937" fontWeight="700" fontSize="20px" textAlign="center" my="3" textTransform="uppercase" letterSpacing="0.5px">
+                                        DAILY INPATIENT REGISTER
+                                    </Text>
+                                    <Table variant="striped" size="sm" borderWidth="1px" borderColor="#E2E8F0">
+                                        <Thead bg="#F7FAFC">
+                                            <Tr>
+                                                <Th rowSpan={2} fontSize="12px" textTransform="none" color="#2D3748" fontWeight="700" textAlign="center" border="1px solid #CBD5E0">
+                                                    S/N
+                                                </Th>
+                                                <Th rowSpan={2} fontSize="12px" textTransform="none" color="#2D3748" fontWeight="700" textAlign="center" border="1px solid #CBD5E0">
+                                                    Date of Admission
+                                                </Th>
+                                                <Th rowSpan={2} fontSize="12px" textTransform="none" color="#2D3748" fontWeight="700" textAlign="center" border="1px solid #CBD5E0">
+                                                    Name of Patient (Surname First)
+                                                </Th>
+                                                <Th rowSpan={2} fontSize="12px" textTransform="none" color="#2D3748" fontWeight="700" textAlign="center" border="1px solid #CBD5E0">
+                                                    Patient number
+                                                </Th>
+                                                <Th rowSpan={2} fontSize="12px" textTransform="none" color="#2D3748" fontWeight="700" textAlign="center" border="1px solid #CBD5E0">
+                                                    Sex
+                                                </Th>
+                                                <Th rowSpan={2} fontSize="12px" textTransform="none" color="#2D3748" fontWeight="700" textAlign="center" border="1px solid #CBD5E0">
+                                                    Age
+                                                </Th>
+                                                <Th rowSpan={2} fontSize="12px" textTransform="none" color="#2D3748" fontWeight="700" textAlign="center" border="1px solid #CBD5E0">
+                                                    Diagnosis
+                                                </Th>
+                                                <Th colSpan={5} fontSize="12px" textTransform="none" color="#2D3748" fontWeight="700" textAlign="center" border="1px solid #CBD5E0">
+                                                    ADMISSION OUTCOME (dates)
+                                                </Th>
+                                            </Tr>
+                                            <Tr bg="#F7FAFC">
+                                                <Th fontSize="11px" textTransform="none" color="#2D3748" fontWeight="700" textAlign="center" border="1px solid #CBD5E0">
+                                                    ABS
+                                                </Th>
+                                                <Th fontSize="11px" textTransform="none" color="#2D3748" fontWeight="700" textAlign="center" border="1px solid #CBD5E0">
+                                                    DISCH
+                                                </Th>
+                                                <Th fontSize="11px" textTransform="none" color="#2D3748" fontWeight="700" textAlign="center" border="1px solid #CBD5E0">
+                                                    REF
+                                                </Th>
+                                                <Th fontSize="11px" textTransform="none" color="#2D3748" fontWeight="700" textAlign="center" border="1px solid #CBD5E0">
+                                                    LAMA
+                                                </Th>
+                                                <Th fontSize="11px" textTransform="none" color="#2D3748" fontWeight="700" textAlign="center" border="1px solid #CBD5E0">
+                                                    DEATH
+                                                </Th>
+                                            </Tr>
+                                        </Thead>
+                                        <Tbody>
+                                            {
+                                                FilterData.map((item, i) => (
+                                                    <TableRow
+                                                        key={i}
+                                                        type="inpatient-register"
+                                                        sn={item.sn || i + 1}
+                                                        dateOfAdmission={item.dateOfAdmission || item.referddate}
+                                                        patientName={item.patientName || `${item.patientSurname || ''} ${item.patientFirstName || ''}`.trim() || `${item.patient?.lastName || ''} ${item.patient?.firstName || ''}`.trim()}
+                                                        patientNumber={item.patientNumber || item.patient?.MRN}
+                                                        sex={item.sex || item.patient?.gender}
+                                                        age={item.age || item.patient?.age}
+                                                        diagnosis={item.diagnosis || (Array.isArray(item.alldiagnosis) ? item.alldiagnosis.map(d => typeof d === 'string' ? d : (d.diagnosis || d.note || '')).filter(Boolean).join(", ") : "")}
+                                                        admissionOutcome={item.admissionOutcome || {
+                                                            abs: item.dischargereason?.toUpperCase().includes("ABS") ? item.dischargedate : null,
+                                                            disch: item.dischargereason?.toUpperCase().includes("DISCH") ? item.dischargedate : null,
+                                                            ref: item.dischargereason?.toUpperCase().includes("REF") ? item.dischargedate : null,
+                                                            lama: item.dischargereason?.toUpperCase().includes("LAMA") ? item.dischargedate : null,
+                                                            death: (item.dischargereason?.toUpperCase().includes("DEATH") || item.dischargereason?.toUpperCase().includes("DEAD")) ? item.dischargedate : null
+                                                        }}
+                                                    />
+                                                ))
+                                            }
+                                        </Tbody>
+                                    </Table>
+                                </TableContainer>
+                            )
+                        }
+                        {
+                            (QueryType === "outpatientregister" || QueryType === "outpatientregisterreport") && (
+                                <TableContainer>
+                                    <Text color="#1F2937" fontWeight="700" fontSize="20px" textAlign="center" my="3" textTransform="uppercase" letterSpacing="0.5px">
+                                        DAILY OUTPATIENT REGISTER (OPD REG.)
+                                    </Text>
+                                    <Table variant="striped" size="sm" borderWidth="1px" borderColor="#E2E8F0">
+                                        <Thead bg="#F7FAFC">
+                                            <Tr>
+                                                <Th fontSize="12px" textTransform="none" color="#2D3748" fontWeight="700" textAlign="center" border="1px solid #CBD5E0">
+                                                    S/N
+                                                </Th>
+                                                <Th fontSize="12px" textTransform="none" color="#2D3748" fontWeight="700" textAlign="center" border="1px solid #CBD5E0">
+                                                    DATE
+                                                </Th>
+                                                <Th fontSize="12px" textTransform="none" color="#2D3748" fontWeight="700" textAlign="center" border="1px solid #CBD5E0">
+                                                    NAME OF PT
+                                                </Th>
+                                                <Th fontSize="12px" textTransform="none" color="#2D3748" fontWeight="700" textAlign="center" border="1px solid #CBD5E0">
+                                                    PT NUMBER
+                                                </Th>
+                                                <Th fontSize="12px" textTransform="none" color="#2D3748" fontWeight="700" textAlign="center" border="1px solid #CBD5E0">
+                                                    Sex
+                                                </Th>
+                                                <Th fontSize="12px" textTransform="none" color="#2D3748" fontWeight="700" textAlign="center" border="1px solid #CBD5E0">
+                                                    Age
+                                                </Th>
+                                                <Th fontSize="12px" textTransform="none" color="#2D3748" fontWeight="700" textAlign="center" border="1px solid #CBD5E0">
+                                                    TYPE OF Attendance New/F/up
+                                                </Th>
+                                                <Th fontSize="12px" textTransform="none" color="#2D3748" fontWeight="700" textAlign="center" border="1px solid #CBD5E0">
+                                                    Presenting complaint
+                                                </Th>
+                                                <Th fontSize="12px" textTransform="none" color="#2D3748" fontWeight="700" textAlign="center" border="1px solid #CBD5E0">
+                                                    Diagnosis
+                                                </Th>
+                                                <Th fontSize="12px" textTransform="none" color="#2D3748" fontWeight="700" textAlign="center" border="1px solid #CBD5E0">
+                                                    Laboratory investigation
+                                                </Th>
+                                            </Tr>
+                                        </Thead>
+                                        <Tbody>
+                                            {
+                                                FilterData.map((item, i) => (
+                                                    <TableRow
+                                                        key={i}
+                                                        type="outpatient-register"
+                                                        sn={item.sn || i + 1}
+                                                        date={item.date || item.appointmentdate}
+                                                        nameOfPt={item.nameOfPt || item.patientName || `${item.lastName || ''} ${item.firstName || ''}`.trim()}
+                                                        ptNumber={item.ptNumber || item.patientNumber || item.MRN}
+                                                        sex={item.sex || item.patient?.gender}
+                                                        age={item.age || item.patient?.age}
+                                                        typeOfAttendance={item.typeOfAttendance || item.appointmenttype}
+                                                        presentingComplaint={item.presentingComplaint || item.reason}
+                                                        diagnosis={item.diagnosis}
+                                                        labinvestigation={item.labinvestigation}
+                                                    />
+                                                ))
+                                            }
+                                        </Tbody>
+                                    </Table>
+                                </TableContainer>
+                            )
+                        }
+                        {
+                            (QueryType === "generalattendance" || QueryType === "generalattendancereport") && (
+                                <TableContainer>
+                                    <Text color="#1F2937" fontWeight="700" fontSize="20px" textAlign="center" my="3" textTransform="uppercase" letterSpacing="0.5px">
+                                        GENERAL ATTENDANCE
+                                    </Text>
+                                    <Table variant="striped" size="sm" borderWidth="1px" borderColor="#E2E8F0">
+                                        <Thead bg="#F7FAFC">
+                                            <Tr>
+                                                <Th fontSize="12px" textTransform="none" color="#2D3748" fontWeight="700" textAlign="center" border="1px solid #CBD5E0">
+                                                    Age Group
+                                                </Th>
+                                                <Th fontSize="12px" textTransform="none" color="#2D3748" fontWeight="700" textAlign="center" border="1px solid #CBD5E0">
+                                                    M
+                                                </Th>
+                                                <Th fontSize="12px" textTransform="none" color="#2D3748" fontWeight="700" textAlign="center" border="1px solid #CBD5E0">
+                                                    F
+                                                </Th>
+                                                <Th fontSize="12px" textTransform="none" color="#2D3748" fontWeight="700" textAlign="center" border="1px solid #CBD5E0">
+                                                    TOTAL
+                                                </Th>
+                                            </Tr>
+                                        </Thead>
+                                        <Tbody>
+                                            {
+                                                FilterData.map((item, i) => (
+                                                    <TableRow
+                                                        key={i}
+                                                        type="general-attendance"
+                                                        ageGroup={item.ageGroup}
+                                                        M={item.M ?? item.male}
+                                                        F={item.F ?? item.female}
+                                                        total={item.total ?? item.TOTAL}
+                                                    />
+                                                ))
+                                            }
+                                        </Tbody>
+                                    </Table>
+                                </TableContainer>
                             )
                         }
                         {
