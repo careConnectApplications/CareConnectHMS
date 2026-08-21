@@ -51,12 +51,10 @@ jobs:
           sudo apt-get install -y sshpass
 
           # Deploy build to the server using SCP
-          sshpass -p "$SSH_PASSWORD" scp -o StrictHostKeyChecking=no -r ./build "$SSH_USERNAME"@"$SERVER_IP":/var/www/html/staging/hmsfrontendstaging
+          sshpass -p "$SSH_PASSWORD" scp -P 21098 -o StrictHostKeyChecking=no -r ./build "$SSH_USERNAME"@"$SERVER_IP":/var/www/html/staging/hmsfrontendstaging
 
           # Optionally restart your app after copying the build
-          sshpass -p "$SSH_PASSWORD" ssh -o StrictHostKeyChecking=no "$SSH_USERNAME"@"$SERVER_IP" << 'EOF'
-            export NVM_DIR="$HOME/.nvm"
-            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+          sshpass -p "$SSH_PASSWORD" ssh -p 21098 -o StrictHostKeyChecking=no "$SSH_USERNAME"@"$SERVER_IP" << 'EOF'
             # Stop any existing server (optional)
             # pm2 stop my-app || true
             # Restart the server (or your app, depending on your setup)
