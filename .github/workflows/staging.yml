@@ -13,11 +13,11 @@ jobs:
     steps:
       # Step 1: Checkout code from the repository
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       # Step 2: Set up Node.js and install dependencies
       - name: Set up Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: "22.x" # Specify the Node.js version
 
@@ -51,16 +51,14 @@ jobs:
           sudo apt-get install -y sshpass
 
           # Deploy build to the server using SCP
-         sshpass -p "$SSH_PASSWORD" scp -P 21098 -o StrictHostKeyChecking=no -r ./build "$SSH_USERNAME"@"$SERVER_IP":/var/www/html/hmsfrontend
+          sshpass -p "$SSH_PASSWORD" scp -P 21098 -o StrictHostKeyChecking=no -r ./build "$SSH_USERNAME"@"$SERVER_IP":/var/www/html/hmsfrontend
 
           # Optionally restart your app after copying the build
           sshpass -p "$SSH_PASSWORD" ssh -p 21098 -o StrictHostKeyChecking=no "$SSH_USERNAME"@"$SERVER_IP" << 'EOF'
-          
-
-          # Optionally restart your app after copying the build
-          sshpass -p "$SSH_PASSWORD" ssh -o StrictHostKeyChecking=no "$SSH_USERNAME"@"$SERVER_IP" << 'EOF'
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
             # Stop any existing server (optional)
-            #pm2 stop my-app || true
+            # pm2 stop my-app || true
             # Restart the server (or your app, depending on your setup)
-            #pm2 start /path/to/your/server/app.js
+            # pm2 start /path/to/your/server/app.js
           EOF
