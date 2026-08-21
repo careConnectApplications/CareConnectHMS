@@ -55,8 +55,8 @@ jobs:
 
           # Optionally restart your app after copying the build
           sshpass -p "$SSH_PASSWORD" ssh -p 21098 -o StrictHostKeyChecking=no "$SSH_USERNAME"@"$SERVER_IP" << 'EOF'
-            export NVM_DIR="$HOME/.nvm"
-            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+
+
             # Stop any existing server (optional)
             # pm2 stop my-app || true
             # Restart the server (or your app, depending on your setup)
