@@ -13,6 +13,7 @@ import {
 import { Tr, Td } from "@chakra-ui/react";
 import { BsThreeDots } from "react-icons/bs";
 import { useNavigate } from "react-router-dom";
+import moment from "moment";
 
 export default function TableRow({
   type,
@@ -125,6 +126,19 @@ export default function TableRow({
   onReset,
   testid,
   department,
+  dateOfAdmission,
+  patientName,
+  patientNumber,
+  sex,
+  admissionOutcome,
+  nameOfPt,
+  ptNumber,
+  typeOfAttendance,
+  presentingComplaint,
+  labinvestigation,
+  ageGroup,
+  M,
+  F,
 }) {
   const router = useNavigate();
 
@@ -3018,7 +3032,149 @@ export default function TableRow({
               {visitType}
             </Text>
           </Td>
-         
+          
+        </>
+      )}
+      {type === "inpatient-register" && (
+        <>
+          <Td textAlign="center">
+            <Text fontWeight="400" fontSize="12px">
+              {sn}
+            </Text>
+          </Td>
+          <Td textAlign="center">
+            <Text fontWeight="400" fontSize="12px">
+              {dateOfAdmission ? (moment(dateOfAdmission).isValid() ? moment(dateOfAdmission).format("DD/MM/YYYY") : dateOfAdmission) : ""}
+            </Text>
+          </Td>
+          <Td>
+            <Text fontWeight="400" fontSize="12px">
+              {patientName}
+            </Text>
+          </Td>
+          <Td textAlign="center">
+            <Text fontWeight="400" fontSize="12px">
+              {patientNumber}
+            </Text>
+          </Td>
+          <Td textAlign="center">
+            <Text fontWeight="400" fontSize="12px" textTransform="capitalize">
+              {sex}
+            </Text>
+          </Td>
+          <Td textAlign="center">
+            <Text fontWeight="400" fontSize="12px">
+              {age}
+            </Text>
+          </Td>
+          <Td>
+            <Text fontWeight="400" fontSize="12px">
+              {diagnosis}
+            </Text>
+          </Td>
+          <Td textAlign="center">
+            <Text fontWeight="400" fontSize="12px">
+              {admissionOutcome?.abs ? (moment(admissionOutcome.abs).isValid() ? moment(admissionOutcome.abs).format("DD/MM/YYYY") : admissionOutcome.abs) : ""}
+            </Text>
+          </Td>
+          <Td textAlign="center">
+            <Text fontWeight="400" fontSize="12px">
+              {admissionOutcome?.disch ? (moment(admissionOutcome.disch).isValid() ? moment(admissionOutcome.disch).format("DD/MM/YYYY") : admissionOutcome.disch) : ""}
+            </Text>
+          </Td>
+          <Td textAlign="center">
+            <Text fontWeight="400" fontSize="12px">
+              {admissionOutcome?.ref ? (moment(admissionOutcome.ref).isValid() ? moment(admissionOutcome.ref).format("DD/MM/YYYY") : admissionOutcome.ref) : ""}
+            </Text>
+          </Td>
+          <Td textAlign="center">
+            <Text fontWeight="400" fontSize="12px">
+              {admissionOutcome?.lama ? (moment(admissionOutcome.lama).isValid() ? moment(admissionOutcome.lama).format("DD/MM/YYYY") : admissionOutcome.lama) : ""}
+            </Text>
+          </Td>
+          <Td textAlign="center">
+            <Text fontWeight="400" fontSize="12px">
+              {admissionOutcome?.death ? (moment(admissionOutcome.death).isValid() ? moment(admissionOutcome.death).format("DD/MM/YYYY") : admissionOutcome.death) : ""}
+            </Text>
+          </Td>
+        </>
+      )}
+      {type === "outpatient-register" && (
+        <>
+          <Td textAlign="center">
+            <Text fontWeight="400" fontSize="12px">
+              {sn}
+            </Text>
+          </Td>
+          <Td textAlign="center">
+            <Text fontWeight="400" fontSize="12px">
+              {date ? (moment(date).isValid() ? moment(date).format("DD/MM/YYYY") : date) : ""}
+            </Text>
+          </Td>
+          <Td>
+            <Text fontWeight="400" fontSize="12px">
+              {nameOfPt || patientName || name}
+            </Text>
+          </Td>
+          <Td textAlign="center">
+            <Text fontWeight="400" fontSize="12px">
+              {ptNumber || patientNumber || mrn}
+            </Text>
+          </Td>
+          <Td textAlign="center">
+            <Text fontWeight="400" fontSize="12px" textTransform="capitalize">
+              {sex || gender}
+            </Text>
+          </Td>
+          <Td textAlign="center">
+            <Text fontWeight="400" fontSize="12px">
+              {age}
+            </Text>
+          </Td>
+          <Td textAlign="center">
+            <Text fontWeight="400" fontSize="12px">
+              {typeOfAttendance}
+            </Text>
+          </Td>
+          <Td>
+            <Text fontWeight="400" fontSize="12px">
+              {presentingComplaint}
+            </Text>
+          </Td>
+          <Td>
+            <Text fontWeight="400" fontSize="12px">
+              {diagnosis}
+            </Text>
+          </Td>
+          <Td>
+            <Text fontWeight="400" fontSize="12px">
+              {labinvestigation}
+            </Text>
+          </Td>
+        </>
+      )}
+      {type === "general-attendance" && (
+        <>
+          <Td textAlign="center" fontWeight={ageGroup === "TOTAL" ? "700" : "500"}>
+            <Text fontSize="13px">
+              {ageGroup}
+            </Text>
+          </Td>
+          <Td textAlign="center" fontWeight={ageGroup === "TOTAL" ? "700" : "400"}>
+            <Text fontSize="13px">
+              {M ?? 0}
+            </Text>
+          </Td>
+          <Td textAlign="center" fontWeight={ageGroup === "TOTAL" ? "700" : "400"}>
+            <Text fontSize="13px">
+              {F ?? 0}
+            </Text>
+          </Td>
+          <Td textAlign="center" fontWeight={ageGroup === "TOTAL" ? "700" : "600"}>
+            <Text fontSize="13px">
+              {total ?? 0}
+            </Text>
+          </Td>
         </>
       )}
     </Tr>
