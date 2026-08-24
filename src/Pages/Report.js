@@ -101,6 +101,9 @@ export default function Report() {
                 item.diagnosis?.toLowerCase().includes(val) ||
                 item.presentingComplaint?.toLowerCase().includes(val) ||
                 item.labinvestigation?.toLowerCase().includes(val) ||
+                item.drugsGiven?.toLowerCase().includes(val) ||
+                item.dateOfDischarge?.toLowerCase().includes(val) ||
+                item.dischargedate?.toLowerCase().includes(val) ||
                 item.ageGroup?.toLowerCase().includes(val)
         );
         console.log("filter checking", filter);
@@ -224,7 +227,21 @@ export default function Report() {
     };
 
 
-  
+    const formatChunkedText = (inputData, fallbackArray, getProp, chunkSize = 10) => {
+        let items = [];
+        if (typeof inputData === 'string' && inputData.trim()) {
+            items = inputData.split(',').map(s => s.trim()).filter(Boolean);
+        } else if (Array.isArray(fallbackArray) && fallbackArray.length > 0) {
+            items = fallbackArray.map(l => typeof l === 'string' ? l : getProp(l)).filter(Boolean);
+        }
+        if (items.length === 0) return typeof inputData === 'string' ? inputData : "";
+        let chunks = [];
+        for (let i = 0; i < items.length; i += chunkSize) {
+            chunks.push(items.slice(i, i + chunkSize).join(", "));
+        }
+        return chunks.join("\n");
+    };
+
     const DownloadFile = () => {
         var workbook = XLSX.utils.book_new();
         let exportData = Data;
@@ -242,7 +259,10 @@ export default function Report() {
                 const pSex = item.sex || item.patient?.gender || "";
                 const pAge = item.age || item.patient?.age || "";
                 const diag = item.diagnosis || (Array.isArray(item.alldiagnosis) ? item.alldiagnosis.map(d => typeof d === 'string' ? d : (d.diagnosis || d.note || '')).filter(Boolean).join(", ") : "");
-                
+                const lab = item.labinvestigation || (Array.isArray(item.labDetails) && item.labDetails.length > 0 ? item.labDetails.map(l => typeof l === 'string' ? l : (l.investigation || l.testName || l.labTest || l.test || l.serviceName || l.name || l.title || l.labTestName || '')).filter(Boolean).join(", ") : "");
+                const drugs = item.drugsGiven || (Array.isArray(item.prescriptionDetails) && item.prescriptionDetails.length > 0 ? item.prescriptionDetails.map(p => typeof p === 'string' ? p : (p.prescription || p.drugName || p.drug || p.name || p.drugGiven || '')).filter(Boolean).join(", ") : "");
+                const dischDate = item.dateOfDischarge || item.dischargedate || "";
+
                 const outcome = item.admissionOutcome || {
                     abs: item.dischargereason?.toUpperCase().includes("ABS") ? item.dischargedate : null,
                     disch: item.dischargereason?.toUpperCase().includes("DISCH") ? item.dischargedate : null,
@@ -259,6 +279,9 @@ export default function Report() {
                     "Sex": pSex,
                     "Age": pAge,
                     "Diagnosis": diag,
+                    "Laboratory Test": lab,
+                    "Drug Given": drugs,
+                    "Date of Discharge": formatDateStr(dischDate),
                     "ABS": formatDateStr(outcome?.abs),
                     "DISCH": formatDateStr(outcome?.disch),
                     "REF": formatDateStr(outcome?.ref),
@@ -274,6 +297,10 @@ export default function Report() {
                     return m.isValid() ? m.format("DD/MM/YYYY") : d;
                 };
 
+                const diag = item.diagnosis || (Array.isArray(item.alldiagnosis) ? item.alldiagnosis.map(d => typeof d === 'string' ? d : (d.diagnosis || d.note || '')).filter(Boolean).join(", ") : "");
+                const lab = item.labinvestigation || (Array.isArray(item.labDetails) && item.labDetails.length > 0 ? item.labDetails.map(l => typeof l === 'string' ? l : (l.investigation || l.testName || l.labTest || l.test || l.serviceName || l.name || l.title || l.labTestName || '')).filter(Boolean).join(", ") : "");
+                const drugs = item.drugsGiven || (Array.isArray(item.prescriptionDetails) && item.prescriptionDetails.length > 0 ? item.prescriptionDetails.map(p => typeof p === 'string' ? p : `${p.prescription || p.drugName || p.drug || p.name || ''} ${p.dosage || ''} ${p.frequency || ''} ${p.duration || ''}`.trim()).filter(Boolean).join(", ") : "");
+
                 return {
                     "S/N": item.sn || index + 1,
                     "DATE": formatDateStr(item.date || item.appointmentdate),
@@ -283,8 +310,9 @@ export default function Report() {
                     "Age": item.age || item.patient?.age || "",
                     "TYPE OF Attendance New/F/up": item.typeOfAttendance || item.appointmenttype || "",
                     "Presenting complaint": item.presentingComplaint || item.reason || "",
-                    "Diagnosis": item.diagnosis || "",
-                    "Laboratory investigation": item.labinvestigation || ""
+                    "Diagnosis": diag,
+                    "Laboratory investigation": lab,
+                    "Drug Given": drugs
                 };
             });
         } else if (QueryType === "generalattendance" || QueryType === "generalattendancereport") {
@@ -952,6 +980,15 @@ export default function Report() {
                                                 <Th rowSpan={2} fontSize="12px" textTransform="none" color="#2D3748" fontWeight="700" textAlign="center" border="1px solid #CBD5E0">
                                                     Diagnosis
                                                 </Th>
+                                                <Th rowSpan={2} fontSize="12px" textTransform="none" color="#2D3748" fontWeight="700" textAlign="center" border="1px solid #CBD5E0">
+                                                    Laboratory Test
+                                                </Th>
+                                                <Th rowSpan={2} fontSize="12px" textTransform="none" color="#2D3748" fontWeight="700" textAlign="center" border="1px solid #CBD5E0">
+                                                    Drug Given
+                                                </Th>
+                                                <Th rowSpan={2} fontSize="12px" textTransform="none" color="#2D3748" fontWeight="700" textAlign="center" border="1px solid #CBD5E0">
+                                                    Date of Discharge
+                                                </Th>
                                                 <Th colSpan={5} fontSize="12px" textTransform="none" color="#2D3748" fontWeight="700" textAlign="center" border="1px solid #CBD5E0">
                                                     ADMISSION OUTCOME (dates)
                                                 </Th>
@@ -986,7 +1023,10 @@ export default function Report() {
                                                         patientNumber={item.patientNumber || item.patient?.MRN}
                                                         sex={item.sex || item.patient?.gender}
                                                         age={item.age || item.patient?.age}
-                                                        diagnosis={item.diagnosis || (Array.isArray(item.alldiagnosis) ? item.alldiagnosis.map(d => typeof d === 'string' ? d : (d.diagnosis || d.note || '')).filter(Boolean).join(", ") : "")}
+                                                        diagnosis={formatChunkedText(item.diagnosis, item.alldiagnosis, d => d.diagnosis || d.note || '', 10)}
+                                                        labinvestigation={formatChunkedText(item.labinvestigation, item.labDetails, l => l.investigation || l.testName || l.labTest || l.test || l.serviceName || l.name || l.title || l.labTestName || '', 10)}
+                                                        drugsGiven={formatChunkedText(item.drugsGiven, item.prescriptionDetails, p => p.prescription || p.drugName || p.drug || p.name || p.drugGiven || '', 10)}
+                                                        dateOfDischarge={item.dateOfDischarge || item.dischargedate}
                                                         admissionOutcome={item.admissionOutcome || {
                                                             abs: item.dischargereason?.toUpperCase().includes("ABS") ? item.dischargedate : null,
                                                             disch: item.dischargereason?.toUpperCase().includes("DISCH") ? item.dischargedate : null,
@@ -1041,6 +1081,9 @@ export default function Report() {
                                                 <Th fontSize="12px" textTransform="none" color="#2D3748" fontWeight="700" textAlign="center" border="1px solid #CBD5E0">
                                                     Laboratory investigation
                                                 </Th>
+                                                <Th fontSize="12px" textTransform="none" color="#2D3748" fontWeight="700" textAlign="center" border="1px solid #CBD5E0">
+                                                    Drug Given
+                                                </Th>
                                             </Tr>
                                         </Thead>
                                         <Tbody>
@@ -1056,9 +1099,10 @@ export default function Report() {
                                                         sex={item.sex || item.patient?.gender}
                                                         age={item.age || item.patient?.age}
                                                         typeOfAttendance={item.typeOfAttendance || item.appointmenttype}
-                                                        presentingComplaint={item.presentingComplaint || item.reason}
-                                                        diagnosis={item.diagnosis}
-                                                        labinvestigation={item.labinvestigation}
+                                                        presentingComplaint={formatChunkedText(item.presentingComplaint || item.reason, null, null, 10)}
+                                                        diagnosis={formatChunkedText(item.diagnosis, item.alldiagnosis, d => d.diagnosis || d.note || '', 10)}
+                                                        labinvestigation={formatChunkedText(item.labinvestigation, item.labDetails, l => l.investigation || l.testName || l.labTest || l.test || l.serviceName || l.name || l.title || l.labTestName || '', 10)}
+                                                        drugsGiven={formatChunkedText(item.drugsGiven, item.prescriptionDetails, p => typeof p === 'string' ? p : `${p.prescription || p.drugName || p.drug || p.name || ''} ${p.dosage || ''} ${p.frequency || ''} ${p.duration || ''}`.trim(), 10)}
                                                     />
                                                 ))
                                             }
