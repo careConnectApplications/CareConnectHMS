@@ -136,6 +136,8 @@ export default function TableRow({
   typeOfAttendance,
   presentingComplaint,
   labinvestigation,
+  drugsGiven,
+  dateOfDischarge,
   ageGroup,
   M,
   F,
@@ -3067,9 +3069,24 @@ export default function TableRow({
               {age}
             </Text>
           </Td>
-          <Td>
-            <Text fontWeight="400" fontSize="12px">
+          <Td minW="300px" maxW="500px" whiteSpace="normal">
+            <Text fontWeight="400" fontSize="12px" whiteSpace="pre-line" wordBreak="break-word">
               {diagnosis}
+            </Text>
+          </Td>
+          <Td minW="350px" maxW="600px" whiteSpace="normal">
+            <Text fontWeight="400" fontSize="12px" whiteSpace="pre-line" wordBreak="break-word">
+              {labinvestigation}
+            </Text>
+          </Td>
+          <Td minW="450px" maxW="800px" whiteSpace="normal">
+            <Text fontWeight="400" fontSize="12px" whiteSpace="pre-line" wordBreak="break-word">
+              {drugsGiven}
+            </Text>
+          </Td>
+          <Td textAlign="center">
+            <Text fontWeight="400" fontSize="12px">
+              {dateOfDischarge ? (moment(dateOfDischarge).isValid() ? moment(dateOfDischarge).format("DD/MM/YYYY") : dateOfDischarge) : ""}
             </Text>
           </Td>
           <Td textAlign="center">
@@ -3136,19 +3153,24 @@ export default function TableRow({
               {typeOfAttendance}
             </Text>
           </Td>
-          <Td>
-            <Text fontWeight="400" fontSize="12px">
+          <Td minW="200px" maxW="400px" whiteSpace="normal">
+            <Text fontWeight="400" fontSize="12px" whiteSpace="pre-line" wordBreak="break-word">
               {presentingComplaint}
             </Text>
           </Td>
-          <Td>
-            <Text fontWeight="400" fontSize="12px">
+          <Td minW="300px" maxW="500px" whiteSpace="normal">
+            <Text fontWeight="400" fontSize="12px" whiteSpace="pre-line" wordBreak="break-word">
               {diagnosis}
             </Text>
           </Td>
-          <Td>
-            <Text fontWeight="400" fontSize="12px">
+          <Td minW="350px" maxW="600px" whiteSpace="normal">
+            <Text fontWeight="400" fontSize="12px" whiteSpace="pre-line" wordBreak="break-word">
               {labinvestigation}
+            </Text>
+          </Td>
+          <Td minW="450px" maxW="800px" whiteSpace="normal">
+            <Text fontWeight="400" fontSize="12px" whiteSpace="pre-line" wordBreak="break-word">
+              {drugsGiven}
             </Text>
           </Td>
         </>
