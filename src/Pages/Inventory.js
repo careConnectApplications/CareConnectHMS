@@ -109,8 +109,8 @@ export default function Inventory() {
               item.qty <= 0
                 ? "out of stock"
                 : item.qty <= item.lowstocklevel
-                ? "low stock"
-                : "available",
+                  ? "low stock"
+                  : "available",
           }));
           setData(formattedData);
           setFilterData(formattedData);

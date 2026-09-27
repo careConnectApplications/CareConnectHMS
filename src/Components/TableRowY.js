@@ -1455,16 +1455,18 @@ export default function TableRowY({
                 >
                   View
                 </MenuItem>
-                <MenuItem
-                  _hover={{
-                    color: "#fff",
-                    fontWeight: "400",
-                    bg: "blue.blue500",
-                  }}
-                  onClick={onEdit}
-                >
-                  Edit
-                </MenuItem>
+                {status?.toLowerCase() !== "processed" && (
+                  <MenuItem
+                    _hover={{
+                      color: "#fff",
+                      fontWeight: "400",
+                      bg: "blue.blue500",
+                    }}
+                    onClick={onEdit}
+                  >
+                    Edit
+                  </MenuItem>
+                )}
               </MenuList>
             </Menu>
           </Td>
@@ -1566,26 +1568,30 @@ export default function TableRowY({
                     >
                       View
                     </MenuItem>
-                    <MenuItem
-                      _hover={{
-                        color: "#fff",
-                        fontWeight: "400",
-                        bg: "blue.blue500",
-                      }}
-                      onClick={onUpload}
-                    >
-                      Upload
-                    </MenuItem>
-                    <MenuItem
-                      _hover={{
-                        color: "#fff",
-                        fontWeight: "400",
-                        bg: "blue.blue500",
-                      }}
-                      onClick={onEdit}
-                    >
-                      Edit
-                    </MenuItem>
+                    {status?.toLowerCase() !== "processed" && (
+                      <>
+                        <MenuItem
+                          _hover={{
+                            color: "#fff",
+                            fontWeight: "400",
+                            bg: "blue.blue500",
+                          }}
+                          onClick={onUpload}
+                        >
+                          Upload
+                        </MenuItem>
+                        <MenuItem
+                          _hover={{
+                            color: "#fff",
+                            fontWeight: "400",
+                            bg: "blue.blue500",
+                          }}
+                          onClick={onEdit}
+                        >
+                          Edit
+                        </MenuItem>
+                      </>
+                    )}
                     {status === "inprogress" && (
                       <MenuItem
                         _hover={{

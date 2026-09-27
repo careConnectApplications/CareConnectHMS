@@ -4940,9 +4940,23 @@ export const ViewMultipleRadiologyResultsApi = async (fileNames) => {
           },
           responseType: "blob",
         });
-        const contentType = response.headers["content-type"] || "image/jpeg";
-        const blob = new Blob([response.data], { type: contentType });
-        return window.URL.createObjectURL(blob);
+
+        // Infer correct MIME type from filename extension if header is missing or generic
+        const ext = (fileName || "").split('.').pop().toLowerCase();
+        let mimeType = response.headers["content-type"];
+
+        if (!mimeType || mimeType === 'application/octet-stream' || mimeType === 'text/plain' || mimeType === 'image/jpeg') {
+          if (ext === 'pdf') mimeType = 'application/pdf';
+          else if (ext === 'docx') mimeType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+          else if (ext === 'doc') mimeType = 'application/msword';
+          else if (ext === 'dcm') mimeType = 'application/dicom';
+          else if (['png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp', 'svg'].includes(ext)) mimeType = `image/${ext === 'jpg' ? 'jpeg' : ext}`;
+        }
+
+        const blob = new Blob([response.data], { type: mimeType });
+        const blobUrl = window.URL.createObjectURL(blob);
+        // Append #name=fileName to preserve the filename and extension in the blob URL string
+        return `${blobUrl}#name=${encodeURIComponent(fileName)}`;
       })
     );
     return urls;
