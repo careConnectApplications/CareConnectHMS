@@ -20,7 +20,6 @@ import {
   FiZoomOut,
   FiMaximize,
   FiRefreshCw,
-  FiMove,
   FiChevronLeft,
   FiChevronRight,
 } from 'react-icons/fi';
@@ -266,9 +265,21 @@ const SimpleImageViewer = ({ imageUrls = [], testName = 'Radiology Image' }) => 
                 <Text color="red.400" fontSize="lg">
                   Failed to load image
                 </Text>
-                <Button size="sm" onClick={handleReset} colorScheme="blue">
-                  Try Again
-                </Button>
+                <HStack spacing={2}>
+                  <Button size="sm" onClick={handleReset} colorScheme="blue">
+                    Try Again
+                  </Button>
+                  {currentUrl && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      colorScheme="whiteAlpha"
+                      onClick={() => window.open(currentUrl, '_blank')}
+                    >
+                      Open / Download File
+                    </Button>
+                  )}
+                </HStack>
               </VStack>
             </Flex>
           ) : (

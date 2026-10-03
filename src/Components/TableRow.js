@@ -17,6 +17,7 @@ import moment from "moment";
 
 export default function TableRow({
   type,
+  isClickable,
   doctorsnote,
   name,
   email,
@@ -891,21 +892,23 @@ export default function TableRow({
                 </Flex>
               </MenuButton>
               <MenuList>
-                <MenuItem
-                  onClick={onClick}
-                  textTransform="capitalize"
-                  fontWeight={"500"}
-                  color="#2F2F2F"
-                  _hover={{
-                    color: "#fff",
-                    fontWeight: "400",
-                    bg: "blue.blue500",
-                  }}
-                >
-                  <HStack fontSize="14px">
-                    <Text>Explore</Text>
-                  </HStack>
-                </MenuItem>
+                {isClickable !== false && (
+                  <MenuItem
+                    onClick={onClick}
+                    textTransform="capitalize"
+                    fontWeight={"500"}
+                    color="#2F2F2F"
+                    _hover={{
+                      color: "#fff",
+                      fontWeight: "400",
+                      bg: "blue.blue500",
+                    }}
+                  >
+                    <HStack fontSize="14px">
+                      <Text>Explore</Text>
+                    </HStack>
+                  </MenuItem>
+                )}
                 <MenuItem
                   onClick={onVital}
                   textTransform="capitalize"
@@ -1252,7 +1255,7 @@ export default function TableRow({
           <BsThreeDots />
         </MenuButton>
         <MenuList>
-          {labStatus === "awaiting confirmation" ? (
+          {labStatus?.toLowerCase() === "awaiting confirmation" ? (
             <MenuItem
               onClick={onConfirmClick}
               textTransform="capitalize"
@@ -1266,7 +1269,7 @@ export default function TableRow({
             >
               Confirm
             </MenuItem>
-          ) : (
+          ) : (labStatus?.toLowerCase() !== "processed" && labStatus?.toLowerCase() !== "complete") ? (
             <MenuItem
               onClick={onClick}
               textTransform="capitalize"
@@ -1280,7 +1283,7 @@ export default function TableRow({
             >
               Process
             </MenuItem>
-          )}
+          ) : null}
         </MenuList>
       </Menu>
     </Td>
@@ -2137,58 +2140,67 @@ export default function TableRow({
             </HStack>
           </Td>
           <Td>
-            <Menu>
-              <MenuButton as={Box}>
-                <BsThreeDots />
-              </MenuButton>
-              <MenuList>
-                <MenuItem
-                  _hover={{
-                    color: "#fff",
-                    fontWeight: "400",
-                    bg: "blue.blue500",
-                  }}
-                  onClick={onEdit}
-                >
-                  Edit
-                </MenuItem>
-                <MenuItem
-                  _hover={{
-                    color: "#fff",
-                    fontWeight: "400",
-                    bg: "blue.blue500",
-                  }}
-                  onClick={onView}
-                >
-                  View
-                </MenuItem>
+            {status?.toLowerCase() !== "schedule" &&
+            status?.toLowerCase() !== "scheduled" ? (
+              <Menu>
+                <MenuButton as={Box}>
+                  <BsThreeDots />
+                </MenuButton>
+                <MenuList>
+                  <MenuItem
+                    _hover={{
+                      color: "#fff",
+                      fontWeight: "400",
+                      bg: "blue.blue500",
+                    }}
+                    onClick={onEdit}
+                  >
+                    Edit
+                  </MenuItem>
+                  <MenuItem
+                    _hover={{
+                      color: "#fff",
+                      fontWeight: "400",
+                      bg: "blue.blue500",
+                    }}
+                    onClick={onView}
+                  >
+                    View
+                  </MenuItem>
 
-                {onlineUser._id === consultant && (
-                  <MenuItem
-                    _hover={{
-                      color: "#fff",
-                      fontWeight: "400",
-                      bg: "blue.blue500",
-                    }}
-                    onClick={onProcess}
-                  >
-                    Process
-                  </MenuItem>
-                )}
-                {onlineUser._id === consultant && (
-                  <MenuItem
-                    _hover={{
-                      color: "#fff",
-                      fontWeight: "400",
-                      bg: "blue.blue500",
-                    }}
-                    onClick={onClick}
-                  >
-                    Schedule Appointment
-                  </MenuItem>
-                )}
-              </MenuList>
-            </Menu>
+                  {status?.toLowerCase() !== "accept" &&
+                    status?.toLowerCase() !== "accepted" && (
+                      <MenuItem
+                        _hover={{
+                          color: "#fff",
+                          fontWeight: "400",
+                          bg: "blue.blue500",
+                        }}
+                        onClick={onProcess}
+                      >
+                        Process
+                      </MenuItem>
+                    )}
+                  {(status?.toLowerCase() === "accept" ||
+                    status?.toLowerCase() === "accepted") && (
+                    <MenuItem
+                      _hover={{
+                        color: "#fff",
+                        fontWeight: "400",
+                        bg: "blue.blue500",
+                      }}
+                      onClick={onClick}
+                    >
+                      Schedule Appointment
+                    </MenuItem>
+                  )}
+                </MenuList>
+              </Menu>
+            ) : (
+              <Text color="#9CA3AF" fontSize="13px">
+                -
+              </Text>
+            )}
           </Td>
         </>
       )}

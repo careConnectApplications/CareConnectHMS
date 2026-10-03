@@ -2,7 +2,7 @@ import { isActive, isOutPatient,isOutPatientParent,isRecordStaff,isInPatient,
   isScheduleAppointmentStaff,isScheduleProcedureStaff,isLabStaff,isRadiologyStaff,
   isPharmacyStaff,isInventoryStaff,isBillingStaff,isUserManagerStaff,isTheatreStaff,isClinicalReport,isBillingStaffHOD } from "../Authentication/Index";
 import { MdOutlineAnalytics } from "react-icons/md";
-import { FaUserInjured, FaUsers } from "react-icons/fa";
+import { FaUserInjured, FaUsers, FaExchangeAlt } from "react-icons/fa";
 import { BiSolidReport } from "react-icons/bi";
 import { FaUserNurse } from "react-icons/fa";
 import { RiSettings3Fill } from "react-icons/ri";
@@ -49,7 +49,8 @@ export const NavList = (location) => {
 
     if (
       isActive(location, "/dashboard/patient") ||
-      isActive(location, "/dashboard/doctor-schedule")
+      isActive(location, "/dashboard/doctor-schedule") ||
+      isActive(location, "/dashboard/clinic-referral")
     ) {
       result = true;
       return result;
@@ -100,6 +101,13 @@ export const NavList = (location) => {
           icon: <RiCalendarScheduleFill />,
           link: "/dashboard/doctor-schedule",
           active: isActive(location, "/dashboard/doctor-schedule"),
+          display: isOutPatient(),
+        },
+        {
+          name: "Referrer",
+          icon: <FaExchangeAlt />,
+          link: "/dashboard/clinic-referral",
+          active: isActive(location, "/dashboard/clinic-referral"),
           display: isOutPatient(),
         },
       ],

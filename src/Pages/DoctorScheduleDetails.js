@@ -1,4 +1,4 @@
-import { HStack, Text } from "@chakra-ui/react";
+import { HStack, Text, Box } from "@chakra-ui/react";
 import {
   Tabs,
   TabList,
@@ -33,18 +33,24 @@ import SingleReferral from "./SingleReferral";
 import SingleDeliveryNote from "./SingleDeliveryNote";
 import ReferTheatreAdmissionPage from "./ReferTheatreAdmissionPage";
 import NutritionPage from "./NutritionPage";
-import { getPatientData } from "../Utils/ApiCalls";
+import BedFeeRecords from "./BedFeeRecords";
+import { getPatientData, getWalletBalanceApi } from "../Utils/ApiCalls";
 
 export default function DoctorScheduleDetails() {
   const { id } = useParams();
   const [patient, setPatient] = useState({});
   const [isLoading, setIsLoading] = useState(true);
+  const [walletBalance, setWalletBalance] = useState(0);
 
   useEffect(() => {
     const fetchPatientData = async () => {
       try {
         const data = await getPatientData(id);
         setPatient(data);
+        const balRes = await getWalletBalanceApi(id);
+        if (balRes) {
+            setWalletBalance(balRes.balance || balRes.walletBalance || balRes.data?.balance || balRes.queryresult?.balance || 0);
+        }
       } catch (error) {
         console.error("Failed to fetch patient data", error);
       } finally {
@@ -80,9 +86,16 @@ export default function DoctorScheduleDetails() {
           {`> ${patient.firstName || ""} ${patient.lastName || ""}`}
         </Text>
       </HStack>
-      <Text color="#686C75" mt="9px" fontWeight="400" fontSize="15px">
-        Give review, notes, findings and diagnosis about patient
-      </Text>
+      <HStack justifyContent="space-between">
+        <Text color="#686C75" mt="9px" fontWeight="400" fontSize="15px">
+          Give review, notes, findings and diagnosis about patient
+        </Text>
+        <Box bg="blue.50" p="3" rounded="md" border="1px solid" borderColor="blue.100">
+          <Text fontWeight="bold" color="blue.700" fontSize="14px">
+            Wallet Balance: ₦{Number(walletBalance).toLocaleString()}
+          </Text>
+        </Box>
+      </HStack>
 
       {/* Added patient details section from InPatientTimeline */}
       <HStack cursor="pointer" mt="32px">
@@ -230,6 +243,12 @@ export default function DoctorScheduleDetails() {
           >
             Nutrition{" "}
           </Tab>
+          <Tab
+            _focus={{ outline: "none" }}
+            _selected={{ color: "blue.blue500", fontWeight: "700" }}
+          >
+            Bed Fee Records
+          </Tab>
         </TabList>
         {/* <TabIndicator mt='-1.5px' height='2px' bg='blue.blue500' borderRadius='1px' /> */}
         <TabPanels>
@@ -292,6 +311,9 @@ export default function DoctorScheduleDetails() {
           </TabPanel>
           <TabPanel p="0">
             <NutritionPage />
+          </TabPanel>
+          <TabPanel p="0">
+            <BedFeeRecords id={id} />
           </TabPanel>
         </TabPanels>
       </Tabs>

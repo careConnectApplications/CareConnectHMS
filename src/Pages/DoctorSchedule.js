@@ -191,7 +191,14 @@ export default function DoctoerSchedule() {
   const filterTodayQueue = () => {
     setAll(false);
     setTodayQueue(true);
-    setFilterData(QueueData);
+    setCompleted(false);
+    setInprogress(false);
+    setFilterData(QueueData || []);
+    setTotalData(QueueData?.length || 0);
+    setCurrentPage(1);
+    if (Clinic) {
+      getAllTodayQueue(Clinic);
+    }
   };
 
   const filterCompleted = () => {
@@ -223,13 +230,19 @@ export default function DoctoerSchedule() {
     }
   };
 
-  const getAllTodayQueue = async () => {
+  const getAllTodayQueue = async (targetClinic = Clinic) => {
+    if (!targetClinic) return;
     try {
-      const result = await GetAllTodayQueueHistoryApi(Clinic);
+      const result = await GetAllTodayQueueHistoryApi(targetClinic);
       console.log("getAllTodayQueue", result);
-      if (result.status === true) {
+      if (result && result.status === true) {
         setLoading(false);
-        setQueueData(result.queryresult.appointmentdetails);
+        const queueItems = result.queryresult?.appointmentdetails || [];
+        setQueueData(queueItems);
+        if (TodayQueue) {
+          setFilterData(queueItems);
+          setTotalData(result.queryresult?.totalappointmentdetails || queueItems.length);
+        }
       }
     } catch (e) {
       console.error(e.message);
@@ -257,32 +270,40 @@ export default function DoctoerSchedule() {
   };
 
   const fetchPatient = () => {
+    if (!Clinic) return;
     setLoading(true);
-    getAllPatientHistory("scheduled");
-    getAllTodayQueue();
+    if (TodayQueue) {
+      getAllTodayQueue(Clinic);
+    } else if (Completed) {
+      getAllPatientHistory("complete");
+      getAllTodayQueue(Clinic);
+    } else if (Inprogress) {
+      getAllPatientHistory("inprogress");
+      getAllTodayQueue(Clinic);
+    } else {
+      getAllPatientHistory("scheduled");
+      getAllTodayQueue(Clinic);
+    }
   };
   
 
- useEffect(() => {
-  getAllClinic();
-  getAllTodayQueue();
-  filterTodayQueue();
-   console.log("got to use effect")
-
-  if (Clinic != null) {
-    if (FilteredData?.length > 0 && FilteredData !== null) {
-      getFilteredScheduled(Key, Value);
-    } else {
-      if (All) {
-        getAllPatientHistory("scheduled");
-      } else if (Completed) {
-        getAllPatientHistory("complete");
-      } else if (Inprogress) {
-        getAllPatientHistory("inprogress");
+  useEffect(() => {
+    getAllClinic();
+    if (Clinic) {
+      getAllTodayQueue(Clinic);
+      if (FilteredData?.length > 0 && FilteredData !== null) {
+        getFilteredScheduled(Key, Value);
+      } else {
+        if (All) {
+          getAllPatientHistory("scheduled");
+        } else if (Completed) {
+          getAllPatientHistory("complete");
+        } else if (Inprogress) {
+          getAllPatientHistory("inprogress");
+        }
       }
     }
-  }
-}, [isOpen, Trigger, CurrentPage]);
+  }, [isOpen, Trigger, CurrentPage, Clinic]);
 
 
   return (
@@ -315,7 +336,13 @@ export default function DoctoerSchedule() {
         <Select
           id="type"
           value={Clinic}
-          onChange={(e) => setClinic(e.target.value)}
+          onChange={(e) => {
+            const val = e.target.value;
+            setClinic(val);
+            if (val) {
+              getAllTodayQueue(val);
+            }
+          }}
           placeholder="Select Clinic"
           fontSize={Clinic !== "" ? "16px" : "13px"}
         >

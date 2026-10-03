@@ -9,33 +9,41 @@ import {
   ModalCloseButton,
   Button,
   Box,
-  useDisclosure,
 } from '@chakra-ui/react';
 import DicomViewer from './DicomViewer';
 import SimpleImageViewer from './SimpleImageViewer';
+import DocumentViewer from './DocumentViewer';
 
 const DicomViewerModal = ({ isOpen, onClose, imageUrls = [], testName = 'Radiology Result' }) => {
   const [viewerKey, setViewerKey] = useState(0);
 
-  // Determine which viewer to use based on URL type
-  const useSimpleViewer = useMemo(() => {
-    if (!imageUrls || imageUrls.length === 0) return true;
+  // Determine which viewer to use based on URL type / file format
+  const viewerType = useMemo(() => {
+    if (!imageUrls || imageUrls.length === 0) return 'simple';
     
-    // Check if any URL is a blob URL or regular image
     const firstUrl = imageUrls[0];
-    if (!firstUrl) return true;
+    if (!firstUrl) return 'simple';
     
-    // Use SimpleImageViewer for:
-    // 1. Blob URLs
-    // 2. Regular image extensions
-    // 3. When we're not sure (safer to use simple viewer)
-    const isBlobUrl = firstUrl.startsWith('blob:');
-    const isRegularImage = firstUrl.toLowerCase().match(/\.(jpg|jpeg|png|gif|bmp)$/i);
-    const isDicomFile = firstUrl.toLowerCase().includes('.dcm') || firstUrl.includes('wado');
+    const urlLower = firstUrl.toLowerCase();
     
-    // Use simple viewer for blob URLs and regular images
-    // Use DICOM viewer only for confirmed DICOM files
-    return isBlobUrl || isRegularImage || !isDicomFile;
+    // 1. DICOM files
+    if (urlLower.includes('.dcm') || urlLower.includes('wado')) {
+      return 'dicom';
+    }
+
+    // 2. Document files (.pdf, .doc, .docx, etc.)
+    if (
+      urlLower.includes('.pdf') ||
+      urlLower.startsWith('data:application/pdf') ||
+      urlLower.match(/\.(doc|docx|pdf|txt|rtf|csv|xlsx|xls)$/i) ||
+      urlLower.includes('msword') ||
+      urlLower.includes('wordprocessingml')
+    ) {
+      return 'document';
+    }
+
+    // 3. Regular Image / Blob URLs
+    return 'simple';
   }, [imageUrls]);
 
   // Reset viewer when modal opens with new images
@@ -49,9 +57,9 @@ const DicomViewerModal = ({ isOpen, onClose, imageUrls = [], testName = 'Radiolo
   useEffect(() => {
     if (isOpen && imageUrls.length > 0) {
       console.log('Image URLs available:', imageUrls);
-      console.log('Using simple viewer:', useSimpleViewer);
+      console.log('Viewer type:', viewerType);
     }
-  }, [isOpen, imageUrls, useSimpleViewer]);
+  }, [isOpen, imageUrls, viewerType]);
 
   return (
     <Modal
@@ -64,15 +72,17 @@ const DicomViewerModal = ({ isOpen, onClose, imageUrls = [], testName = 'Radiolo
       <ModalOverlay bg="blackAlpha.700" />
       <ModalContent maxW="90vw" maxH="90vh">
         <ModalHeader borderBottom="1px solid" borderColor="gray.200">
-          {testName} - Image Viewer
+          {testName} - {viewerType === 'dicom' ? 'DICOM Viewer' : viewerType === 'document' ? 'Document Viewer' : 'Image Viewer'}
         </ModalHeader>
         <ModalCloseButton />
         <ModalBody p={0} overflow="auto">
           <Box p={4}>
-            {useSimpleViewer ? (
-              <SimpleImageViewer key={viewerKey} imageUrls={imageUrls} testName={testName} />
-            ) : (
+            {viewerType === 'dicom' ? (
               <DicomViewer key={viewerKey} initialImageUrls={imageUrls} />
+            ) : viewerType === 'document' ? (
+              <DocumentViewer key={viewerKey} imageUrls={imageUrls} testName={testName} />
+            ) : (
+              <SimpleImageViewer key={viewerKey} imageUrls={imageUrls} testName={testName} />
             )}
           </Box>
         </ModalBody>

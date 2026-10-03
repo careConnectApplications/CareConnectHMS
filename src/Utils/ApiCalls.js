@@ -1,6 +1,61 @@
 import axios from "axios";
 import { baseUrl, nigeriaStateApiUrl, token } from "./ApiConfig";
 
+export const FundWalletApi = (Payload) => {
+  let data = JSON.stringify(Payload);
+  let config = {
+    method: "post",
+    maxBodyLength: Infinity,
+    url: `${baseUrl}/billing/fundwallet`,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    data: data,
+  };
+
+  return axios
+    .request(config)
+    .then((response) => {
+      return response.data;
+    })
+    .catch((error) => {
+      return error.response?.data;
+    });
+};
+
+export const getWalletBalanceApi = (patientId) => {
+  let config = {
+    method: "get",
+    maxBodyLength: Infinity,
+    url: `${baseUrl}/billing/walletbalance/${patientId}`,
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
+
+  return axios
+    .request(config)
+    .then((response) => response.data)
+    .catch((error) => error.response?.data);
+};
+
+export const getBedFeeRecordsApi = (patientId) => {
+  let config = {
+    method: "get",
+    maxBodyLength: Infinity,
+    url: `${baseUrl}/billing/bedfee/${patientId}`,
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
+
+  return axios
+    .request(config)
+    .then((response) => response.data)
+    .catch((error) => error.response?.data);
+};
+
 export const ProviderLoginApi = (Payload) => {
   // console.log("CreateAccountPayload", Payload);
 
@@ -163,7 +218,7 @@ export const UpdatePriceStatusApi = (id) => {
     });
 };
 
-export const confirmPaymentAPI = (id) => {
+export const confirmPaymentAPI = (id, payload = {}) => {
   let config = {
     method: "put",
     maxBodyLength: Infinity,
@@ -172,6 +227,7 @@ export const confirmPaymentAPI = (id) => {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
+    data: JSON.stringify(payload),
   };
 
   return axios
@@ -193,7 +249,7 @@ export const confirmPaymentAPI = (id) => {
       }
     });
 };
-export const confirmAllPaymentAPI = (id) => {
+export const confirmAllPaymentAPI = (id, payload = {}) => {
   let config = {
     method: "put",
     maxBodyLength: Infinity,
@@ -202,6 +258,7 @@ export const confirmAllPaymentAPI = (id) => {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
+    data: JSON.stringify(payload),
   };
 
   return axios
@@ -885,6 +942,36 @@ export const GetAllReferralApi = (id) => {
       }
     });
 };
+
+export const ReadAllReferralByClinicApi = (clinic) => {
+  let config = {
+    method: "get",
+    url: `${baseUrl}/referrer/readallreferrerbyclinic/${encodeURIComponent(clinic)}`,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  };
+
+  return axios
+    .request(config)
+    .then((response) => {
+      return response.data;
+    })
+    .catch((error) => {
+      console.log("Error in ReadAllReferralByClinicApi:", error.response);
+      if (error.response && error.response.data?.msg) {
+        throw new Error(error.response.data.msg);
+      } else if (error.response && error.response.data) {
+        throw new Error(error.response);
+      } else if (error.request) {
+        throw new Error(error.msg);
+      } else {
+        throw new Error(error.msg);
+      }
+    });
+};
+
 export const GetAllDeliveryNoteApi = (id) => {
   // Configure the GET request
   let config = {
@@ -4940,9 +5027,23 @@ export const ViewMultipleRadiologyResultsApi = async (fileNames) => {
           },
           responseType: "blob",
         });
-        const contentType = response.headers["content-type"] || "image/jpeg";
-        const blob = new Blob([response.data], { type: contentType });
-        return window.URL.createObjectURL(blob);
+
+        // Infer correct MIME type from filename extension if header is missing or generic
+        const ext = (fileName || "").split('.').pop().toLowerCase();
+        let mimeType = response.headers["content-type"];
+
+        if (!mimeType || mimeType === 'application/octet-stream' || mimeType === 'text/plain' || mimeType === 'image/jpeg') {
+          if (ext === 'pdf') mimeType = 'application/pdf';
+          else if (ext === 'docx') mimeType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+          else if (ext === 'doc') mimeType = 'application/msword';
+          else if (ext === 'dcm') mimeType = 'application/dicom';
+          else if (['png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp', 'svg'].includes(ext)) mimeType = `image/${ext === 'jpg' ? 'jpeg' : ext}`;
+        }
+
+        const blob = new Blob([response.data], { type: mimeType });
+        const blobUrl = window.URL.createObjectURL(blob);
+        // Append #name=fileName to preserve the filename and extension in the blob URL string
+        return `${blobUrl}#name=${encodeURIComponent(fileName)}`;
       })
     );
     return urls;

@@ -22,6 +22,7 @@ import {
   MenuItem,
 } from "@chakra-ui/react";
 import CreatePatientModal from "../Components/CreatePatientModal";
+import FundWalletModal from "../Components/FundWalletModal";
 import { GetAllPatientsApi, GetAllFilteredPatientsApi } from "../Utils/ApiCalls";
 import moment from "moment";
 import { HiOutlineDocumentArrowUp } from "react-icons/hi2";
@@ -44,6 +45,8 @@ export default function Patients() {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [FilterPatient, setFilterPatient] = useState({});
   const [isLoading, setIsLoading] = useState(true); //
+  const [fundWalletOpen, setFundWalletOpen] = useState(false);
+  const [selectedPatientId, setSelectedPatientId] = useState("");
 
   // Search Filter settings to follow
   const [SearchInput, setSearchInput] = useState("");
@@ -198,6 +201,11 @@ export default function Patients() {
   const CreatePatient = () => {
     setModalState("new");
     onOpen();
+  };
+
+  const handleFundWallet = (id) => {
+    setSelectedPatientId(id);
+    setFundWalletOpen(true);
   };
 
   const testing = () => {
@@ -571,6 +579,9 @@ export default function Patients() {
                     Status
                   </Th>
                   <Th fontSize="12px" fontWeight="600" color="#534D59">
+                    Wallet Balance
+                  </Th>
+                  <Th fontSize="12px" fontWeight="600" color="#534D59">
                     Date Created
                   </Th>
                   <Th fontSize="12px" fontWeight="600" color="#534D59">
@@ -595,9 +606,11 @@ export default function Patients() {
                       status={item.status}
                       hmoStatus={item.isHMOCover}
                       hmoId={item.HMOId}
+                      walletBalance={item.walletBalance || 0}
                       date={moment(item.createdAt).format("lll")}
                       onEdit={() => onEdit(item._id)}
                       onView={() => navigateToPatientDetails(item._id)}
+                      onFundWallet={() => handleFundWallet(item._id)}
                       OnClick={testing}
                     />
                   ))
@@ -617,9 +630,11 @@ export default function Patients() {
                       status={item.status}
                       hmoStatus={item.isHMOCover}
                       hmoId={item.HMOId}
+                      walletBalance={item.walletBalance || 0}
                       date={moment(item.createdAt).format("lll")}
                       onEdit={() => onEdit(item._id)}
                       onView={() => navigateToPatientDetails(item._id)}
+                      onFundWallet={() => handleFundWallet(item._id)}
                       OnClick={testing}
                     />
                   ))
@@ -645,6 +660,12 @@ export default function Patients() {
         onClose={onClose}
         type={ModalState}
         filteredpatient={FilterPatient}
+      />
+      <FundWalletModal
+        isOpen={fundWalletOpen}
+        onClose={() => setFundWalletOpen(false)}
+        patientId={selectedPatientId}
+        onSuccess={getAllPatient}
       />
     </MainLayout>
   );
