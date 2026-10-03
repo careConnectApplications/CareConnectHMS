@@ -36,6 +36,7 @@ import Pharmacy from "../Pages/Pharmacy";
 import PharmacyNew from "../Pages/PharmacyNew";
 import NurseCare from "../Pages/NurseCare";
 import RadiologyPage from "../Pages/RadiologyPage";
+import ClinicReferralPage from "../Pages/ClinicReferralPage";
 import PrivateRoutes from "./PrivateRoute";
 import OutPatientRoutes from "./OutPatientRoutes";
 import RecordsRoutes from "./RecordsRoutes";
@@ -118,6 +119,10 @@ export default function IndexRoutes() {
             <Route
               path="/dashboard/anc-follow-up-v3/:id"
               element={<AncFollowUpv3 />}
+            />
+            <Route
+              path="/dashboard/clinic-referral"
+              element={<ClinicReferralPage />}
             />
           </Route>
           <Route element={<InPatientRoutes />}>

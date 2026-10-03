@@ -8,7 +8,7 @@ import {
 import { BsThreeDots } from "react-icons/bs"
 import { useNavigate } from 'react-router-dom'
 
-export default function TableRowX({ type, name, mrn, phone, code, age,patientType, email,status, date, onEdit, hmoId, onRemove, onView, onChangeStatus, onClick, gender,hmoStatus }) {
+export default function TableRowX({ type, name, mrn, phone, code, age,patientType, email,status, date, onEdit, hmoId, onRemove, onView, onChangeStatus, onClick, gender,hmoStatus, walletBalance, onFundWallet }) {
     const router = useNavigate()
     return (
 
@@ -43,6 +43,7 @@ export default function TableRowX({ type, name, mrn, phone, code, age,patientTyp
                             <Text fontWeight="400" fontSize={"12px"} >{status}</Text>
                         </HStack>
                     </Td>
+                    <Td><Text fontWeight="400" fontSize={"12px"} >{walletBalance}</Text></Td>
                     <Td><Text fontWeight="400" fontSize={"13px"} >{date}</Text></Td>
                     <Td>
                          <Menu isLazy>
@@ -70,6 +71,12 @@ export default function TableRowX({ type, name, mrn, phone, code, age,patientTyp
                                     <HStack fontSize="12px">
                                       
                                         <Text >Delete</Text>
+                                    </HStack>
+                                </MenuItem>
+
+                                <MenuItem  onClick={onFundWallet} textTransform="capitalize" fontWeight={"500"} _hover={{ color: "#fff", fontWeight: "400", bg: "blue.blue500" }}>
+                                    <HStack fontSize="12px">
+                                        <Text >Fund Wallet</Text>
                                     </HStack>
                                 </MenuItem>
 

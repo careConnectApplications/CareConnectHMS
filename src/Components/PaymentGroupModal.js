@@ -1,4 +1,4 @@
-import { HStack, Radio, RadioGroup, Text } from '@chakra-ui/react'
+import { HStack, Radio, RadioGroup, Text, Checkbox } from '@chakra-ui/react'
 import React, { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from "react-router-dom";
 import {
@@ -40,7 +40,8 @@ export default function PaymentGroupModal({ isOpen, onClose, setOldPayload, acti
     const [Data, setData] = useState([]);
     const [TotalAmount, setTotalAmount] = useState([]);
     const [Settings, setSettings] = useState("");
-      const [Trigger, setTrigger] = useState(false);
+    const [Trigger, setTrigger] = useState(false);
+    const [UseWallet, setUseWallet] = useState(false);
     
 
 
@@ -124,9 +125,8 @@ export default function PaymentGroupModal({ isOpen, onClose, setOldPayload, acti
       }
 
       const onChangeStatus = async (id) => {
-          // alert(id)
           try {
-            const result = await confirmPaymentAPI(id);
+            const result = await confirmPaymentAPI(id, { useWallet: UseWallet });
             if (result.status === 200) {
             
                 activateNotifications("Payment confirmed Successfully", "success")
@@ -140,10 +140,10 @@ export default function PaymentGroupModal({ isOpen, onClose, setOldPayload, acti
         };
 
       const ConfirmAllPayment = async () => {
-          // alert(id)
           setLoading(true)
           try {
-            const result = await confirmAllPaymentAPI(oldPayload.paymentreference);
+            const payload = { useWallet: UseWallet };
+            const result = await confirmAllPaymentAPI(oldPayload.paymentreference, payload);
             if (result.status === 200) {
                 setLoading(false)
             
@@ -313,10 +313,21 @@ export default function PaymentGroupModal({ isOpen, onClose, setOldPayload, acti
 
                   <Flex
                         justifyContent="flex-end"
+                        alignItems="center"
                         flexWrap="wrap"
                         mt={["10px", "10px", "10px", "10px"]}
                         w={"100%"}
+                        gap="3"
                     >
+                        <Checkbox
+                            isChecked={UseWallet}
+                            onChange={(e) => setUseWallet(e.target.checked)}
+                            colorScheme="blue"
+                            fontWeight="500"
+                            fontSize="14px"
+                        >
+                            Pay with Wallet
+                        </Checkbox>
                         <Button
                             mt={["10px", "10px", "0px", "0px"]}
                             isLoading={Loading}
