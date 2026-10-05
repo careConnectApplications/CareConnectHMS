@@ -39,7 +39,6 @@ import Seo from "../Utils/Seo";
 import { HiOutlineDocumentArrowUp } from "react-icons/hi2";
 import { BiSearch } from "react-icons/bi";
 
-import { SlPlus } from "react-icons/sl";
 import Pagination from "../Components/Pagination";
 import { configuration } from "../Utils/Helpers";
 import Preloader from "../Components/Preloader";
@@ -370,11 +369,6 @@ export default function Payment() {
 
   const onPView = (id) => {
     router(`/dashboard/patient/${id}`);
-  };
-
-  const CreatePatient = () => {
-    setPModalState("new");
-    onPOpen();
   };
 
   const handleFundWallet = (id) => {
@@ -1020,22 +1014,6 @@ export default function Payment() {
                 </Menu>
               </HStack>
             </Flex>
-          </Flex>
-
-          {/* Add Patient Button */}
-          <Flex
-            justifyContent="space-between"
-            flexWrap="wrap"
-            mt={["10px", "10px", "10px", "10px"]}
-            w={["100%", "100%", "50%", "37%"]}
-          >
-            <Button
-              rightIcon={<SlPlus />}
-              w={["100%", "100%", "144px", "144px"]}
-              onClick={CreatePatient}
-            >
-              Add Patient
-            </Button>
           </Flex>
 
           {/* Patient Table */}
