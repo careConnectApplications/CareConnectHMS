@@ -72,6 +72,7 @@ import EditPostAnaestheticRecoveryChartForm from "../Pages/EditPostAnaestheticRe
 import TheatreVitalSignScores from "../Pages/TheatreVitalSignScores";
 import AddHistologyRequestForm from "../Pages/AddHistologyRequestForm";
 import EditHistologyRequestForm from "../Pages/EditHistologyRequestForm";
+import RefundManagement from "../Pages/RefundManagement";
 
 export default function IndexRoutes() {
   return (
@@ -185,6 +186,10 @@ export default function IndexRoutes() {
             <Route
               path="/dashboard/billing-payment/receipt/:id"
               element={<PrintPaymentReceipt />}
+            />
+            <Route
+              path="/dashboard/refund-management"
+              element={<RefundManagement />}
             />
           </Route>
           <Route element={<HODBillingRoutes />}>

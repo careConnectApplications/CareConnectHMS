@@ -27,7 +27,7 @@ import ReferralDiagnosisCard from "./ReferralDiagnosisCard";
 import { FaNoteSticky } from "react-icons/fa6";
 import { FaCalendarAlt } from "react-icons/fa";
 import { IoColorFilter } from "react-icons/io5";
-import { SettingsApi, AddDeliveryNoteAPI, confirmPaymentAPI, confirmAllPaymentAPI, GetAllPaymentDetailApi } from "../Utils/ApiCalls";
+import { SettingsApi, AddDeliveryNoteAPI, confirmPaymentAPI, confirmAllPaymentAPI, GetAllPaymentDetailApi, getWalletBalanceApi } from "../Utils/ApiCalls";
 import { FaArrowsToDot } from "react-icons/fa6";
 import { AiFillDatabase } from "react-icons/ai";
 import moment from "moment";
@@ -42,7 +42,7 @@ export default function PaymentGroupModal({ isOpen, onClose, setOldPayload, acti
     const [Settings, setSettings] = useState("");
     const [Trigger, setTrigger] = useState(false);
     const [UseWallet, setUseWallet] = useState(false);
-    
+    const [WalletBalance, setWalletBalance] = useState(0);
 
 
     const id = localStorage.getItem('patientId')
@@ -111,6 +111,17 @@ export default function PaymentGroupModal({ isOpen, onClose, setOldPayload, acti
 
             setData(result.queryresult.paymentdetails);
             setTotalAmount(result.totalAmount[0].totalAmount)
+
+            // fetch wallet balance
+            if(result.queryresult?.paymentdetails?.length > 0) {
+                const patientId = result.queryresult.paymentdetails[0].patient?._id;
+                if(patientId) {
+                    const balanceResult = await getWalletBalanceApi(patientId);
+                    if(balanceResult) {
+                        setWalletBalance(balanceResult.queryresult?.walletBalance || balanceResult.walletBalance || balanceResult.balance || 0);
+                    }
+                }
+            }
         } catch (e) {
             console.log(e.message, "error");
         }
@@ -326,7 +337,7 @@ export default function PaymentGroupModal({ isOpen, onClose, setOldPayload, acti
                             fontWeight="500"
                             fontSize="14px"
                         >
-                            Pay with Wallet
+                            Pay with Wallet (Wallet Balance: {Number(WalletBalance).toLocaleString()})
                         </Checkbox>
                         <Button
                             mt={["10px", "10px", "0px", "0px"]}

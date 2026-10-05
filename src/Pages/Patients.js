@@ -612,6 +612,7 @@ export default function Patients() {
                       onView={() => navigateToPatientDetails(item._id)}
                       onFundWallet={() => handleFundWallet(item._id)}
                       OnClick={testing}
+                      hideFundWallet={true}
                     />
                   ))
                 ) : SearchInput !== "" && FilteredData?.length > 0 ? (
@@ -636,6 +637,7 @@ export default function Patients() {
                       onView={() => navigateToPatientDetails(item._id)}
                       onFundWallet={() => handleFundWallet(item._id)}
                       OnClick={testing}
+                      hideFundWallet={true}
                     />
                   ))
                 ) : (

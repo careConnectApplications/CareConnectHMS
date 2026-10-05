@@ -242,6 +242,13 @@ export const NavList = (location) => {
           display: isBillingStaffHOD(),
         },
 
+        {
+          name: "Refund",
+          link: "/dashboard/refund-management",
+          active: isActive(location, "/dashboard/refund-management"),
+          display: isBillingStaff(),
+        },
+
       ],
     },
     {

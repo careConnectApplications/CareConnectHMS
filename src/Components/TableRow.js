@@ -142,6 +142,8 @@ export default function TableRow({
   ageGroup,
   M,
   F,
+  totalWalletAmount,
+  totalNonWalletAmount,
 }) {
   const router = useNavigate();
 
@@ -2938,6 +2940,16 @@ export default function TableRow({
           <Td>
             <Text fontWeight="400" fontSize="12px">
               {total}
+            </Text>
+          </Td>
+          <Td>
+            <Text fontWeight="400" fontSize="12px">
+              {totalWalletAmount}
+            </Text>
+          </Td>
+          <Td>
+            <Text fontWeight="400" fontSize="12px">
+              {totalNonWalletAmount}
             </Text>
           </Td>
           <Td>

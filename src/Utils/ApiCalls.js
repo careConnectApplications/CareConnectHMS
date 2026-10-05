@@ -7627,3 +7627,49 @@ export const GetAllOutreachMedicationApi = () => {
     });
 };
 
+
+export const GetWalletTransactionsApi = (patientId) => {
+  let config = {
+    method: "get",
+    url: `${baseUrl}/billing/wallettransactions/${patientId}`,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  };
+  return axios.request(config).then((response) => response.data).catch((error) => { throw new Error(error.response?.data?.msg || error.message); });
+};
+
+export const RequestRefundApi = (payload) => {
+  let config = {
+    method: "post",
+    url: `${baseUrl}/billing/refundwallet`,
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    data: payload,
+  };
+  return axios.request(config).then((response) => response.data).catch((error) => { throw new Error(error.response?.data?.msg || error.message); });
+};
+
+export const GetAllRefundsApi = (status, startDate, endDate) => {
+  let q = [];
+  if (status) q.push(`status=${status}`);
+  if (startDate) q.push(`startDate=${startDate}`);
+  if (endDate) q.push(`endDate=${endDate}`);
+  const qs = q.length > 0 ? "?" + q.join("&") : "";
+  let config = {
+    method: "get",
+    url: `${baseUrl}/billing/allrefunds${qs}`,
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+  };
+  return axios.request(config).then((response) => response.data).catch((error) => { throw new Error(error.response?.data?.msg || error.message); });
+};
+
+export const ApproveRejectRefundApi = (refundId, action) => {
+  let config = {
+    method: "put",
+    url: `${baseUrl}/billing/approverefund/${refundId}`,
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    data: { action },
+  };
+  return axios.request(config).then((response) => response.data).catch((error) => { throw new Error(error.response?.data?.msg || error.message); });
+};
