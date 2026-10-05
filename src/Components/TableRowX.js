@@ -8,7 +8,7 @@ import {
 import { BsThreeDots } from "react-icons/bs"
 import { useNavigate } from 'react-router-dom'
 
-export default function TableRowX({ type, name, mrn, phone, code, age,patientType, email,status, date, onEdit, hmoId, onRemove, onView, onChangeStatus, onClick, gender,hmoStatus, walletBalance, onFundWallet }) {
+export default function TableRowX({ type, name, mrn, phone, code, age, patientType, email, status, date, onEdit, hmoId, onRemove, onView, onChangeStatus, onClick, gender, hmoStatus, walletBalance, onFundWallet, hideFundWallet, hideEdit, hideDelete, hideView, onViewWalletTx, onRefund }) {
     const router = useNavigate()
     return (
 
@@ -53,32 +53,53 @@ export default function TableRowX({ type, name, mrn, phone, code, age,patientTyp
                             </MenuButton>
                             <MenuList >
                              
+                                {!hideEdit && (
                                 <MenuItem onClick={onEdit} textTransform="capitalize" fontWeight={"500"} color='#2F2F2F' _hover={{ color: "#fff", fontWeight: "400", bg: "blue.blue500" }}>
                                     <HStack fontSize="12px">
-                                      
                                         <Text>Edit</Text>
                                     </HStack>
                                 </MenuItem>
-                               
-                                <MenuItem  onClick={onView} textTransform="capitalize" fontWeight={"500"} _hover={{ color: "#fff", fontWeight: "400", bg: "blue.blue500" }}>
-                                    <HStack fontSize="12px">
-                                      
-                                        <Text >View</Text>
-                                    </HStack>
-                                </MenuItem>
+                                )}
 
-                                <MenuItem  onClick={onView} textTransform="capitalize" fontWeight={"500"} _hover={{ color: "#fff", fontWeight: "400", bg: "blue.blue500" }}>
+                                {!hideView && (
+                                <MenuItem onClick={onView} textTransform="capitalize" fontWeight={"500"} _hover={{ color: "#fff", fontWeight: "400", bg: "blue.blue500" }}>
                                     <HStack fontSize="12px">
-                                      
-                                        <Text >Delete</Text>
+                                        <Text>View</Text>
                                     </HStack>
                                 </MenuItem>
+                                )}
 
-                                <MenuItem  onClick={onFundWallet} textTransform="capitalize" fontWeight={"500"} _hover={{ color: "#fff", fontWeight: "400", bg: "blue.blue500" }}>
+                                {!hideDelete && (
+                                <MenuItem onClick={onRemove} textTransform="capitalize" fontWeight={"500"} _hover={{ color: "#fff", fontWeight: "400", bg: "blue.blue500" }}>
                                     <HStack fontSize="12px">
-                                        <Text >Fund Wallet</Text>
+                                        <Text>Delete</Text>
                                     </HStack>
                                 </MenuItem>
+                                )}
+
+                                {!hideFundWallet && (
+                                <MenuItem onClick={onFundWallet} textTransform="capitalize" fontWeight={"500"} _hover={{ color: "#fff", fontWeight: "400", bg: "blue.blue500" }}>
+                                    <HStack fontSize="12px">
+                                        <Text>Fund Wallet</Text>
+                                    </HStack>
+                                </MenuItem>
+                                )}
+
+                                {onViewWalletTx && (
+                                <MenuItem onClick={onViewWalletTx} textTransform="capitalize" fontWeight={"500"} _hover={{ color: "#fff", fontWeight: "400", bg: "blue.blue500" }}>
+                                    <HStack fontSize="12px">
+                                        <Text>View Wallet Transactions</Text>
+                                    </HStack>
+                                </MenuItem>
+                                )}
+
+                                {onRefund && Number(walletBalance) > 0 && (
+                                <MenuItem onClick={onRefund} textTransform="capitalize" fontWeight={"500"} color="#EA5937" _hover={{ color: "#fff", fontWeight: "400", bg: "#EA5937" }}>
+                                    <HStack fontSize="12px">
+                                        <Text>Refund Request</Text>
+                                    </HStack>
+                                </MenuItem>
+                                )}
 
                             </MenuList>
                         </Menu>

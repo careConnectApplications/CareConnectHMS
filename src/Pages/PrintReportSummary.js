@@ -209,6 +209,22 @@ export default function PrintReportSummary() {
                     color="#000"
                     fontWeight="600"
                   >
+                    Total Wallet Amount (&#8358;)
+                  </Th>
+                  <Th
+                    fontSize="13px"
+                    textTransform="capitalize"
+                    color="#000"
+                    fontWeight="600"
+                  >
+                    Total Non-Wallet Amount (&#8358;)
+                  </Th>
+                  <Th
+                    fontSize="13px"
+                    textTransform="capitalize"
+                    color="#000"
+                    fontWeight="600"
+                  >
                     Status
                   </Th>
                 </Tr>
@@ -222,6 +238,8 @@ export default function PrintReportSummary() {
                     name={item.cashiername}
                     id={item.cashierid}
                     total={item.totalAmount?.toLocaleString()}
+                    totalWalletAmount={item.totalWalletAmount?.toLocaleString()}
+                    totalNonWalletAmount={item.totalNonWalletAmount?.toLocaleString()}
                     status={item.status}
                   />
                 ))}
@@ -241,7 +259,19 @@ export default function PrintReportSummary() {
                 Grand Total Amount: &#8358;{" "}
                 {JSON.parse(
                   localStorage.getItem("reportGrandTotal")
-                )?.grandtotalAmount.toLocaleString()}
+                )?.grandtotalAmount?.toLocaleString()}
+              </Text>
+              <Text fontWeight="700" fontSize="16px">
+                Grand Total Wallet Amount: &#8358;{" "}
+                {JSON.parse(
+                  localStorage.getItem("reportGrandTotal")
+                )?.grandTotalWalletAmount?.toLocaleString()}
+              </Text>
+              <Text fontWeight="700" fontSize="16px">
+                Grand Total Non-Wallet Amount: &#8358;{" "}
+                {JSON.parse(
+                  localStorage.getItem("reportGrandTotal")
+                )?.grandTotalNonWalletAmount?.toLocaleString()}
               </Text>
             </Box>
            </>
